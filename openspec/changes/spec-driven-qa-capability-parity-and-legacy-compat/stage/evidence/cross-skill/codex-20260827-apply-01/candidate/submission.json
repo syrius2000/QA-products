@@ -1,0 +1,12 @@
+{
+  "base_revision": 0,
+  "expected_semantic_digest": "9fa2657598278e930593fc646ea07e1c3462a7e884268592b5410d9c4418c133",
+  "target_findings": [
+    "QA-0001-F01"
+  ],
+  "responses": {
+    "QA-0001-F01": {
+      "disposition": "accepted"
+    }
+  }
+}

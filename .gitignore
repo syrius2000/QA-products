@@ -1,0 +1,17 @@
+# 生成されるPython・テストキャッシュ
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+**/.mypy_cache/
+.ruff_cache/
+**/.ruff_cache/
+
+# macOSのメタデータ
+.DS_Store
+
+# 個人用カレンダー
+garmin_live.ics

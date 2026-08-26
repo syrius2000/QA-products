@@ -1,0 +1,543 @@
+{
+  "bundle_manifest_digest": "8994c0e0d4ac93ddb3e102f72b2edd305bbbc7d9f9839b77b644814d7ad6a96e",
+  "bundle_names": [
+    "legacy",
+    "candidate",
+    "compact"
+  ],
+  "created_at": "2026-08-26T16:31:55.155958+00:00",
+  "fixture_classes": [
+    "golden",
+    "negative",
+    "cross-skill",
+    "legacy-compat",
+    "size"
+  ],
+  "fixture_suite_digest": "4c5d747dbb4c2a4502755c8db248b1c9e3ca2e2faf9be699af3a0c072d4cba67",
+  "observed_count": 15,
+  "run_count": 15,
+  "run_id": "codex-20260827-compat-01",
+  "runs": [
+    {
+      "adapter": "legacy Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "zip",
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jso1hfg0/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jso1hfg0",
+        "--title",
+        "parity-golden",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "golden",
+        "digest": "2e438212ac77d60d7a3e016239a131c62cd2069b90833fc5ad2db524cead040c",
+        "path": "fixtures/golden.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "legacy Author validate_author_response.py (negative)",
+      "bundle": {
+        "kind": "zip",
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-rlhq3z9r/legacy-bundle/spec-driven-qa-author-response/scripts/validate_author_response.py",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-rlhq3z9r/missing-case",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/runs/codex-20260827-compat-01/legacy/negative/input.json"
+      ],
+      "execution_status": "observed",
+      "exit_code": 1,
+      "fixture": {
+        "class": "negative",
+        "digest": "32f3a7ae186c308cd89c488930f37b95152b68ab2a8dd9b42a3d39b468d8ece4",
+        "path": "fixtures/negative.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "legacy Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "zip",
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-nodfkpbf/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-nodfkpbf",
+        "--title",
+        "parity-cross-skill",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "cross-skill",
+        "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+        "path": "fixtures/cross-skill.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "legacy Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "zip",
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jlcnxu4d/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jlcnxu4d",
+        "--title",
+        "parity-legacy-compat",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "legacy-compat",
+        "digest": "042c1fb82b038fd05b32a54133dba85382b76f299b7d6a73a4e8c3a8d180d8de",
+        "path": "fixtures/legacy-compat.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "legacy Reviewer CLI help",
+      "bundle": {
+        "kind": "zip",
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-iiamkqrt/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+        "--help"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "size",
+        "digest": "491537901340588ce3dd5434bcc00984df973602b7b7727256ff0bb3904b0fb3",
+        "path": "fixtures/size.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "candidate Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "directory",
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-kjs5y6qm",
+        "--title",
+        "parity-golden",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "golden",
+        "digest": "2e438212ac77d60d7a3e016239a131c62cd2069b90833fc5ad2db524cead040c",
+        "path": "fixtures/golden.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "candidate Author validate_author_response.py (negative)",
+      "bundle": {
+        "kind": "directory",
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_author_response/scripts/validate_author_response.py",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-fuagu8j4/missing-case",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/runs/codex-20260827-compat-01/candidate/negative/input.json"
+      ],
+      "execution_status": "observed",
+      "exit_code": 1,
+      "fixture": {
+        "class": "negative",
+        "digest": "32f3a7ae186c308cd89c488930f37b95152b68ab2a8dd9b42a3d39b468d8ece4",
+        "path": "fixtures/negative.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "candidate Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "directory",
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-u6gb5nj6",
+        "--title",
+        "parity-cross-skill",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "cross-skill",
+        "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+        "path": "fixtures/cross-skill.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "candidate Reviewer create_review_case.py",
+      "bundle": {
+        "kind": "directory",
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+        "--root",
+        "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-0bz0bw_2",
+        "--title",
+        "parity-legacy-compat",
+        "--target",
+        "fixture-input",
+        "--profile",
+        "lite"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "legacy-compat",
+        "digest": "042c1fb82b038fd05b32a54133dba85382b76f299b7d6a73a4e8c3a8d180d8de",
+        "path": "fixtures/legacy-compat.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "candidate Reviewer CLI help",
+      "bundle": {
+        "kind": "directory",
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+        "--help"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "size",
+        "digest": "491537901340588ce3dd5434bcc00984df973602b7b7727256ff0bb3904b0fb3",
+        "path": "fixtures/size.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "compact JSON Launcher",
+      "bundle": {
+        "kind": "directory",
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+        "review",
+        "--json",
+        "{\"request_id\":\"parity-golden\",\"fixture_class\":\"golden\",\"fixture_path\":\"input.json\"}"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "golden",
+        "digest": "2e438212ac77d60d7a3e016239a131c62cd2069b90833fc5ad2db524cead040c",
+        "path": "fixtures/golden.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "compact JSON Launcher",
+      "bundle": {
+        "kind": "directory",
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-author-response/launcher.py",
+        "close",
+        "--json",
+        "{\"request_id\":\"parity-negative\",\"fixture_class\":\"negative\",\"fixture_path\":\"input.json\"}"
+      ],
+      "execution_status": "observed",
+      "exit_code": 2,
+      "fixture": {
+        "class": "negative",
+        "digest": "32f3a7ae186c308cd89c488930f37b95152b68ab2a8dd9b42a3d39b468d8ece4",
+        "path": "fixtures/negative.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "compact JSON Launcher",
+      "bundle": {
+        "kind": "directory",
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+        "handoff",
+        "--json",
+        "{\"request_id\":\"parity-cross-skill\",\"fixture_class\":\"cross-skill\",\"fixture_path\":\"input.json\"}"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "cross-skill",
+        "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+        "path": "fixtures/cross-skill.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "compact JSON Launcher",
+      "bundle": {
+        "kind": "directory",
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+        "review",
+        "--json",
+        "{\"request_id\":\"parity-legacy-compat\",\"fixture_class\":\"legacy-compat\",\"fixture_path\":\"input.json\"}"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "legacy-compat",
+        "digest": "042c1fb82b038fd05b32a54133dba85382b76f299b7d6a73a4e8c3a8d180d8de",
+        "path": "fixtures/legacy-compat.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    },
+    {
+      "adapter": "compact JSON Launcher",
+      "bundle": {
+        "kind": "directory",
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-B",
+        "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+        "review",
+        "--json",
+        "{\"request_id\":\"parity-size\",\"fixture_class\":\"size\",\"fixture_path\":\"input.json\"}"
+      ],
+      "execution_status": "observed",
+      "exit_code": 0,
+      "fixture": {
+        "class": "size",
+        "digest": "491537901340588ce3dd5434bcc00984df973602b7b7727256ff0bb3904b0fb3",
+        "path": "fixtures/size.json"
+      },
+      "input": "input.json",
+      "schema_version": "parity-run-result-1",
+      "side_effects_snapshot": "side-effects-snapshot.json",
+      "state_snapshot": "state-snapshot.json",
+      "structured_output": "structured-output.json",
+      "unverified": [
+        "state snapshot: fixture-specific state adapter is not defined",
+        "cross-version semantic equivalence: not inferred from one execution"
+      ]
+    }
+  ],
+  "schema_version": "parity-run-manifest-1",
+  "unverified_count": 0
+}

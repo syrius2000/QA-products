@@ -1,0 +1,24 @@
+{
+  "schema_version": "parity-bundles-1",
+  "repository_root": "../../../..",
+  "bundles": {
+    "legacy": {
+      "source": "../../../../archives/skills/legacy-qa-skills_20260825.zip",
+      "kind": "zip",
+      "version": "legacy-20260825",
+      "roles": ["reviewer", "author"]
+    },
+    "candidate": {
+      "source": "../../../../openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage",
+      "kind": "directory",
+      "version": "contract-v1.2-candidate-20260826",
+      "roles": ["reviewer", "author"]
+    },
+    "compact": {
+      "source": "../../../../openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle",
+      "kind": "directory",
+      "version": "compact-20260827-chain-api",
+      "roles": ["reviewer", "author"]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+    "chain-verify",
+    "--json",
+    "{\"request_id\": \"cross-skill-parity-verify\", \"case_id\": \"QA-0001\", \"workspace\": \"/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/cross-skill/codex-20260827-chain-api-01/compact/workspace\", \"submission_id\": \"submission-cross-skill\"}"
+  ],
+  "stdout": "{\"case_id\": \"QA-0001\", \"case_revision\": 1, \"operation\": \"chain-verify\", \"status\": \"ok\", \"submission_id\": \"submission-cross-skill\", \"verification\": \"verified\"}\n",
+  "stderr": "",
+  "exit_code": 0
+}

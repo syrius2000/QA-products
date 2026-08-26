@@ -1,0 +1,27 @@
+schema_version: "1.0"
+case_id: QA-0007
+traceability:
+  - requirement_id: "REQ-01-separate-digests"
+    title: "semantic_digest と content_digest の名前空間および算出入力の分離"
+    spec_ref: "openspec/changes/separate-semantic-content-digests/specs/spec-driven-qa/spec.md"
+    implementation_ref: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/shared_core/digest.py"
+    test_ref: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/test_verification_integrity.py::test_compute_handoff_digests_stable"
+    status: CONFIRMED
+  - requirement_id: "REQ-02-content-only-detection"
+    title: "本文のみ変更時の content_digest 不一致検知と非終端化"
+    spec_ref: "openspec/changes/separate-semantic-content-digests/specs/spec-driven-qa/spec.md"
+    implementation_ref: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+    test_ref: "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py::test_content_only_handoff_change_is_rejected"
+    status: CONFIRMED
+  - requirement_id: "REQ-03-legacy-digest-rejection"
+    title: "旧形式の同値digestを受理せず拒否"
+    spec_ref: "openspec/changes/separate-semantic-content-digests/specs/spec-driven-qa/spec.md"
+    implementation_ref: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+    test_ref: "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py::test_legacy_equivalent_digests_are_rejected"
+    status: CONFIRMED
+  - requirement_id: "REQ-04-secret-protection"
+    title: "digest入力への秘密値・トークン混入拒否"
+    spec_ref: "openspec/changes/separate-semantic-content-digests/design.md"
+    implementation_ref: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/shared_core/digest.py"
+    test_ref: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/test_verification_integrity.py::test_secret_values_are_rejected_from_digest_input"
+    status: CONFIRMED

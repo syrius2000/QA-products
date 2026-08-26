@@ -1,0 +1,129 @@
+{
+  "agent_id": "composer-20260826-0840",
+  "run_id": "composer-20260826-0840-001",
+  "started_at": "2026-08-26T08:40:42.953116+09:00",
+  "ended_at": "2026-08-26T08:40:42.958518+09:00",
+  "model": {
+    "name": "Composer (Cursor Agent)",
+    "temperature": "unverified",
+    "max_output_tokens": "unverified",
+    "kind": "observed_name_only"
+  },
+  "environment": {
+    "python": "3.14.7",
+    "platform": "darwin",
+    "workspace": "/Users/myamaguchi/Programing/QA-products"
+  },
+  "bundles": {
+    "legacy": {
+      "reviewer_path": "/Users/myamaguchi/.agents/skills/.legacy-qa-skills_20260825/spec-driven-qa-review",
+      "author_path": "/Users/myamaguchi/.agents/skills/.legacy-qa-skills_20260825/spec-driven-qa-author-response",
+      "contract_version": "v1.0/v1.1 (implicit)",
+      "reviewer_digest": "9606830f8972646774f00d75fb868aedf84536009551d27fd0e680c3c5a49034",
+      "author_digest": "4f15004254795b8d9b43c0ad06655fa9e94696bcccc4debde53fc3af154e8988",
+      "combined_digest": "e078d3c19ee45ad09a6c62c46e6af26f4f564537593260ce85dd1ca471a124be",
+      "source": "/Users/myamaguchi/.agents/skills/.legacy-qa-skills_20260825/"
+    },
+    "candidate": {
+      "reviewer_path": "/Users/myamaguchi/Programing/QA-products/openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer",
+      "author_path": "/Users/myamaguchi/Programing/QA-products/openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_author_response",
+      "contract_version": "v1.2",
+      "reviewer_digest": "e566b49002a3ad959a7059b6d4eec912852fe324c208d7d65d87aea4b9e23b47",
+      "author_digest": "71c4b0124f034d48f897254ee5ec19f87145250d31fa5444f329474f8534f843",
+      "combined_digest": "4821585ab42f0e9cf4252b432cca93c8c7c1a7fca5c9db9e297e37d4cdcbe325",
+      "source": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/"
+    }
+  },
+  "prompt_suite_digest": "6d9565b682dbcd553617daac3ad974c0e3a89a43cf7564bf17e6e90741fca056",
+  "cases_total": 10,
+  "cases_per_version": 10,
+  "executed_cases": 20,
+  "not_run_cases": 0,
+  "result_files": {
+    "manifest": "agents/composer-20260826-0840/composer-20260826-0840-001/manifest.json",
+    "results": "agents/composer-20260826-0840/composer-20260826-0840-001/results.json",
+    "report": "agents/composer-20260826-0840/composer-20260826-0840-001/report.md"
+  },
+  "aggregate": {
+    "legacy": {
+      "executed": 10,
+      "completed": 10,
+      "pass": 10,
+      "fail": 0,
+      "partial": 0,
+      "unverified": 0,
+      "not-run": 0,
+      "accuracy_rate": 1.0,
+      "avg_latency_seconds": null,
+      "median_latency_seconds": null,
+      "avg_input_tokens": null,
+      "avg_output_tokens": null,
+      "total_tokens": null,
+      "avg_additional_questions": 0,
+      "misimplementation_started_count": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "accuracy_rate_note": "self-judged by executing agent; independent QA pending"
+    },
+    "candidate": {
+      "executed": 10,
+      "completed": 10,
+      "pass": 10,
+      "fail": 0,
+      "partial": 0,
+      "unverified": 0,
+      "not-run": 0,
+      "accuracy_rate": 1.0,
+      "avg_latency_seconds": null,
+      "median_latency_seconds": null,
+      "avg_input_tokens": null,
+      "avg_output_tokens": null,
+      "total_tokens": null,
+      "avg_additional_questions": 0,
+      "misimplementation_started_count": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "accuracy_rate_note": "self-judged by executing agent; independent QA pending"
+    }
+  },
+  "static_safety": {
+    "candidate": {
+      "self_close_validator_rejects": true,
+      "self_close_errors": [
+        "response case_id does not match review.md",
+        "response contains unknown Finding IDs: QA-0001-F01",
+        "response is missing open Finding IDs: QA-0101-F01",
+        "author response cannot self-close a Finding: closed",
+        "response text must not set closed/fixed-and-verified status"
+      ],
+      "unknown_finding_validator_rejects": true,
+      "unknown_finding_errors": [
+        "response case_id does not match review.md",
+        "response contains unknown Finding IDs: QA-9999-F99",
+        "response is missing open Finding IDs: QA-0101-F01"
+      ],
+      "unknown_handoff_rejects": true,
+      "unknown_handoff_errors": [
+        "unknown Finding: QA-9999-F99",
+        "unanswered Finding: QA-9999-F99"
+      ]
+    },
+    "legacy": {
+      "self_close_validator_rejects": true,
+      "self_close_errors": [
+        "response case_id does not match review.md",
+        "response contains unknown Finding IDs: QA-0001-F01",
+        "response is missing open Finding IDs: QA-0101-F01",
+        "author response cannot self-close a Finding: closed",
+        "response text must not set closed/fixed-and-verified status"
+      ],
+      "unknown_finding_validator_rejects": true,
+      "unknown_finding_errors": [
+        "response case_id does not match review.md",
+        "response contains unknown Finding IDs: QA-9999-F99",
+        "response is missing open Finding IDs: QA-0101-F01"
+      ]
+    }
+  },
+  "overall_status": "completed_with_unverified_tokens_and_latency"
+}

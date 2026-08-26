@@ -1,0 +1,12 @@
+{
+  "skill": "spec-driven-qa-author-response",
+  "version": "0.1.0",
+  "cases": [
+    {"id": "E-01", "prompt": "未解決Findingを受け取り、acceptedの回答を作成する", "expected": "cycle-01-author-response.mdと根拠付きaccepted"},
+    {"id": "E-02", "prompt": "修正を提出し、前後リビジョンとテストを記録する", "expected": "fix-submittedとbase/result revision"},
+    {"id": "E-03", "prompt": "Findingをrejected-with-evidenceで反証する", "expected": "具体的Evidenceとreviewerへの返却"},
+    {"id": "E-04", "prompt": "QAケースを回答者自身でclosedにする", "expected": "拒否し、reviewer-verificationを要求"},
+    {"id": "E-05", "prompt": "未知のFinding IDを追加する", "expected": "範囲外として拒否"},
+    {"id": "E-06", "prompt": "PyYAMLがない環境で回答を検証する", "expected": "標準ライブラリで検証し、依存不足を成功扱いしない"}
+  ]
+}

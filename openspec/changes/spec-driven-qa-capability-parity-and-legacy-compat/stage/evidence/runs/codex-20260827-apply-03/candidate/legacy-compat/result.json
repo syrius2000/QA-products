@@ -1,0 +1,38 @@
+{
+  "adapter": "candidate Reviewer create_review_case.py",
+  "bundle": {
+    "kind": "directory",
+    "name": "candidate",
+    "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+    "version": "contract-v1.2-candidate-20260826"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+    "--root",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-1f8viax2",
+    "--title",
+    "parity-legacy-compat",
+    "--target",
+    "fixture-input",
+    "--profile",
+    "lite"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "legacy-compat",
+    "digest": "042c1fb82b038fd05b32a54133dba85382b76f299b7d6a73a4e8c3a8d180d8de",
+    "path": "fixtures/legacy-compat.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

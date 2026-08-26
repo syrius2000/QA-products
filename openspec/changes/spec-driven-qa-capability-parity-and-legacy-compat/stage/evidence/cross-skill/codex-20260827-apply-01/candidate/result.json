@@ -1,0 +1,33 @@
+{
+  "author": {
+    "status": "observed",
+    "validation_exit_code": 0
+  },
+  "bundle": "candidate",
+  "bundle_identity": {
+    "name": "candidate",
+    "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+    "version": "contract-v1.2-candidate-20260826"
+  },
+  "digest": {
+    "semantic_digest_present": true,
+    "status": "observed"
+  },
+  "handoff": {
+    "path": "handoff.md",
+    "status": "observed"
+  },
+  "reviewer": {
+    "create_exit_code": 0,
+    "render_exit_code": 0,
+    "status": "observed"
+  },
+  "revision": {
+    "status": "observed",
+    "value": "0"
+  },
+  "submission": {
+    "exit_code": 1,
+    "status": "failed"
+  }
+}

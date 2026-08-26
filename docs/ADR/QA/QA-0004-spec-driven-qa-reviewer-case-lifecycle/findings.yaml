@@ -1,0 +1,415 @@
+schema_version: "1.0"
+case_id: QA-0004
+findings:
+  - id: QA-0004-F01
+    title: "Launcher/CLI が ReviewerLifecycle に接続されておらず公開操作経路が動作しない"
+    category: coverage-gap
+    purpose_classification: spec-required
+    severity: high
+    severity_rationale: "designは Launcher + shared_core.cli 経由でライフサイクルを公開する前提。現状 runtime.run はスタブで、launcher 実行は bundle_root_unexpected で失敗し、init/handoff/verify/close の公開CLIが成立しない。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "design.md Decision 1 / Decision 3"
+      - "evidence/capability_matrix.md REV-*-01 実装・検証済み"
+    requirement_refs:
+      - "spec.md Review Case Initialization / Deterministic Handoff / Verification / Close"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/shared_core/runtime.py"
+        note: "run() は authorize 後に status=ok の固定JSONを返すのみ。lifecycle未呼び出し。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/launcher-probe.txt"
+        note: "launcher review --json 実行結果 code=bundle_root_unexpected"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/launcher.py"
+        revision: "unverified-no-git"
+    limitations:
+      - "pytestは ReviewerLifecycle 直importで通るため、CLI未接続が見えにくい。"
+    requested_action: "shared_core.runtime.run（または Reviewer Facade）から action=init/review/handoff/verify/close を ReviewerLifecycle へ接続し、本Change stage の Bundle レイアウトで launcher の subprocess golden/negative を追加する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: coverage-gap
+      requirement_id: "cli-lifecycle-wiring"
+      primary_path: "stage/shared_core/runtime.py"
+      semantic_key: "launcher-not-wired-to-lifecycle"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:09:41+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1109
+      note: "Launcher CLI init を subprocess で再確認し成功。runtime.run が ReviewerLifecycle に接続。"
+      residual_risk: "shared_core を改変したためアーカイブ digest 不一致。test_reviewer_launcher_missing_shared_core が削除されている。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle01-probes.txt
+        - stage/tests pytest 20 passed (re-run)
+
+  - id: QA-0004-F02
+    title: "verify_submission が base/result revision と変更ファイル存在を検証せず fixed-and-verified 相当を記録する"
+    category: evidence-gap
+    purpose_classification: spec-required
+    severity: high
+    severity_rationale: "Specの verify シナリオは base revision 一致・modified files 存在・Evidence確認を要求。実装は自己クローズ/未知ID以外をほぼ無条件で verified とし、偽陽性の検証成功を生む。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 6.1"
+    requirement_refs:
+      - "spec.md Scenario: Verify valid author fix submission"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        note: "verify_submission: self-close/unknown ID 検査後、revision/files未照合のまま outcome=verified と verification.md に fixed-and-verified を記載。"
+        revision: "unverified-no-git"
+      - type: test
+        reference: "stage/tests/test_verification.py::test_verify_submission_success"
+        note: "test_evidence文字列のみ。ファイル存在・revision照合アサーションなし。"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "handoff/case revision との照合、変更ファイル存在、テストEvidenceの実在確認を必須化し、不足時は拒否または unverified に留め、fixed-and-verified を書かない。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: evidence-gap
+      requirement_id: "verify-revision-files"
+      primary_path: "stage/spec-driven-qa-review/lifecycle.py"
+      semantic_key: "verify-skips-revision-and-files"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 2
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:15:12+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1113
+      note: "handoff必須・base_revision必須・空Evidence拒否をプローブで確認。negative test追加を確認。"
+      residual_risk: "test_evidenceは非空文字列のみでパス実在は未強制。modified_filesは任意のまま。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle02-probes.txt
+        - stage/tests pytest 21 passed (re-run)
+  - id: QA-0004-F03
+    title: "close_case がケース内の REQUIRED/Critical を検査せず呼び出し引数を信頼する"
+    category: security-risk
+    purpose_classification: spec-required
+    severity: high
+    severity_rationale: "Specは REQUIRED 残存や未解決 Critical での close 拒否を要求。実装は unresolved_markers/unresolved_critical を呼び出し側入力に依存し、ファイル上の REQUIRED があっても close 成功する。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 7.2 / 7.3"
+    requirement_refs:
+      - "spec.md Scenario: Prevent closure when blocking markers or unresolved critical findings remain"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        note: "close_case(unresolved_markers=..., unresolved_critical=...) を呼び出し元が供給。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "reviewer probe 2026-08-26"
+        note: "review.md に REQUIRED を追記後、引数デフォルトで close→accepted 成功を再現。"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "close時に review.md / findings.yaml から REQUIRED と Critical 未解決を検出し、引数改ざんに依存しない拒否を実装・テストする。risk-accepted High は5要素メタデータを検証する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: security-risk
+      requirement_id: "close-invariants"
+      primary_path: "stage/spec-driven-qa-review/lifecycle.py"
+      semantic_key: "close-trusts-caller-unresolved-flags"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 2
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:15:12+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1113
+      note: "Finding単位パースで verified critical + open low のclose成功、open critical拒否、risk-accepted Highの5要素欠落拒否を確認。"
+      residual_risk: "なし（本Finding範囲）。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle02-probes.txt
+        - stage/tests pytest 21 passed (re-run)
+  - id: QA-0004-F04
+    title: "Finding記録時に traceability.yaml が更新されない"
+    category: coverage-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "Specは claim-to-evidence traceability 管理を要求。record_findings は findings/cycle/events のみ更新し、traceability.yaml は初期空のまま。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 4.3"
+    requirement_refs:
+      - "spec.md Independent Review and Finding Management"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py::record_findings"
+        revision: "unverified-no-git"
+      - type: test
+        reference: "stage/tests/test_findings_and_traceability.py"
+        note: "traceability.yaml 内容のアサーション無し。ファイル名に反し events 追記のみ確認。"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "Findingごとの claim/requirement→evidence 行を traceability.yaml へ書き、欠落時は記録拒否するテストを追加する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: coverage-gap
+      requirement_id: "traceability-update"
+      primary_path: "stage/spec-driven-qa-review/lifecycle.py"
+      semantic_key: "findings-without-traceability-update"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:09:41+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1109
+      note: "record_findings 後の traceability.yaml に finding_id/classification/evidence が追記されることを観測。"
+      residual_risk: "test_findings_and_traceability.py は依然 traceability アサーション無し（テスト負債）。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle01-probes.txt
+        - stage/tests pytest 20 passed (re-run)
+
+  - id: QA-0004-F05
+    title: "tasks/evidence が未充足項目を完了・検証済みと過大表記している"
+    category: contradictory-evidence
+    purpose_classification: purpose-critical
+    severity: medium
+    severity_rationale: "未検証機能を受入済みと誤記しない方針に反し、tasks 全チェックと capability_matrix の『実装・検証済み』が CLI未接続・stale digest未実装・README欠落と矛盾する。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 5.2 / 8.2 / 9.1-9.3 すべて [x]"
+      - "evidence/capability_matrix.md"
+      - "evidence/security_qa_report.md"
+    requirement_refs:
+      - "AGENTS.md / design Decision 6 Independent QA gate"
+    evidence:
+      - type: document
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/tasks.md"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "stage/spec-driven-qa-review/ — README.md 不在; stage/SPEC.md 不在"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "lifecycle.render_handoff / verify_submission — stale digest拒否ロジック無し"
+        revision: "unverified-no-git"
+    limitations:
+      - "実装者レポートは AUTHOR-CLAIM。本Findingはコード差分との矛盾に基づく。"
+    requested_action: "tasks の未充足項目を [ ] に戻すか evidence-gap 注記を追加し、capability_matrix の状態列を実測（CLI接続後）に合わせて修正する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: contradictory-evidence
+      requirement_id: "honest-completion-status"
+      primary_path: "tasks.md"
+      semantic_key: "overclaimed-task-completion"
+    author_response:
+      cycle: 3
+      disposition: fix-submitted
+      note: "Human adjudication A により文書是正。cycle-03-author-response.md 参照。"
+      test_evidence: "rg digest/evidence-gap/task5.2 probes (docs only)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/tasks.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/evidence/capability_matrix.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/evidence/security_qa_report.md"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 3
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:20:38+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1119
+      note: "tasks/capability_matrix/security_qa_report を実測digest付きで是正。task5.2は未達のまま[ ]。過大完了の隠蔽は解消。"
+      residual_risk: "documented evidence-gaps remain (shared_core divergence, stale-digest test, verify path/files); cycle3 doc fix and verification same agent (independence limited)"
+      evidence:
+        - openspec/changes/spec-driven-qa-reviewer-case-lifecycle/tasks.md
+        - openspec/changes/spec-driven-qa-reviewer-case-lifecycle/evidence/capability_matrix.md
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle03-probes.txt
+  - id: QA-0004-F06
+    title: "lifecycle と scripts/* の二重実装が未統合で契約ドリフトリスクがある"
+    category: maintainability-risk
+    purpose_classification: operational-hygiene
+    severity: medium
+    severity_rationale: "v1.2候補由来の create_review_case/render_handoff/validate_* と新 lifecycle.py が並存し、テストは主に後者のみ。設計の『共有コアへ寄せる』意図と乖離。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "design.md Decision 1 / Risk 重複ドリフト"
+    requirement_refs: []
+    evidence:
+      - type: code
+        reference: "stage/spec-driven-qa-review/scripts/render_handoff.py"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "stage/spec-driven-qa-review/lifecycle.py::render_handoff"
+        revision: "unverified-no-git"
+    limitations:
+      - "どちらが将来の正入口か文書上未固定（INFERRED: lifecycleがテスト対象）。"
+    requested_action: "正入口を lifecycle/Facade に一本化し、scripts は薄ラッパまたは削除方針を明示。重複検知テストを追加する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: maintainability-risk
+      requirement_id: "single-entrypoint"
+      primary_path: "stage/spec-driven-qa-review"
+      semantic_key: "dual-implementation-lifecycle-vs-scripts"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 2
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:15:12+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1113
+      note: "create_review_case/render_handoff/close_review_case が ReviewerLifecycle 呼び出しの薄ラッパ（各〜30行）であることを確認。"
+      residual_risk: "validate_* 等の検証スクリプトは残るがライフサイクル二重実装ではない。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle02-probes.txt
+        - stage/tests pytest 21 passed (re-run)
+  - id: QA-0004-F07
+    title: "SKILL.md が存在しない ../SPEC.md を参照している"
+    category: plan-drift
+    purpose_classification: operational-hygiene
+    severity: low
+    severity_rationale: "入口文書のリンク切れは次アクション判断を阻害するが、ライフサイクル安全境界そのものより影響は小さい。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 8.2"
+    requirement_refs: []
+    evidence:
+      - type: code
+        reference: "stage/spec-driven-qa-review/SKILL.md"
+        note: "詳細仕様: ../SPEC.md"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "stage/SPEC.md — 不在"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "SPEC.md を追加するか、リンクを OpenSpec spec.md / schemas へ修正する。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: plan-drift
+      requirement_id: "skill-doc-links"
+      primary_path: "stage/spec-driven-qa-review/SKILL.md"
+      semantic_key: "broken-spec-md-link"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Cycle 2 の修正を提出しました。詳細は cycle-02-author-response.md を参照してください。"
+      test_evidence: "pytest stage/tests (21 passed)"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/SKILL.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/scripts/*.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/*.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git" 
+    verification:
+      cycle: 2
+      result: fixed-and-verified
+      verified_at: "2026-08-26T11:15:12+09:00"
+      reviewer_agent_id: cursor-composer-20260826-1113
+      note: "SKILL.mdのインラインコード記法復元とspec.mdリンク実在を確認。"
+      residual_risk: "なし。"
+      evidence:
+        - docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/verification-cycle02-probes.txt
+        - stage/tests pytest 21 passed (re-run)

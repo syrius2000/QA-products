@@ -1,0 +1,29 @@
+{
+  "agent_id": "codex-20260826-0904",
+  "run_id": "codex-20260826-0904-001",
+  "start_time": "2026-08-26T09:03:53+09:00",
+  "end_time": "2026-08-26T09:04:28+09:00",
+  "model": "Codex GPT-5",
+  "model_settings": {
+    "temperature": "unavailable",
+    "max_tokens": "unavailable",
+    "runtime_env": "Mac mini M2 Pro, macOS 26.5.2, Python 3.14.7"
+  },
+  "legacy_bundle_digest": {
+    "zip_archive_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+    "archive_entries": 115
+  },
+  "candidate_bundle_digest": {
+    "reviewer": {"file_count": 100, "line_count": 4578, "aggregate_sha256": "82109e024ac7f7ac4c7ede54a6df95830455ec46cff80f4b14ad056d815f015f"},
+    "author": {"file_count": 34, "line_count": 741, "aggregate_sha256": "62c5aa87236a9e63d1c3b1b673116315723a18bd0ac0d0d19906c7b37d2685e7"}
+  },
+  "prompt_suite_sha256": "fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742",
+  "context_isolation": false,
+  "git_repository_detected": false,
+  "pytest_command": "/Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q spec_driven_qa_reviewer/tests spec_driven_qa_author_response/tests",
+  "pytest_exit_code": 0,
+  "pytest_status": "observed-pass",
+  "dynamic_model_cases": "unverified",
+  "overall_status": "blocked-insufficient-evidence",
+  "recommendation": "HOLD-REMEDIATION"
+}

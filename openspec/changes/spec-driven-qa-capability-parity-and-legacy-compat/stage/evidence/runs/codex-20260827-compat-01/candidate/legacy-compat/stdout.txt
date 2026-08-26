@@ -1,0 +1,1 @@
+/private/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-0bz0bw_2/docs/ADR/QA/QA-0001-parity-legacy-compat

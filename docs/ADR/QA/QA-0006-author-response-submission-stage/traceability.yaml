@@ -1,0 +1,62 @@
+schema_version: "1.0"
+case_id: QA-0006
+claims:
+  - claim_id: QA-0006-C01
+    claim: "handoff digestは現行正本から再計算して照合され、staleは拒否される"
+    requirement_ref: "specs/spec-driven-qa-author-response-submission/spec.md: stale handoff"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F01"
+      - "evidence/verification-cycle03-probes.txt"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-03-verification.md"
+  - claim_id: QA-0006-C02
+    claim: "未知Finding IDは拒否される"
+    requirement_ref: "specs/spec-driven-qa-author-response-submission/spec.md: 未知Finding"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F02"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-01-verification.md"
+  - claim_id: QA-0006-C03
+    claim: "Authorは許可提出先のみへ書き込み、Reviewer正本を変更しない"
+    requirement_ref: "specs/.../spec.md: Authorの書込み境界"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F03"
+      - "findings.yaml:QA-0006-F04"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-01-verification.md"
+  - claim_id: QA-0006-C04
+    claim: "相対Evidence・絶対/file://・Workspace外・symlinkを拒否する"
+    requirement_ref: "tasks.md 3.3 / 3.4"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F05"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-01-verification.md"
+  - claim_id: QA-0006-C05
+    claim: "Author/Reviewer回帰テスト全件合格"
+    requirement_ref: "tasks.md 6.1"
+    evidence_refs:
+      - "evidence/verification-cycle03-probes.txt"
+    result: established
+    verification_status: confirmed
+    verification_ref: "cycles/cycle-03-verification.md"
+  - claim_id: QA-0006-C06
+    claim: "content_digestのみ不一致を意味変更として区別する"
+    requirement_ref: "specs/spec-driven-qa/spec.md: 内容だけが変更される"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F06"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "../QA-0007-separate-semantic-content-digests/review.md"
+  - claim_id: QA-0006-C07
+    claim: "digest用Finding集合はReviewerと同様にopenのみ"
+    requirement_ref: "QA-0006 Cycle2/3 handoff"
+    evidence_refs:
+      - "findings.yaml:QA-0006-F01"
+      - "stage/tests/test_submission.py::test_closed_canonical_findings_are_excluded_from_reviewer_digest"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-03-verification.md"

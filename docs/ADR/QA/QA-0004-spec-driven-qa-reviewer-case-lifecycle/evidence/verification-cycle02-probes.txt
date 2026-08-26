@@ -1,0 +1,7 @@
+Cycle 2 reviewer probes (CONFIRMED)
+pytest: 21 passed
+F02: NO_HANDOFF reject; NO_BASE reject; BAD_REV reject; EMPTY_EV reject; STRING_EV success (residual); BAD_FILE reject; NO_MODFILES success (residual)
+F03: CLOSE_VERIFIED_CRIT_OPEN_LOW success; CLOSE_RA incomplete metadata reject
+F05: tasks.md all [x]; shared_core archive digest NOT equal; capability_matrix unchanged overclaim
+F06: render_handoff.py 27 lines thin wrapper
+F07: SKILL.md backticks restored; spec.md link OK

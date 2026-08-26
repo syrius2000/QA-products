@@ -1,0 +1,81 @@
+schema_version: "1.2"
+case_id: QA-0002
+matrix:
+  - requirement_id: REQ-ROLE-SEPARATION
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L7-L25"
+    claims:
+      - claim_id: CLM-ROLE-ENTRY
+        source: "design.md:L30-L46"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L24-L30"
+    evidence:
+      - type: spec_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md"
+        status: CONFIRMED
+
+  - requirement_id: REQ-CONTRACT-INVARIANTS
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L26-L44"
+    claims:
+      - claim_id: CLM-INVARIANT-PRESERVATION
+        source: "design.md:L71-L76"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L31-L38"
+    evidence:
+      - type: spec_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md"
+        status: CONFIRMED
+
+  - requirement_id: REQ-COMPATIBILITY
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L45-L63"
+    claims:
+      - claim_id: CLM-CLI-COMPAT
+        source: "design.md:L59-L70"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L31-L38"
+    evidence:
+      - type: spec_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md"
+        status: CONFIRMED
+
+  - requirement_id: REQ-CAPABILITY-PROOF
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L64-L82"
+    claims:
+      - claim_id: CLM-FIXTURE-EVAL
+        source: "design.md:L59-L70"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L8-L15"
+      - "tasks.md:L47-L54"
+    evidence:
+      - type: task_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/tasks.md"
+        status: CONFIRMED
+
+  - requirement_id: REQ-SIZE-BUDGET
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L83-L101"
+    claims:
+      - claim_id: CLM-SIZE-TARGET
+        source: "design.md:L81-L84"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L52"
+    evidence:
+      - type: task_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/tasks.md"
+        status: CONFIRMED
+
+  - requirement_id: REQ-STAGING-ROLLBACK
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L102-L120"
+    claims:
+      - claim_id: CLM-STAGING-GUARD
+        source: "design.md:L77-L80"
+        status: CONFIRMED
+    implementation_tasks:
+      - "tasks.md:L55-L62"
+    evidence:
+      - type: task_definition
+        path: "openspec/changes/compact-spec-driven-qa-skills/tasks.md"
+        status: CONFIRMED

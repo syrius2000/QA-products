@@ -1,0 +1,19 @@
+{
+  "case_id": "QA-0001",
+  "case_revision": 1,
+  "case_status": "verification-in-progress",
+  "content_digest": "6ea2ae6e6d34a7eb08caccce20e49da1b78b79cbfa0c76a58be0f5a3f2facf14",
+  "contract_version": "1.2",
+  "findings": [
+    {
+      "classification": "spec-required",
+      "id": "QA-0001-F01",
+      "severity": "medium",
+      "status": "open"
+    }
+  ],
+  "handoff": "handoff.md",
+  "next_action": "reviewer-verification",
+  "schema_version": "qa-case-v1.2",
+  "semantic_digest": "96230df53f2c8420f86ecdd485a36fd09cea41a1a95000a465647f6d65ab98f2"
+}

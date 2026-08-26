@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec-Driven QA Evidence Contract v1.2",
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "reference", "reference_type", "verifier", "acquired_at", "result", "secret_status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "reference": {"type": "string", "minLength": 1},
+        "reference_type": {"enum": ["repository-relative", "external-url", "external-absolute"]},
+        "verifier": {"type": "string", "minLength": 1},
+        "acquired_at": {"type": "string", "minLength": 1},
+        "result": {"enum": ["verified", "unverified", "evidence-gap", "not-applicable"]},
+        "secret_status": {"enum": ["none", "masked", "rejected"]},
+        "summary": {"type": "string"},
+        "content_digest": {"type": "string"}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["required_evidence", "evidence"],
+  "properties": {
+    "required_evidence": {"type": "array", "items": {"$ref": "#/$defs/requirement"}},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/record"}}
+  }
+}

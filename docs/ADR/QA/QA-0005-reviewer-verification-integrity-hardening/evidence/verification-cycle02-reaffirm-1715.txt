@@ -1,0 +1,16 @@
+# QA-0005 Cycle 2 reaffirmation probe
+# recorded: 2026-08-26T17:15:28+09:00 JST
+# agent: cursor-composer-20260826-1715 (reviewer-verification)
+
+## Delta since 16:37 verification
+NONE observed.
+
+- Author Response files: still ABSENT
+- path_exists_for_verify: unchanged (absolute -> p.exists(); relative -> workspace or cwd fallback)
+- VERIFY outside absolute modified_files: success/verified (CONFIRMED)
+- c2-c3-digestion.md C3: still 消化 (CONFIRMED)
+- workspace-escape negative tests: still absent
+
+## Outcome
+reaffirm: F01/F02 remain reopened; case stays author-action-required.
+No new cycle opened (no Author fix-submitted).

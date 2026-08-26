@@ -1,0 +1,20 @@
+verification: cycle-01 reviewer probes
+timestamp: 2026-08-26T20:58:58+09:00
+pytest: 57 passed in 0.25s
+
+A_library_without_case_dir_self_consistent_forge: accepted errors=[]
+  -> F01 residual: canonical_case_dir省略時は正本未照合のまま受理
+
+B_cli_or_api_with_case_dir_yaml_extra_finding: rejected stale digest
+  -> F01 public path: CONFIRMED improvement
+
+C_canonical_match: accepted errors=[]
+
+E_prose_F99_with_canonical: rejected unknown Finding + not listed in handoff
+  -> F02: CONFIRMED
+
+G_cli_missing_findings_yaml: rc=2 rejected
+H_cli_stale_vs_canonical: rc=2 rejected
+
+validate_and_save: still calls validate_submission(..., without canonical_case_dir)
+  -> F01/F03 residual wiring gap on save re-validate path

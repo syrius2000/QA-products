@@ -1,0 +1,25 @@
+# QA-0004 Cycle 3 verification probes (F05 honesty)
+# recorded: 2026-08-26T11:20:38+09:00 JST
+# agent: cursor-composer-20260826-1119
+
+## Probe: tasks.md honesty
+CONFIRMED: task 1.2 documents shared_core digest mismatch
+  archive: 82380f7b8ae672fdd0340fc64585c323b467142bef91e5c494abac49152f75d4
+  current: 80e492a7c92722d4b61ffa62b7531a11bd1f6f3b85ef17653a44943558817c52
+  labeled: evidence-gap (not claimed empty-diff)
+
+CONFIRMED: task 5.2 remains unchecked [ ]
+  text includes: stale digest 専用 negative test なし / evidence-gap
+
+CONFIRMED: section 9.3 table lists unverified/evidence-gap rows
+
+## Probe: capability_matrix.md
+CONFIRMED: shared_core archive match labeled evidence-gap
+CONFIRMED: digest table present with archive/current values above
+
+## Probe: security_qa_report.md
+CONFIRMED: unverified / evidence-gap section expanded
+
+## Independence limitation
+Cycle 3 document edits and this verification were performed by the same agent
+after human adjudication A. Content was checked against file text (rg), not Author claim alone.

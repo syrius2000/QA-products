@@ -1,0 +1,13 @@
+{
+  "fixture_id": "golden-qa-0002-design-case",
+  "kind": "golden",
+  "source": "docs/ADR/QA/QA-0002-compact-spec-driven-qa-skills",
+  "subject": "設計段階のAuthor ResponseとReviewer verification",
+  "expected": {
+    "case_status": "closed",
+    "result": "accepted",
+    "finding_count": 3,
+    "unresolved_required_markers": 0
+  },
+  "note": "設計段階の受入証拠であり、Skill実装や実配備の成功証拠ではない。"
+}

@@ -1,0 +1,97 @@
+{
+  "bundles": {
+    "candidate": {
+      "checks": [
+        {
+          "id": "candidate-fast-path-boundary",
+          "status": "passed"
+        },
+        {
+          "id": "candidate-author-reviewer-field-denied",
+          "status": "passed"
+        },
+        {
+          "id": "candidate-stale-revision-denied",
+          "status": "passed"
+        },
+        {
+          "id": "candidate-unknown-finding-denied",
+          "status": "passed"
+        },
+        {
+          "id": "candidate-secret-evidence-denied",
+          "status": "passed"
+        },
+        {
+          "id": "candidate-workspace-absolute-repository-path-denied",
+          "status": "passed"
+        }
+      ],
+      "status": "observed"
+    },
+    "compact": {
+      "checks": [
+        {
+          "id": "compact-author-self-close-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-reviewer-owned-write-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-unknown-finding-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-stale-semantic-digest-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-stale-content-digest-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-unknown-digest-version-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-workspace-boundary-denied",
+          "status": "passed"
+        },
+        {
+          "id": "compact-secret-input-denied",
+          "status": "passed"
+        }
+      ],
+      "status": "observed"
+    }
+  },
+  "contract_regression": {
+    "cases": [
+      {
+        "checks": {
+          "candidate-author-reviewer-field-denied": "passed",
+          "compact-author-self-close-denied": "passed"
+        },
+        "id": "qa-0006-author-submission-boundary",
+        "source": "docs/ADR/QA/QA-0006-author-response-submission-stage/review.md",
+        "status": "observed"
+      },
+      {
+        "checks": {
+          "compact-stale-content-digest-denied": "passed",
+          "compact-stale-semantic-digest-denied": "passed",
+          "compact-unknown-digest-version-denied": "passed"
+        },
+        "id": "qa-0007-separate-digests",
+        "source": "docs/ADR/QA/QA-0007-separate-semantic-content-digests/review.md",
+        "status": "observed"
+      }
+    ],
+    "status": "observed"
+  },
+  "schema_version": "safety-regression-1",
+  "secret_policy": "secret values are not included in report",
+  "status": "observed"
+}

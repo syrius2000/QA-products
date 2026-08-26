@@ -1,0 +1,9 @@
+spec_driven_qa_reviewer/
+spec_driven_qa_author_response/
+contract_v1_2/qa_cases/
+contract_v1_2/author_submissions/
+
+# 除外対象
+!.pytest_cache/
+!__pycache__/
+!*.pyc

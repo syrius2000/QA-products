@@ -1,0 +1,34 @@
+schema_version: "1.0"
+case_id: QA-XXXX
+findings:
+  - id: QA-XXXX-F01
+    title: "REQUIRED:REVIEWER:FINDING-TITLE"
+    category: evidence-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "REQUIRED:REVIEWER:SEVERITY-RATIONALE"
+    status: open
+    technical_disposition: unverified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs: []
+    requirement_refs: []
+    evidence:
+      - type: code
+        reference: "REQUIRED:REVIEWER:EVIDENCE"
+        revision: "REQUIRED:SYSTEM-REVISION"
+    limitations: []
+    requested_action: "REQUIRED:REVIEWER:REQUESTED-ACTION"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: evidence-gap
+      requirement_id: null
+      primary_path: null
+      semantic_key: "REQUIRED:REVIEWER:SEMANTIC-KEY"
+    author_response: null
+    verification: null

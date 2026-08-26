@@ -1,0 +1,13 @@
+{
+  "schema_version": "compatibility-decisions-1",
+  "decisions": [
+    {
+      "id": "legacy-cross-skill-submission-gap",
+      "scope": "legacy.cross-skill.submission-digest-revision",
+      "classification": "intentional-noncompatibility",
+      "reason": "Legacy版の旧契約にはAuthor submission、semantic/content digest、revisionの連鎖契約が存在しない。アーカイブを改造せず、Candidateとcompactの安全契約をLegacyへ引き下げない。",
+      "spec_ref": "../../specs/spec-driven-qa-capability-parity/spec.md#三版を同一条件で比較する",
+      "evidence_ref": "cross-skill/codex-20260827-chain-api-03/manifest.json"
+    }
+  ]
+}

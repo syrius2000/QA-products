@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+    "chain-review",
+    "--json",
+    "{\"request_id\": \"cross-skill-parity\", \"case_id\": \"QA-0001\", \"workspace\": \"/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/cross-skill/codex-20260827-chain-api-01/compact/workspace\", \"fixture_path\": \"input.json\"}"
+  ],
+  "stdout": "{\"case_id\": \"QA-0001\", \"case_revision\": 1, \"content_digest\": \"6ea2ae6e6d34a7eb08caccce20e49da1b78b79cbfa0c76a58be0f5a3f2facf14\", \"finding_ids\": [\"QA-0001-F01\"], \"handoff\": \"qa-cases/QA-0001/handoff.md\", \"operation\": \"chain-review\", \"semantic_digest\": \"96230df53f2c8420f86ecdd485a36fd09cea41a1a95000a465647f6d65ab98f2\", \"status\": \"ok\"}\n",
+  "stderr": "",
+  "exit_code": 0
+}

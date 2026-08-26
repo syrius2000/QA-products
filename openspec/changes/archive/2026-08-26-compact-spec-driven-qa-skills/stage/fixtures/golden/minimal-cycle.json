@@ -1,0 +1,16 @@
+{
+  "fixture_id": "golden-minimal-cycle",
+  "kind": "golden",
+  "workflow": [
+    "reviewer_creates_case",
+    "reviewer_generates_handoff",
+    "author_reads_handoff",
+    "author_submits_response",
+    "reviewer_verifies_submission"
+  ],
+  "expected": {
+    "author_can_write": ["submission", "author-response"],
+    "author_cannot_write": ["review", "findings", "events", "closure"],
+    "terminal_result": "derived_by_reviewer"
+  }
+}

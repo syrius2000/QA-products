@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-97q0aj0c/bundle/spec-driven-qa-review/scripts/create_review_case.py",
+    "--root",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-97q0aj0c",
+    "--title",
+    "parity-cross-skill",
+    "--target",
+    "fixture-input",
+    "--profile",
+    "lite"
+  ],
+  "stdout": "/private/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-97q0aj0c/docs/ADR/QA/QA-0001-parity-cross-skill\n",
+  "stderr": "",
+  "exit_code": 0
+}

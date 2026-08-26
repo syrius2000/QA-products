@@ -1,0 +1,1 @@
+{"schema_version":"parity-fixture-1","class":"legacy-compat","purpose":"Legacy互換24機能の比較","cases":[{"id":"legacy-cli-surface","expected":"compare"}]}

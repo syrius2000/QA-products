@@ -1,0 +1,21 @@
+{
+  "roles": {
+    "spec-driven-qa-author-response": {
+      "canonical_root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response",
+      "changed": [],
+      "extra": [],
+      "mirror_root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response",
+      "missing": [],
+      "status": "identical"
+    },
+    "spec-driven-qa-review": {
+      "canonical_root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-review",
+      "changed": [],
+      "extra": [],
+      "mirror_root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-review",
+      "missing": [],
+      "status": "identical"
+    }
+  },
+  "status": "identical"
+}

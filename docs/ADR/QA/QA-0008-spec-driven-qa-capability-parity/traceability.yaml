@@ -1,0 +1,27 @@
+schema_version: qa-traceability-1
+case_id: QA-0008
+entries:
+  - id: T-01
+    purpose: compact採用可否を人間が判断可能なEvidenceを整える
+    requirement: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/specs/spec-driven-qa-capability-parity/spec.md
+    implementation: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/overall_report.py
+    evidence: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/overall-report.json
+    status: partial
+  - id: T-02
+    purpose: 三版の安全境界を回帰検証する
+    requirement: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/tasks.md:37-42
+    implementation: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/safety_regression.py
+    evidence: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/safety-regression.json
+    status: partial
+  - id: T-03
+    purpose: サイズ目安と機能保持を決定論的に確認する
+    requirement: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/tasks.md:55-60
+    implementation: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/measure_size.py
+    evidence: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/size-report.json
+    status: observed
+  - id: T-04
+    purpose: 複数Agentの元Evidenceを追跡可能に保持する
+    requirement: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/tasks.md:44-53
+    implementation: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/agent_aggregator.py
+    evidence: openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/agent-aggregate.json
+    status: partial

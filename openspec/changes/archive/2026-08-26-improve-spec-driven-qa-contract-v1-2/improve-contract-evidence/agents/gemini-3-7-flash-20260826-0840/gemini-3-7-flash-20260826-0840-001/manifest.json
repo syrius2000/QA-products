@@ -1,0 +1,30 @@
+{
+  "agent_id": "gemini-3-7-flash-20260826-0840",
+  "run_id": "gemini-3-7-flash-20260826-0840-001",
+  "start_time": "2026-08-26T08:40:00+09:00",
+  "end_time": "2026-08-26T08:41:30+09:00",
+  "model": "Gemini 3.7 Flash",
+  "model_settings": {
+    "temperature": "default",
+    "max_tokens": "default",
+    "runtime_env": "Mac mini M2 Pro, 32GB RAM, macOS, Python 3.9.6"
+  },
+  "legacy_bundle_digest": {
+    "reviewer": "dc6af5aab4a9c8b6e17bc3f974d35127ebaf270f095754a5f60fa83a442c89e3",
+    "author": "a8c5006d5147270d241cf8a11d3748405de587416e49a847e4b60fbe40f21b10",
+    "zip_archive": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817"
+  },
+  "candidate_bundle_digest": {
+    "reviewer": "255ea07251927e7eeb622aa276442b42b8df1e72088ab286609abcf058027f36",
+    "author": "5f0d6a1e4b5e98a1e3f67288e4151962450eaf4bca598b7c69a141e955caca24"
+  },
+  "prompt_suite_digest": "b1c77f781c30787a02de72c5b18bbe565597847082c9f0d1944564e02c30901a",
+  "executed_cases": 10,
+  "unexecuted_cases": 0,
+  "relative_paths": {
+    "manifest": "manifest.json",
+    "results": "results.json",
+    "report": "report.md"
+  },
+  "overall_status": "observed-static-pass-dynamic-unverified"
+}

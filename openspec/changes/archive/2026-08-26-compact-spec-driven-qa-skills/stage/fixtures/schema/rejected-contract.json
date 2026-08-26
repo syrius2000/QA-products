@@ -1,0 +1,9 @@
+{
+  "case_id": "QA-0002",
+  "case_revision": -1,
+  "case_status": "accepted-without-verification",
+  "next_action": "",
+  "findings": [{"id": "unknown", "classification": "urgent", "status": "closed"}],
+  "evidence": [{"id": "", "status": "verified"}],
+  "digest_target": {"paths": [""]}
+}

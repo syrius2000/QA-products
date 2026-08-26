@@ -1,0 +1,10 @@
+{
+  "case_id": "QA-9001",
+  "case_revision": 1,
+  "case_status": "needs-response",
+  "next_action": "author-response",
+  "findings": [{"id": "QA-9001-F1", "classification": "medium", "status": "open"}],
+  "evidence": [{"id": "E-single-1", "status": "verified"}],
+  "digest_target": {"paths": ["handoff.md"]},
+  "cycle": ["review", "handoff", "author-response", "reviewer-verification"]
+}

@@ -1,0 +1,24 @@
+QA-0006 Author Response Cycle 2 Evidence
+実装者: Codex
+基準Revision: unverified-no-git
+結果Revision: unverified-no-git
+
+F01修正:
+- `validate_submission`は`canonical_case_dir`省略時に拒否する。
+- canonical `findings.yaml`からFinding集合を取得し、handoff全文や自己整合値を許可集合にしない。
+- `validate_and_save`はcase_dirをcanonical_case_dirとして再検証する。
+- digest対象は正本Finding集合とhandoff cycleから構成する。
+- case_dir省略拒否とbase revision照合をテストした。
+
+F06:
+- 現行Reviewer共有コアはsemantic/content digestを同一値で返すため、deferredを維持する。
+- 共有基盤のdigest分離Change完了後に再判断する。
+
+検証:
+- Authorテスト + Reviewer回帰テスト: 58 passed in 0.24s
+- Python 3.14 `-S`のfixture CLI検証: awaiting-reviewer-verification
+- OpenSpec validation: valid: true
+
+制約:
+- Reviewer正本（findings.yaml、review.md、events.jsonl）とケースclosureは変更していない。
+- `fixed-and-verified`およびQAケースの`closed`は設定していない。

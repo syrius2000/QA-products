@@ -1,0 +1,5 @@
+findings:
+  - id: QA-0101-F01
+    severity: medium
+    status: open
+    requested_action: "対応方針を提示する"

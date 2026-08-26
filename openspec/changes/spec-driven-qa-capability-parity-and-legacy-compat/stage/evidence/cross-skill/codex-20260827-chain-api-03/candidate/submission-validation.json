@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "-c",
+    "from pathlib import Path; import json,sys; from spec_driven_qa_author_response.scripts.validate_author_response import validate_handoff_submission; errors=validate_handoff_submission(Path(sys.argv[1]).read_text(), json.loads(Path(sys.argv[2]).read_text())); print(json.dumps(errors, ensure_ascii=False)); raise SystemExit(0 if not errors else 1)",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/cross-skill/codex-20260827-chain-api-03/candidate/handoff.md",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/cross-skill/codex-20260827-chain-api-03/candidate/submission.json"
+  ],
+  "stdout": "[]\n",
+  "stderr": "",
+  "exit_code": 0
+}

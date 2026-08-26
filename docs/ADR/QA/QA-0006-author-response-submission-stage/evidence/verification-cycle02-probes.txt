@@ -1,0 +1,17 @@
+verification: cycle-02 reviewer probes
+timestamp: 2026-08-26T21:53:30+09:00
+pytest: 58 passed in 0.25s
+
+A_canonical_case_dir_omitted: rejected includes "canonical_case_dir is required"
+  -> Cycle2 request item1 CONFIRMED
+
+B_match_with_findings_yaml: accepted errors=[]
+
+C_yaml_extra_finding_stale: rejected stale digest
+
+D_closed_finding_still_in_canonical_ids: collected [F01,F02]; open-only handoff digest rejected as stale
+  -> open-status filter OR documented intentional diff: NOT DONE
+
+E_validate_and_save_passes_case_dir: save ok when yaml matches
+F_validate_and_save_rejects_mismatch: ValueError stale digest
+  -> Cycle2 request item2 CONFIRMED

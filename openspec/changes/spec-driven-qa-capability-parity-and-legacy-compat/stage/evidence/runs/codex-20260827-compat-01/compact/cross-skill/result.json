@@ -1,0 +1,33 @@
+{
+  "adapter": "compact JSON Launcher",
+  "bundle": {
+    "kind": "directory",
+    "name": "compact",
+    "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+    "version": "compact-20260827-chain-api"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+    "handoff",
+    "--json",
+    "{\"request_id\":\"parity-cross-skill\",\"fixture_class\":\"cross-skill\",\"fixture_path\":\"input.json\"}"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "cross-skill",
+    "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+    "path": "fixtures/cross-skill.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

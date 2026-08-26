@@ -1,0 +1,38 @@
+{
+  "adapter": "legacy Reviewer create_review_case.py",
+  "bundle": {
+    "kind": "zip",
+    "name": "legacy",
+    "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+    "version": "legacy-20260825"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jlcnxu4d/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+    "--root",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-jlcnxu4d",
+    "--title",
+    "parity-legacy-compat",
+    "--target",
+    "fixture-input",
+    "--profile",
+    "lite"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "legacy-compat",
+    "digest": "042c1fb82b038fd05b32a54133dba85382b76f299b7d6a73a4e8c3a8d180d8de",
+    "path": "fixtures/legacy-compat.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

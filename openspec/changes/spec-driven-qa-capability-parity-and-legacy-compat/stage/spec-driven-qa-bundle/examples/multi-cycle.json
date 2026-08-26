@@ -1,0 +1,10 @@
+{
+  "case_id": "QA-9002",
+  "case_revision": 2,
+  "case_status": "verification-in-progress",
+  "next_action": "reviewer-verification",
+  "findings": [{"id": "QA-9002-F1", "classification": "high", "status": "fix-submitted"}],
+  "evidence": [{"id": "E-multi-1", "status": "verified"}, {"id": "E-multi-2", "status": "unverified"}],
+  "digest_target": {"paths": ["handoff.md", "cycles/cycle-02-author-response.md"]},
+  "cycles": [["review", "handoff", "author-response"], ["fix-submitted", "reviewer-verification"]]
+}

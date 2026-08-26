@@ -1,0 +1,15 @@
+QA-0005 Cycle 3 Reviewer Verification
+検証者: codex-20260826-qa0005-verification
+検証日時: 2026-08-26 19:30 (JST)
+
+実行コマンド:
+/Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests
+
+結果:
+34 passed in 0.21s
+
+確認事項:
+- modified_files の絶対パスを拒否
+- modified_files の ../ によるWorkspace外参照を拒否
+- modified_files のsymlinkによるWorkspace外参照を拒否
+- C3の過大完了表記を撤回し、evidence-gapを維持

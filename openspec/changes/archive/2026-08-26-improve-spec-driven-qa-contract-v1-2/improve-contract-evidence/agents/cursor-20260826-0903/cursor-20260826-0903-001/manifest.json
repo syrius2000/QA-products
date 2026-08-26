@@ -1,0 +1,113 @@
+{
+  "agent_id": "cursor-20260826-0903",
+  "run_id": "cursor-20260826-0903-001",
+  "started_at": "2026-08-26T09:03:31+09:00",
+  "ended_at": "2026-08-26T09:08:00+09:00",
+  "model": {
+    "name": "Composer (Cursor Agent / Auto)",
+    "settings": {
+      "temperature": "unverified",
+      "max_output_tokens": "unverified"
+    },
+    "kind": "observed_name_only"
+  },
+  "environment": {
+    "os": "darwin 25.5.0",
+    "host": "M2PRO.local",
+    "python": "3.14.7",
+    "pytest_python": "/Users/myamaguchi/.local/venvs/ide/bin/python",
+    "workspace": "/Users/myamaguchi/Programing/QA-products"
+  },
+  "context_isolation": false,
+  "context_isolation_note": "同一セッション内でLegacy/CandidateのSKILLを順に読んだ。別AIセッション分離は未実施。回答品質は参考値。",
+  "document_digest": {
+    "test_prompt_2_sha256": "fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742"
+  },
+  "bundles": {
+    "legacy": {
+      "source_zip": "archives/skills/legacy-qa-skills_20260825.zip",
+      "zip_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+      "reviewer": {
+        "path": "archives/skills/legacy-qa-skills_20260825.zip!/spec-driven-qa-review",
+        "file_count": 62,
+        "line_count": 2950,
+        "tree_digest": "be34005c4b278e0bf74d0839a13b6689e96b59446c65dd861209a7f018a351bf"
+      },
+      "author": {
+        "path": "archives/skills/legacy-qa-skills_20260825.zip!/spec-driven-qa-author-response",
+        "file_count": 27,
+        "line_count": 457,
+        "tree_digest": "910fef7a14841ec0302917c57a66646b6c81057fc852b0e7ebe1d7752f8897b5"
+      }
+    },
+    "candidate": {
+      "reviewer": {
+        "path": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer",
+        "file_count": 96,
+        "line_count": 4546,
+        "tree_digest": "0ec4556682d9ebbb3f23ad24b798ad6416d037d321f4f5c7582cda844f11b16d"
+      },
+      "author": {
+        "path": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_author_response",
+        "file_count": 34,
+        "line_count": 741,
+        "tree_digest": "ad9c92d32d73308be9e772714d558a4b3068adbae550ea71ee0f6f6d92e1f8ad"
+      },
+      "combined_digest": "5d130f1bb4d1f8ff3943b27063ecd550e88d3b2d0d0acee6ca1f854418963b94"
+    }
+  },
+  "pytest": {
+    "exit_code": 0,
+    "summary": "78 passed in 0.18s",
+    "command": "/Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q spec_driven_qa_reviewer/tests spec_driven_qa_author_response/tests",
+    "cwd": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage"
+  },
+  "static_probes_candidate": {
+    "baseline": [
+      0,
+      "Author response is structurally valid and remains open for reviewer verification."
+    ],
+    "self_close_disposition": [
+      1,
+      "Author response validation errors:\n- author response cannot self-close a Finding: closed\n- response text must not set closed/fixed-and-verified status"
+    ],
+    "self_close_fixed_and_verified": [
+      1,
+      "Author response validation errors:\n- author response cannot self-close a Finding: fixed-and-verified"
+    ],
+    "unknown_finding": [
+      1,
+      "Author response validation errors:\n- response contains unknown Finding IDs: QA-9999-F99"
+    ]
+  },
+  "aggregate": {
+    "legacy": {
+      "pass": 10,
+      "partial": 0,
+      "fail": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "misimplementation_started_count": 0,
+      "executed": 10
+    },
+    "candidate": {
+      "pass": 10,
+      "partial": 0,
+      "fail": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "misimplementation_started_count": 0,
+      "hard_gate_violations": 0,
+      "executed": 10
+    }
+  },
+  "recommendation": "GO-STAGING",
+  "recommendation_reason": [
+    "Candidate 10ケースの hard-gate 違反 0件（self_scored）",
+    "pytest exit code 0（78 passed）",
+    "E-04/E-05 で自己クローズ・未知Findingを拒否し根拠を提示",
+    "実在しない Evidence を事実として主張しない"
+  ],
+  "overall_status": "completed_with_context_isolation_false_and_unverified_tokens_latency",
+  "self_scored": true
+}

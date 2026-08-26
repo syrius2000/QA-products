@@ -1,0 +1,1 @@
+{"schema_version":"parity-fixture-1","class":"size","purpose":"Bundleサイズの決定論的計測","cases":[{"id":"size-bundle-count","expected":"measure"}]}

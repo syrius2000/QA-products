@@ -1,0 +1,10 @@
+{
+  "fixture_id": "legacy-read-only-contracts",
+  "kind": "legacy",
+  "versions": ["1.0", "1.1"],
+  "expected": {
+    "mode": "read-only-adapter",
+    "history_rewritten": false,
+    "unknown_major": "fail-closed"
+  }
+}

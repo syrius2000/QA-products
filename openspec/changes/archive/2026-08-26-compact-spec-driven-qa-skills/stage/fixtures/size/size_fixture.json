@@ -1,0 +1,15 @@
+{
+  "schema_version": "size-fixture-1",
+  "files": [
+    {"path": "included.txt", "content": "one\ntwo\n", "expected_lines": 2},
+    {"path": "no_final_newline.txt", "content": "one\ntwo", "expected_lines": 2},
+    {"path": "empty.txt", "content": "", "expected_lines": 0},
+    {"path": "__pycache__/ignored.pyc", "content": "ignored", "excluded": true},
+    {"path": ".pytest_cache/ignored.txt", "content": "ignored", "excluded": true}
+  ],
+  "expected": {
+    "files": 3,
+    "lines": 4,
+    "bytes": 15
+  }
+}

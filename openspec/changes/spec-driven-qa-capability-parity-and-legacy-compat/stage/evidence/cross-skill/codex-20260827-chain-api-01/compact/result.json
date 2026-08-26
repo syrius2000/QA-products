@@ -1,0 +1,34 @@
+{
+  "author": {
+    "exit_code": 0,
+    "status": "observed"
+  },
+  "bundle": "compact",
+  "bundle_identity": {
+    "name": "compact",
+    "source_sha256": "5ef718afaabec0528d3c3fd81546ce74db8a60b2429bc48d9c4a79f0bbda32ef",
+    "version": "compact-20260827-chain-api"
+  },
+  "digest": {
+    "content_digest": "6ea2ae6e6d34a7eb08caccce20e49da1b78b79cbfa0c76a58be0f5a3f2facf14",
+    "semantic_digest": "96230df53f2c8420f86ecdd485a36fd09cea41a1a95000a465647f6d65ab98f2",
+    "status": "observed"
+  },
+  "handoff": {
+    "path": "workspace/qa-cases/QA-0001/handoff.md",
+    "status": "observed"
+  },
+  "reviewer": {
+    "exit_code": 0,
+    "status": "observed",
+    "verification_exit_code": 0
+  },
+  "revision": {
+    "status": "observed",
+    "value": 1
+  },
+  "submission": {
+    "path": "workspace/qa-cases/QA-0001/submissions/submission-cross-skill.json",
+    "status": "observed"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "authority": {
+    "rule": "spec_compliance_overrides_candidate_behavior",
+    "spec": "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md",
+    "spec_digest": "fixture-spec-digest"
+  },
+  "candidate_behavior_is_not_authority": true,
+  "decisions": [
+    {
+      "authority": {
+        "rule": "spec_compliance_overrides_candidate_behavior",
+        "spec": "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md",
+        "spec_digest": "fixture-spec-digest"
+      },
+      "contract_match": false,
+      "decision": "behavior-diff",
+      "expected_match_versions": [
+        "contract-v1.2-candidate",
+        "compact-candidate"
+      ],
+      "id": "valid-review",
+      "results": {
+        "compact-candidate": {
+          "contract": "v1.2",
+          "exit_code": 0,
+          "side_effects": [
+            "handoff"
+          ],
+          "state": "needs-response"
+        },
+        "contract-v1.2-candidate": {
+          "contract": "v1.2",
+          "exit_code": 0,
+          "side_effects": [
+            "handoff"
+          ],
+          "state": "needs-response"
+        },
+        "legacy": {
+          "contract": "v1.1",
+          "exit_code": 0,
+          "side_effects": [
+            "handoff"
+          ],
+          "state": "needs-response"
+        }
+      },
+      "spec_violations": []
+    },
+    {
+      "authority": {
+        "rule": "spec_compliance_overrides_candidate_behavior",
+        "spec": "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md",
+        "spec_digest": "fixture-spec-digest"
+      },
+      "contract_match": false,
+      "decision": "behavior-diff",
+      "expected_match_versions": [
+        "contract-v1.2-candidate",
+        "compact-candidate"
+      ],
+      "id": "author-direct-write",
+      "results": {
+        "compact-candidate": {
+          "contract": "v1.2",
+          "exit_code": 2,
+          "side_effects": [],
+          "state": "unchanged"
+        },
+        "contract-v1.2-candidate": {
+          "contract": "v1.2",
+          "exit_code": 2,
+          "side_effects": [],
+          "state": "unchanged"
+        },
+        "legacy": {
+          "contract": "v1.1",
+          "exit_code": 2,
+          "side_effects": [],
+          "state": "unchanged"
+        }
+      },
+      "spec_violations": []
+    }
+  ],
+  "schema_version": "comparison-report-1"
+}

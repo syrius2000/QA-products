@@ -1,0 +1,10 @@
+verification: cycle-03 reviewer probes
+timestamp: 2026-08-26T22:20:48+09:00
+pytest: 59 passed in 0.27s
+
+D_closed_mix_open_only_digest: accepted errors=[] ; canonical ids=['QA-9001-F01']
+no_casedir: still rejects canonical_case_dir is required
+missing_status: excluded from open set (fail-closed for allowlist)
+alt_indent_2space_status: ids=[] (parser assumes 4-space nested status; residual/portability)
+fixture_valid: accepted
+test_closed_canonical_findings_are_excluded_from_reviewer_digest: covered by pytest

@@ -1,0 +1,256 @@
+{
+  "categories": {
+    "evals": {
+      "bytes": 959,
+      "files": 1,
+      "lines": 12
+    },
+    "examples": {
+      "bytes": 2643,
+      "files": 15,
+      "lines": 120
+    },
+    "references": {
+      "bytes": 1507,
+      "files": 3,
+      "lines": 22
+    },
+    "root": {
+      "bytes": 6084,
+      "files": 7,
+      "lines": 120
+    },
+    "scripts": {
+      "bytes": 9649,
+      "files": 4,
+      "lines": 237
+    },
+    "tests": {
+      "bytes": 7741,
+      "files": 4,
+      "lines": 230
+    }
+  },
+  "counts": {
+    "bytes": 28583,
+    "files": 34,
+    "lines": 741
+  },
+  "exclusions": [
+    "__pycache__",
+    ".pytest_cache",
+    "*.pyc"
+  ],
+  "files": [
+    {
+      "bytes": 297,
+      "lines": 7,
+      "path": "CHANGELOG.md",
+      "sha256": "03695be536e1102361fbab38468f00842451594a5c6f212c7035a3dd932fd8bc"
+    },
+    {
+      "bytes": 507,
+      "lines": 12,
+      "path": "INSTALL.md",
+      "sha256": "18e9d4e0c32ce4ae588faf1569964144dc215fd5870b8c442195995f4a9b84f4"
+    },
+    {
+      "bytes": 862,
+      "lines": 27,
+      "path": "MANIFEST.txt",
+      "sha256": "a8a1481f5a9acfc70fa4aa80f4c1068ec4abd5d886c3cde49e054835e0cd58be"
+    },
+    {
+      "bytes": 731,
+      "lines": 9,
+      "path": "README.md",
+      "sha256": "98074ca5244bd112dea5e02016d716902385bab8a2c22d3dbaeb3d83863f673e"
+    },
+    {
+      "bytes": 3310,
+      "lines": 52,
+      "path": "SKILL.md",
+      "sha256": "37bf448e667876a71b55a4aed9554c5e0df83c6b58ec2f89ff813bd0db8e01a5"
+    },
+    {
+      "bytes": 52,
+      "lines": 1,
+      "path": "__init__.py",
+      "sha256": "560b271fc7de6f3cae3b832450b6aa06020e5e1258ef3e2a4b0f46f683ceceef"
+    },
+    {
+      "bytes": 959,
+      "lines": 12,
+      "path": "evals/evals.json",
+      "sha256": "7f4b78646cc17f93b941cdf2b01696e21cf38668a48da2fe00464f277e2989d9"
+    },
+    {
+      "bytes": 357,
+      "lines": 18,
+      "path": "examples/accepted/cycles/cycle-01-author-response.md",
+      "sha256": "af623b1d9dadacd2a5c1f6250fa1bfb4a4e5ec9ca2de46a06d0de66f33c6df15"
+    },
+    {
+      "bytes": 126,
+      "lines": 1,
+      "path": "examples/accepted/events.jsonl",
+      "sha256": "3d487e8c2de91e9f75b561b1c76f9eee1d3a8d27a134c4f89aac54410d8e16c2"
+    },
+    {
+      "bytes": 120,
+      "lines": 5,
+      "path": "examples/accepted/findings.yaml",
+      "sha256": "f70ab6b4100df3aeec0400e3f45f08d1ebe7d2f292b561c4ab01911823a01817"
+    },
+    {
+      "bytes": 162,
+      "lines": 8,
+      "path": "examples/accepted/handoff.md",
+      "sha256": "ea67b88248edcb09966648f487ee42b3ff6a8b914a071ebb5045cf68a786893a"
+    },
+    {
+      "bytes": 119,
+      "lines": 8,
+      "path": "examples/accepted/review.md",
+      "sha256": "65c6a23875b73384aeef80c977147c62fbe6c29b1215b454deea161736cbb539"
+    },
+    {
+      "bytes": 318,
+      "lines": 18,
+      "path": "examples/fix-submitted/cycles/cycle-01-author-response.md",
+      "sha256": "7c71120199be9e58e5f13ab8875992a1c1d5cf56db56a853d49236a5b4452eec"
+    },
+    {
+      "bytes": 176,
+      "lines": 1,
+      "path": "examples/fix-submitted/events.jsonl",
+      "sha256": "f046195035802d29b7af5b2f58029e1ca454da4b6ca4599fea130f5527f1106e"
+    },
+    {
+      "bytes": 130,
+      "lines": 5,
+      "path": "examples/fix-submitted/findings.yaml",
+      "sha256": "c37912ddd04ef08c59e2bd99118e2ca170bc817045fa3eb582c9b0abf8e4de84"
+    },
+    {
+      "bytes": 162,
+      "lines": 8,
+      "path": "examples/fix-submitted/handoff.md",
+      "sha256": "3c594c9f2fc7ea2d098266b0dae058d3fe02578868ed89763de23965609f2738"
+    },
+    {
+      "bytes": 119,
+      "lines": 8,
+      "path": "examples/fix-submitted/review.md",
+      "sha256": "7cfcaaf73f3c6e6af83fc000ac19ec7bbedb4218b29e7dd38cf16d2e8d3c9b25"
+    },
+    {
+      "bytes": 334,
+      "lines": 18,
+      "path": "examples/rejected-with-evidence/cycles/cycle-01-author-response.md",
+      "sha256": "40ddae9c7bc0520d1e7c410791229669399642c390886bc62ddd063aeb6227eb"
+    },
+    {
+      "bytes": 126,
+      "lines": 1,
+      "path": "examples/rejected-with-evidence/events.jsonl",
+      "sha256": "80a3b2bce850f4f88610624829b848450ceae50092ece443c380ca6e25571a67"
+    },
+    {
+      "bytes": 113,
+      "lines": 5,
+      "path": "examples/rejected-with-evidence/findings.yaml",
+      "sha256": "4f834e1f375e98f55990bb2a44bc9971de8d0b77ccf403b8660da8402b8a2419"
+    },
+    {
+      "bytes": 162,
+      "lines": 8,
+      "path": "examples/rejected-with-evidence/handoff.md",
+      "sha256": "48c8fd4f664dc0d1effe1455299cf82ac5d98b618671c91f703700f8334b1461"
+    },
+    {
+      "bytes": 119,
+      "lines": 8,
+      "path": "examples/rejected-with-evidence/review.md",
+      "sha256": "7688a94692858629bf3cdf044d564e10896a02ed1eb54a51376e4c5c2d286843"
+    },
+    {
+      "bytes": 325,
+      "lines": 12,
+      "path": "pyproject.toml",
+      "sha256": "f6bccee858cf798e3e903a001a11e070b8f3e433f37d0a9f6f9de468854cc81d"
+    },
+    {
+      "bytes": 594,
+      "lines": 12,
+      "path": "references/disposition-policy.md",
+      "sha256": "99f2a17aebc50015aea19468b486b4a3cb003d5f5bf0047afe068ecd8697480b"
+    },
+    {
+      "bytes": 503,
+      "lines": 5,
+      "path": "references/security.md",
+      "sha256": "319d044f9c4b7f6523f6eab10b405f12961e4f7f917fe7afc365f2cba2566093"
+    },
+    {
+      "bytes": 410,
+      "lines": 5,
+      "path": "references/state-transition-policy.md",
+      "sha256": "46046747533a4b428fbab79d42d8f86d65c5b49ea2ca2461c0a83bd7f2dc2de2"
+    },
+    {
+      "bytes": 82,
+      "lines": 1,
+      "path": "scripts/__init__.py",
+      "sha256": "d00a3d38749bd876d6d30c6dbc8962102c0612008c4ea233951ba968a366ef8f"
+    },
+    {
+      "bytes": 905,
+      "lines": 31,
+      "path": "scripts/execution_policy.py",
+      "sha256": "ca181d60f3b60269ab8d2cbe4e243b9e12d20fc84d399928ae0e443c1f2e0663"
+    },
+    {
+      "bytes": 2240,
+      "lines": 57,
+      "path": "scripts/submission_store.py",
+      "sha256": "d4e867050ee6605f9d12117da90e3480485ff9948ac3651fb13f1576a69cd1c8"
+    },
+    {
+      "bytes": 6422,
+      "lines": 148,
+      "path": "scripts/validate_author_response.py",
+      "sha256": "8d3ba31ff584d1988e2c4c7b0c20d2618edc048c50f5cd41b292d4fbaa3d8d0e"
+    },
+    {
+      "bytes": 2648,
+      "lines": 65,
+      "path": "tests/test_author_response.py",
+      "sha256": "10bee95ebed1aa055019d74f9012ce2fa84d67c8df90f9766256c7577b46266a"
+    },
+    {
+      "bytes": 1733,
+      "lines": 61,
+      "path": "tests/test_execution_policy.py",
+      "sha256": "5c1bb675390ee0746587bc340bd7092d72007d99dc7ec72838170f92af432154"
+    },
+    {
+      "bytes": 1901,
+      "lines": 59,
+      "path": "tests/test_handoff_submission.py",
+      "sha256": "80d0639fff6a9eb78f214463ece220fd1e87be45f2666b864f116ecb0e00fc66"
+    },
+    {
+      "bytes": 1459,
+      "lines": 45,
+      "path": "tests/test_submission_store.py",
+      "sha256": "189082a7e21f25dd1fe46e896ecfc2ea01d996c3c36828322408e9f6616414c9"
+    }
+  ],
+  "manifest": null,
+  "resident_files": [
+    "SKILL.md"
+  ],
+  "root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response",
+  "schema_version": "size-metrics-1"
+}

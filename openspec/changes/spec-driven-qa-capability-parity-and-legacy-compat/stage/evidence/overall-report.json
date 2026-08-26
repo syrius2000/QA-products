@@ -1,0 +1,98 @@
+{
+  "adjudication": {
+    "adjudicator": "human-owner",
+    "case_id": "QA-0008",
+    "compensating_controls": [
+      "F01をQA記録と総合レポートの残余リスクとして保持する",
+      "Token、Latency、外部LLM正答率およびAgent／Run欠測はunverifiedのまま保持する",
+      "外部Skill配置は別Changeのbackup、dry-run、配置後検証、rollback、明示承認後に限定する"
+    ],
+    "cycle": 5,
+    "decision": "accepted-with-residual-risk",
+    "deployment_allowed": false,
+    "expiry_or_review_trigger": "Candidate再利用、compactのEvidence契約追加、または配備前の契約変更時に再レビューする",
+    "f01_disposition": "risk-accepted",
+    "next_action": "別Changeで配備dry-run計画を作成する。ただし本記録だけでは外部配置を実行しない",
+    "rationale": "F01はアーカイブ済みCandidate固有の観測違反であり、Legacyを変更せずcompactの採用候補を判断する目的に照らして、条件付きで受け入れる。F01をfixed-and-verifiedとは扱わない。",
+    "schema_version": "qa-human-adjudication-1",
+    "scope_and_assumptions": [
+      "本番候補はcompactであり、Candidateを本番フォールバックとして使用しない",
+      "compactのempty-or-missing-evidenceは現在の連鎖API契約ではnot-applicableであり、安全性の合格証拠とは扱わない",
+      "Legacyは読み取り専用基準として維持し、完全互換は宣言しない"
+    ],
+    "selected_option": "A"
+  },
+  "decision": "accepted-with-residual-risk",
+  "decision_policy": "evidence-gap、unverified、intentional-noncompatibilityを合格へ集約せず、compact採用可否は人間裁定とする",
+  "evidence_files": {
+    "agent_aggregate": "agent-aggregate.json",
+    "agent_source_manifest": "agents/source-manifest.json",
+    "candidate_contract_probe": "candidate-contract-probe.json",
+    "candidate_digest_probe": "candidate-digest-probe.json",
+    "compatibility": "compatibility-report.json",
+    "contract_applicability": "contract-applicability.json",
+    "cross_skill": "cross-skill/codex-20260827-compat-01/manifest.json",
+    "human_adjudication": "human-adjudication.json",
+    "runner": "runs/codex-20260827-compat-01/manifest.json",
+    "safety": "safety-regression.json",
+    "size": "size-report.json"
+  },
+  "gate_status": {
+    "G0_bundle_and_fixture_boundary": "observed",
+    "G1_compatibility_and_safety": "evidence-gap",
+    "G2_external_agent_evidence": "observed-with-unverified",
+    "G3_human_adjudication": "observed"
+  },
+  "input_statuses": {
+    "agent_aggregate": "observed-with-unverified",
+    "agent_source_manifest": "observed",
+    "candidate_contract_probe": "observed-violation",
+    "candidate_digest_probe": "observed",
+    "compatibility": "evidence-gap",
+    "contract_applicability": "evidence-gap",
+    "cross_skill": "evidence-gap",
+    "human_adjudication": "observed",
+    "runner": "observed",
+    "safety": "observed",
+    "size": "observed"
+  },
+  "promotion": {
+    "allowed": false,
+    "reason": "条件付き受入後も、外部配備は別Changeと明示承認が必要"
+  },
+  "residual_risks": [
+    {
+      "detail": "Legacyには後発のsubmission・digest・revision契約がなく、Candidate／compactとの連鎖完全互換を主張しない",
+      "evidence": "compatibility-report.json",
+      "id": "R-LEGACY-CROSS-SKILL",
+      "status": "intentional-noncompatibility"
+    },
+    {
+      "detail": "Agent集計ではToken・LatencyをObservedへ補完していないため、動的性能比較は未検証",
+      "evidence": "agent-aggregate.json",
+      "id": "R-DYNAMIC-METRICS",
+      "status": "unverified"
+    },
+    {
+      "detail": "Candidateの空Evidence受理という観測違反が残る。semantic digestのstale拒否はObserved、content digest／versionはCandidate契約外として分離済み",
+      "evidence": "candidate-contract-probe.json, contract-applicability.json",
+      "id": "R-CANDIDATE-CONTRACT-GAPS",
+      "status": "failed"
+    },
+    {
+      "detail": "5 Agent／Runのうち、実行件数・Prompt suite・未実行項目などの必須メタデータを全項目確認できるRunは一部に限られる",
+      "evidence": "agent-aggregate.json",
+      "id": "R-AGENT-METADATA-COMPLETENESS",
+      "status": "evidence-gap"
+    },
+    {
+      "detail": "外部Skill配置、Legacy削除、commit、pushは本Changeの範囲外で未実施",
+      "evidence": "overall-report.json",
+      "id": "R-NO-DEPLOYMENT",
+      "status": "not-performed"
+    }
+  ],
+  "run_id": "codex-20260827-compat-01",
+  "schema_version": "overall-parity-report-1",
+  "status": "evidence-gap"
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "qa-human-adjudication-1",
+  "case_id": "QA-0008",
+  "cycle": 5,
+  "adjudicator": "human-owner",
+  "decision": "accepted-with-residual-risk",
+  "selected_option": "A",
+  "f01_disposition": "risk-accepted",
+  "rationale": "F01はアーカイブ済みCandidate固有の観測違反であり、Legacyを変更せずcompactの採用候補を判断する目的に照らして、条件付きで受け入れる。F01をfixed-and-verifiedとは扱わない。",
+  "scope_and_assumptions": [
+    "本番候補はcompactであり、Candidateを本番フォールバックとして使用しない",
+    "compactのempty-or-missing-evidenceは現在の連鎖API契約ではnot-applicableであり、安全性の合格証拠とは扱わない",
+    "Legacyは読み取り専用基準として維持し、完全互換は宣言しない"
+  ],
+  "compensating_controls": [
+    "F01をQA記録と総合レポートの残余リスクとして保持する",
+    "Token、Latency、外部LLM正答率およびAgent／Run欠測はunverifiedのまま保持する",
+    "外部Skill配置は別Changeのbackup、dry-run、配置後検証、rollback、明示承認後に限定する"
+  ],
+  "expiry_or_review_trigger": "Candidate再利用、compactのEvidence契約追加、または配備前の契約変更時に再レビューする",
+  "deployment_allowed": false,
+  "next_action": "別Changeで配備dry-run計画を作成する。ただし本記録だけでは外部配置を実行しない"
+}

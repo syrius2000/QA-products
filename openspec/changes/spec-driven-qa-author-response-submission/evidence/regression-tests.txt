@@ -1,0 +1,7 @@
+実行日時: 2026-08-26 JST
+実行コマンド:
+PYTHONDONTWRITEBYTECODE=1 python -B -m pytest --assert=plain -p no:cacheprovider -q openspec/changes/spec-driven-qa-author-response-submission/stage/tests openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests
+
+結果:
+57 passed in 0.24s
+内訳: Author 23件、Reviewer 34件

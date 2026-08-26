@@ -1,0 +1,22 @@
+QA-0006 Author Response Cycle 1 Evidence
+実装者: Codex
+基準Revision: unverified-no-git
+結果Revision: unverified-no-git
+
+修正内容:
+- F01: findings.yamlを正本としてFinding集合を読み、構造化handoffのdigestと照合する経路を追加。
+- F02: handoff全文検索を廃止し、open_finding_idsと正本Finding集合の交差検証へ変更。
+- F03: CLIへ--case-dir、--cycle、--saveを追加し、許可提出先へ保存する経路を接続。
+- F04: submission保存にもAuthor Write Allowlist検査を適用し、FS拒否テストを追加。
+- F05: file:// Evidence拒否の専用negativeテストを追加。
+- F06: Reviewer共有コアがsemantic/contentを同一値として出力するため、このChangeでは契約を変更せずdeferred＋evidence-gapとする。
+
+検証:
+- Authorテスト: 23 passed
+- Reviewer回帰テスト: 34 passed
+- 合計: 57 passed in 0.24s
+- 標準ライブラリ環境（Python 3.14、-S）でfixture CLI検証: awaiting-reviewer-verification
+
+制約:
+- AuthorはReviewer正本、events、closureを変更していない。
+- `fixed-and-verified`およびQAケースの`closed`は設定していない。

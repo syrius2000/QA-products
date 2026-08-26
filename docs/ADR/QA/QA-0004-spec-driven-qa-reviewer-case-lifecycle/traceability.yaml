@@ -1,0 +1,64 @@
+schema_version: "1.0"
+case_id: QA-0004
+target: openspec/changes/spec-driven-qa-reviewer-case-lifecycle
+traceability:
+  - requirement_id: "Review Case Initialization / CLI surface"
+    claim: "公開CLI経由でケース初期化できる"
+    implementation_refs:
+      - "stage/spec-driven-qa-review/launcher.py"
+      - "stage/shared_core/runtime.py"
+      - "stage/spec-driven-qa-review/lifecycle.py::init_case"
+    evidence_refs:
+      - "docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/launcher-probe.txt"
+    status: gap
+    finding_ids: ["QA-0004-F01"]
+  - requirement_id: "Verify valid author fix submission"
+    claim: "base/result revision とファイル存在を検証してから verified とする"
+    implementation_refs:
+      - "stage/spec-driven-qa-review/lifecycle.py::verify_submission"
+    evidence_refs:
+      - "stage/tests/test_verification.py"
+    status: gap
+    finding_ids: ["QA-0004-F02"]
+  - requirement_id: "Prevent closure with REQUIRED/Critical"
+    claim: "ケース正本から close 不変条件を評価する"
+    implementation_refs:
+      - "stage/spec-driven-qa-review/lifecycle.py::close_case"
+    evidence_refs:
+      - "reviewer runtime probe 2026-08-26"
+    status: gap
+    finding_ids: ["QA-0004-F03"]
+  - requirement_id: "Finding + claim-to-evidence traceability"
+    claim: "Finding記録時に traceability.yaml が更新される"
+    implementation_refs:
+      - "stage/spec-driven-qa-review/lifecycle.py::record_findings"
+    evidence_refs:
+      - "stage/tests/test_findings_and_traceability.py"
+    status: gap
+    finding_ids: ["QA-0004-F04"]
+  - requirement_id: "Honest completion / independent QA gate"
+    claim: "未検証を完了扱いにしない"
+    implementation_refs:
+      - "tasks.md"
+      - "evidence/capability_matrix.md"
+    evidence_refs:
+      - "QA-0004 findings vs code inspection"
+    status: gap
+    finding_ids: ["QA-0004-F05"]
+  - requirement_id: "Self-close / unknown Finding rejection"
+    claim: "Author自己クローズと未知IDを拒否する"
+    implementation_refs:
+      - "lifecycle.py::verify_submission"
+    evidence_refs:
+      - "stage/tests/test_verification.py"
+      - "docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/pytest-20260826.txt"
+    status: covered
+    finding_ids: []
+  - requirement_id: "shared_core contract unchanged"
+    claim: "共有コア内容digestがアーカイブと一致"
+    implementation_refs:
+      - "stage/shared_core/*"
+    evidence_refs:
+      - "docs/ADR/QA/QA-0004-spec-driven-qa-reviewer-case-lifecycle/evidence/shared_core_digest.txt"
+    status: covered
+    finding_ids: []

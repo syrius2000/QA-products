@@ -1,0 +1,9 @@
+=== QA-0007 Independent Probe Verification ===
+Probe 1: semantic=05272350209410650c3cad3481f646273f6eab8960c2dcc14ebdb806d3269682 content=3d7c2b14e32de719e076d6f8925923b01c5fd65e404227dff00a59ebbc334050
+Probe 1 PASS: digests are distinct
+Probe 2 PASS: revision change alters both digests
+Probe 3 PASS: Secret rejected (secret-in-digest-input)
+Probe 4 PASS: Unknown version rejected (unsupported-digest-version)
+Probe 5: errors = ['legacy equivalent semantic/content digest is not accepted', 'handoff semantic_digest is stale', 'handoff content_digest is stale', 'handoff content_digest does not match handoff content']
+Probe 5 PASS: legacy equivalent rejected
+=== All Probes Completed Successfully ===

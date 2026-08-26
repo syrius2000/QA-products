@@ -1,0 +1,26 @@
+semantic/content digest分離 Change 実装Evidence
+
+実施日: 2026-08-26 JST
+
+実行コマンド:
+PYTHONDONTWRITEBYTECODE=1 /Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q openspec/changes/spec-driven-qa-author-response-submission/stage/tests openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests
+
+結果:
+67 passed in 0.26s
+
+確認内容:
+- semantic/content digestの名前空間分離
+- handoff本文の正規化とvolatile field除外
+- semantic変更、content-only変更、stale digestの検出
+- Reviewer/Author相互運用、closed Finding混在、複数cycle
+- 旧同値digest、未知digest version、秘密値入力の拒否
+- Bundle Manifest整合性、Reviewer/Authorの既存回帰
+
+OpenSpec検証:
+openspec validate "separate-semantic-content-digests" --type change --json
+結果: valid: true（1 passed, 0 failed）
+
+未完了:
+- Reviewerによる独立QAとQA-0006への再提出
+- QA-0006 F06の人間裁定
+- 外部Skill配置、旧版削除、commit、push

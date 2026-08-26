@@ -1,0 +1,33 @@
+{
+  "author": {
+    "status": "observed",
+    "validation_exit_code": 0
+  },
+  "bundle": "legacy",
+  "bundle_identity": {
+    "name": "legacy",
+    "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+    "version": "legacy-20260825"
+  },
+  "digest": {
+    "semantic_digest_present": false,
+    "status": "evidence-gap"
+  },
+  "handoff": {
+    "path": "handoff.md",
+    "status": "observed"
+  },
+  "reviewer": {
+    "create_exit_code": 0,
+    "render_exit_code": 0,
+    "status": "observed"
+  },
+  "revision": {
+    "status": "evidence-gap",
+    "value": null
+  },
+  "submission": {
+    "reason": "対象版にhandoff submission validatorまたはdigestがない",
+    "status": "evidence-gap"
+  }
+}

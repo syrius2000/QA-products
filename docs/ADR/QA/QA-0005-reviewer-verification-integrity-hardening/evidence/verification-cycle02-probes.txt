@@ -1,0 +1,22 @@
+# QA-0005 Cycle 2 re-probe
+# recorded: 2026-08-26T16:37:21+09:00 JST
+# agent: cursor-composer-20260826-1637 (reviewer-verification)
+
+## Preconditions
+- cycles/cycle-01-author-response.md: ABSENT
+- cycles/cycle-02-author-response.md: ABSENT
+
+## Code
+lifecycle.py path_exists_for_verify still:
+  absolute -> p.exists()
+  relative -> (workspace_root/p).exists() or p.exists()
+
+## Runtime
+VERIFY_ABS with modified_files=[outside tempfile] -> status=success outcome=verified (CONFIRMED)
+
+## Tests
+test_verification_integrity.py: 10 passed
+No negative for absolute modified_files / ../ workspace escape (CONFIRMED by rg)
+
+## Documents
+c2-c3-digestion.md still marks C3 as 消化 (CONFIRMED)

@@ -1,0 +1,18 @@
+# QA-0005 workspace boundary probe
+# recorded: 2026-08-26T16:27:40+09:00 JST
+# agent: cursor-composer-20260826-1627 (reviewer)
+# note: same conversation previously implemented the change — independence limited
+
+## Unit: path_exists_for_verify
+abs /etc/hosts under empty workspace_root -> True (CONFIRMED)
+abs tempfile outside workspace -> True (CONFIRMED)
+relative ../sib_file.txt resolving outside workspace -> True (CONFIRMED)
+
+## Integration: verify_submission
+workspace_root = temp dir (no modified file inside it)
+modified_files = [absolute path to tempfile outside workspace]
+test_evidence = prose
+outcome: status=success, outcome=verified (CONFIRMED ACCEPT of out-of-workspace absolute path)
+
+## pytest
+31 passed (re-run 2026-08-26T16:27 JST)

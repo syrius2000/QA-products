@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec-Driven QA Findings",
+  "type": "object",
+  "required": [
+    "case_id",
+    "findings"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "category",
+          "severity",
+          "severity_rationale",
+          "status",
+          "evidence"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "purpose_classification": {
+            "enum": [
+              "spec-required",
+              "purpose-critical",
+              "operational-hygiene",
+              "out-of-scope"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "severity_rationale": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "technical_disposition": {
+            "enum": [
+              "fixed-and-verified",
+              "partially-fixed",
+              "unverified",
+              "failed"
+            ]
+          },
+          "owner_disposition": {
+            "type": ["string", "null"]
+          },
+          "risk_acceptance": {
+            "type": ["object", "null"],
+            "properties": {
+              "owner": {"type": ["string", "null"]},
+              "rationale": {"type": ["string", "null"]},
+              "scope_or_assumptions": {"type": ["string", "null"]},
+              "compensating_controls": {"type": "array"},
+              "expiry_or_review_trigger": {"type": ["string", "null"]}
+            }
+          },
+          "evidence": {
+            "type": "array"
+          },
+          "limitations": {
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}

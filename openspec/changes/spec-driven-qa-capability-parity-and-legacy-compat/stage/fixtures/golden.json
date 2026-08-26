@@ -1,0 +1,1 @@
+{"schema_version":"parity-fixture-1","class":"golden","purpose":"正常系の公開契約","cases":[{"id":"golden-minimal-cycle","expected":"success"}]}

@@ -1,0 +1,919 @@
+{
+  "canonical_roots": {
+    "spec-driven-qa-author-response": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response",
+    "spec-driven-qa-review": "/Users/myamaguchi/.agents/skills/spec-driven-qa-review"
+  },
+  "schema_version": "baseline-1",
+  "skills": {
+    "spec-driven-qa-author-response": {
+      "categories": {
+        "evals": {
+          "bytes": 959,
+          "files": 1,
+          "lines": 12
+        },
+        "examples": {
+          "bytes": 2643,
+          "files": 15,
+          "lines": 120
+        },
+        "references": {
+          "bytes": 1507,
+          "files": 3,
+          "lines": 22
+        },
+        "root": {
+          "bytes": 6084,
+          "files": 7,
+          "lines": 120
+        },
+        "scripts": {
+          "bytes": 9649,
+          "files": 4,
+          "lines": 237
+        },
+        "tests": {
+          "bytes": 7741,
+          "files": 4,
+          "lines": 230
+        }
+      },
+      "counts": {
+        "bytes": 28583,
+        "files": 34,
+        "lines": 741
+      },
+      "exclusions": [
+        "__pycache__",
+        ".pytest_cache",
+        "*.pyc"
+      ],
+      "files": [
+        {
+          "bytes": 297,
+          "lines": 7,
+          "path": "CHANGELOG.md",
+          "sha256": "03695be536e1102361fbab38468f00842451594a5c6f212c7035a3dd932fd8bc"
+        },
+        {
+          "bytes": 507,
+          "lines": 12,
+          "path": "INSTALL.md",
+          "sha256": "18e9d4e0c32ce4ae588faf1569964144dc215fd5870b8c442195995f4a9b84f4"
+        },
+        {
+          "bytes": 862,
+          "lines": 27,
+          "path": "MANIFEST.txt",
+          "sha256": "a8a1481f5a9acfc70fa4aa80f4c1068ec4abd5d886c3cde49e054835e0cd58be"
+        },
+        {
+          "bytes": 731,
+          "lines": 9,
+          "path": "README.md",
+          "sha256": "98074ca5244bd112dea5e02016d716902385bab8a2c22d3dbaeb3d83863f673e"
+        },
+        {
+          "bytes": 3310,
+          "lines": 52,
+          "path": "SKILL.md",
+          "sha256": "37bf448e667876a71b55a4aed9554c5e0df83c6b58ec2f89ff813bd0db8e01a5"
+        },
+        {
+          "bytes": 52,
+          "lines": 1,
+          "path": "__init__.py",
+          "sha256": "560b271fc7de6f3cae3b832450b6aa06020e5e1258ef3e2a4b0f46f683ceceef"
+        },
+        {
+          "bytes": 959,
+          "lines": 12,
+          "path": "evals/evals.json",
+          "sha256": "7f4b78646cc17f93b941cdf2b01696e21cf38668a48da2fe00464f277e2989d9"
+        },
+        {
+          "bytes": 357,
+          "lines": 18,
+          "path": "examples/accepted/cycles/cycle-01-author-response.md",
+          "sha256": "af623b1d9dadacd2a5c1f6250fa1bfb4a4e5ec9ca2de46a06d0de66f33c6df15"
+        },
+        {
+          "bytes": 126,
+          "lines": 1,
+          "path": "examples/accepted/events.jsonl",
+          "sha256": "3d487e8c2de91e9f75b561b1c76f9eee1d3a8d27a134c4f89aac54410d8e16c2"
+        },
+        {
+          "bytes": 120,
+          "lines": 5,
+          "path": "examples/accepted/findings.yaml",
+          "sha256": "f70ab6b4100df3aeec0400e3f45f08d1ebe7d2f292b561c4ab01911823a01817"
+        },
+        {
+          "bytes": 162,
+          "lines": 8,
+          "path": "examples/accepted/handoff.md",
+          "sha256": "ea67b88248edcb09966648f487ee42b3ff6a8b914a071ebb5045cf68a786893a"
+        },
+        {
+          "bytes": 119,
+          "lines": 8,
+          "path": "examples/accepted/review.md",
+          "sha256": "65c6a23875b73384aeef80c977147c62fbe6c29b1215b454deea161736cbb539"
+        },
+        {
+          "bytes": 318,
+          "lines": 18,
+          "path": "examples/fix-submitted/cycles/cycle-01-author-response.md",
+          "sha256": "7c71120199be9e58e5f13ab8875992a1c1d5cf56db56a853d49236a5b4452eec"
+        },
+        {
+          "bytes": 176,
+          "lines": 1,
+          "path": "examples/fix-submitted/events.jsonl",
+          "sha256": "f046195035802d29b7af5b2f58029e1ca454da4b6ca4599fea130f5527f1106e"
+        },
+        {
+          "bytes": 130,
+          "lines": 5,
+          "path": "examples/fix-submitted/findings.yaml",
+          "sha256": "c37912ddd04ef08c59e2bd99118e2ca170bc817045fa3eb582c9b0abf8e4de84"
+        },
+        {
+          "bytes": 162,
+          "lines": 8,
+          "path": "examples/fix-submitted/handoff.md",
+          "sha256": "3c594c9f2fc7ea2d098266b0dae058d3fe02578868ed89763de23965609f2738"
+        },
+        {
+          "bytes": 119,
+          "lines": 8,
+          "path": "examples/fix-submitted/review.md",
+          "sha256": "7cfcaaf73f3c6e6af83fc000ac19ec7bbedb4218b29e7dd38cf16d2e8d3c9b25"
+        },
+        {
+          "bytes": 334,
+          "lines": 18,
+          "path": "examples/rejected-with-evidence/cycles/cycle-01-author-response.md",
+          "sha256": "40ddae9c7bc0520d1e7c410791229669399642c390886bc62ddd063aeb6227eb"
+        },
+        {
+          "bytes": 126,
+          "lines": 1,
+          "path": "examples/rejected-with-evidence/events.jsonl",
+          "sha256": "80a3b2bce850f4f88610624829b848450ceae50092ece443c380ca6e25571a67"
+        },
+        {
+          "bytes": 113,
+          "lines": 5,
+          "path": "examples/rejected-with-evidence/findings.yaml",
+          "sha256": "4f834e1f375e98f55990bb2a44bc9971de8d0b77ccf403b8660da8402b8a2419"
+        },
+        {
+          "bytes": 162,
+          "lines": 8,
+          "path": "examples/rejected-with-evidence/handoff.md",
+          "sha256": "48c8fd4f664dc0d1effe1455299cf82ac5d98b618671c91f703700f8334b1461"
+        },
+        {
+          "bytes": 119,
+          "lines": 8,
+          "path": "examples/rejected-with-evidence/review.md",
+          "sha256": "7688a94692858629bf3cdf044d564e10896a02ed1eb54a51376e4c5c2d286843"
+        },
+        {
+          "bytes": 325,
+          "lines": 12,
+          "path": "pyproject.toml",
+          "sha256": "f6bccee858cf798e3e903a001a11e070b8f3e433f37d0a9f6f9de468854cc81d"
+        },
+        {
+          "bytes": 594,
+          "lines": 12,
+          "path": "references/disposition-policy.md",
+          "sha256": "99f2a17aebc50015aea19468b486b4a3cb003d5f5bf0047afe068ecd8697480b"
+        },
+        {
+          "bytes": 503,
+          "lines": 5,
+          "path": "references/security.md",
+          "sha256": "319d044f9c4b7f6523f6eab10b405f12961e4f7f917fe7afc365f2cba2566093"
+        },
+        {
+          "bytes": 410,
+          "lines": 5,
+          "path": "references/state-transition-policy.md",
+          "sha256": "46046747533a4b428fbab79d42d8f86d65c5b49ea2ca2461c0a83bd7f2dc2de2"
+        },
+        {
+          "bytes": 82,
+          "lines": 1,
+          "path": "scripts/__init__.py",
+          "sha256": "d00a3d38749bd876d6d30c6dbc8962102c0612008c4ea233951ba968a366ef8f"
+        },
+        {
+          "bytes": 905,
+          "lines": 31,
+          "path": "scripts/execution_policy.py",
+          "sha256": "ca181d60f3b60269ab8d2cbe4e243b9e12d20fc84d399928ae0e443c1f2e0663"
+        },
+        {
+          "bytes": 2240,
+          "lines": 57,
+          "path": "scripts/submission_store.py",
+          "sha256": "d4e867050ee6605f9d12117da90e3480485ff9948ac3651fb13f1576a69cd1c8"
+        },
+        {
+          "bytes": 6422,
+          "lines": 148,
+          "path": "scripts/validate_author_response.py",
+          "sha256": "8d3ba31ff584d1988e2c4c7b0c20d2618edc048c50f5cd41b292d4fbaa3d8d0e"
+        },
+        {
+          "bytes": 2648,
+          "lines": 65,
+          "path": "tests/test_author_response.py",
+          "sha256": "10bee95ebed1aa055019d74f9012ce2fa84d67c8df90f9766256c7577b46266a"
+        },
+        {
+          "bytes": 1733,
+          "lines": 61,
+          "path": "tests/test_execution_policy.py",
+          "sha256": "5c1bb675390ee0746587bc340bd7092d72007d99dc7ec72838170f92af432154"
+        },
+        {
+          "bytes": 1901,
+          "lines": 59,
+          "path": "tests/test_handoff_submission.py",
+          "sha256": "80d0639fff6a9eb78f214463ece220fd1e87be45f2666b864f116ecb0e00fc66"
+        },
+        {
+          "bytes": 1459,
+          "lines": 45,
+          "path": "tests/test_submission_store.py",
+          "sha256": "189082a7e21f25dd1fe46e896ecfc2ea01d996c3c36828322408e9f6616414c9"
+        }
+      ],
+      "manifest": null,
+      "resident_files": [
+        "SKILL.md"
+      ],
+      "root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response",
+      "schema_version": "size-metrics-1"
+    },
+    "spec-driven-qa-review": {
+      "categories": {
+        "adapters": {
+          "bytes": 2968,
+          "files": 3,
+          "lines": 77
+        },
+        "evals": {
+          "bytes": 3730,
+          "files": 2,
+          "lines": 58
+        },
+        "examples": {
+          "bytes": 13694,
+          "files": 17,
+          "lines": 382
+        },
+        "integrations": {
+          "bytes": 1268,
+          "files": 2,
+          "lines": 36
+        },
+        "references": {
+          "bytes": 18480,
+          "files": 9,
+          "lines": 564
+        },
+        "root": {
+          "bytes": 22150,
+          "files": 7,
+          "lines": 515
+        },
+        "schemas": {
+          "bytes": 9303,
+          "files": 7,
+          "lines": 357
+        },
+        "scripts": {
+          "bytes": 56309,
+          "files": 24,
+          "lines": 1466
+        },
+        "templates": {
+          "bytes": 8572,
+          "files": 9,
+          "lines": 342
+        },
+        "tests": {
+          "bytes": 25203,
+          "files": 16,
+          "lines": 749
+        }
+      },
+      "counts": {
+        "bytes": 161677,
+        "files": 96,
+        "lines": 4546
+      },
+      "exclusions": [
+        "__pycache__",
+        ".pytest_cache",
+        "*.pyc"
+      ],
+      "files": [
+        {
+          "bytes": 964,
+          "lines": 21,
+          "path": "CHANGELOG.md",
+          "sha256": "a9ce9384441481c591d83f72041ea5375d50d718a00f45d0d5e78f7585c84ef2"
+        },
+        {
+          "bytes": 1121,
+          "lines": 32,
+          "path": "INSTALL.md",
+          "sha256": "1c91e20b1d4796b771f1b8f078e00385e0fdbb92818c6df3d709a1f74e7ef749"
+        },
+        {
+          "bytes": 1923,
+          "lines": 62,
+          "path": "MANIFEST.txt",
+          "sha256": "74f0682e2c5678b7c86037e36220a2130342abb40aa8f7f7bd51de375c01957e"
+        },
+        {
+          "bytes": 4468,
+          "lines": 107,
+          "path": "README.md",
+          "sha256": "43c2c2b14df0a937c3c6ba07357021088ca913b25d716a872174a3d8b331cb15"
+        },
+        {
+          "bytes": 13322,
+          "lines": 280,
+          "path": "SKILL.md",
+          "sha256": "803bd9f83c927ae87858688ecbe51bc6724f334b426d08dd65706c374842b8b3"
+        },
+        {
+          "bytes": 45,
+          "lines": 1,
+          "path": "__init__.py",
+          "sha256": "692ea54ff8a171f191d0426a82dbdae59a2735194abdf070386c73dfddb1f641"
+        },
+        {
+          "bytes": 821,
+          "lines": 22,
+          "path": "adapters/generic-sdd.md",
+          "sha256": "949c151b0986c4745782d8c36fcdb832d642f6fbb4bfb1dca1d53027e79f27f5"
+        },
+        {
+          "bytes": 1162,
+          "lines": 31,
+          "path": "adapters/openspec.md",
+          "sha256": "15f4de693ef0ae8b3f219f6f7b204ad0ba48a3deb535d6dbd63eb5695392b8a3"
+        },
+        {
+          "bytes": 985,
+          "lines": 24,
+          "path": "adapters/spec-kit.md",
+          "sha256": "85d142ad3f0216dbc0b62accf066fd970f10eae2b9fb8bb50b35671e2193b5fd"
+        },
+        {
+          "bytes": 1871,
+          "lines": 25,
+          "path": "evals/evals.json",
+          "sha256": "2762eff74f77e06f5aafebd8a603c8547a17a5fbe688b5f1c246a3cba0a96d2b"
+        },
+        {
+          "bytes": 1859,
+          "lines": 33,
+          "path": "evals/evaluation-20260825.md",
+          "sha256": "3c6d3ed4630cebf8ecff2ae83a7a779c8a7c4676cfb3cc366f3009827c7a79d9"
+        },
+        {
+          "bytes": 126,
+          "lines": 3,
+          "path": "examples/multi-cycle/cycles/cycle-01-author-response.md",
+          "sha256": "6cfca3091c040a2ef705c476586bca648149ffc686dba2b26d9ee916cf38084a"
+        },
+        {
+          "bytes": 108,
+          "lines": 3,
+          "path": "examples/multi-cycle/cycles/cycle-01-independent-review.md",
+          "sha256": "def356cb77a653fe6132bab2cc07632448b417384a5c4c0f2822e4ab1db29b5d"
+        },
+        {
+          "bytes": 155,
+          "lines": 3,
+          "path": "examples/multi-cycle/cycles/cycle-01-verification.md",
+          "sha256": "5bfe972279931b33152253f6f4edc652516f3172e41927eab60f8076dd8430a8"
+        },
+        {
+          "bytes": 175,
+          "lines": 5,
+          "path": "examples/multi-cycle/cycles/cycle-02-independent-review.md",
+          "sha256": "2f529d482042cb4cc66b9fa5f162b6c94c27ee2ba3ca034e8954a3dc601d4ac8"
+        },
+        {
+          "bytes": 963,
+          "lines": 5,
+          "path": "examples/multi-cycle/events.jsonl",
+          "sha256": "12f63cf8de44c340d8baa34f1ad490a32591a247458d418f8cab5caf38ae16a6"
+        },
+        {
+          "bytes": 1544,
+          "lines": 44,
+          "path": "examples/multi-cycle/findings.yaml",
+          "sha256": "5b662241a0ea2fefaaecd7e44084107a7ad152c0cb0cf40f7e0d50f81eec6dec"
+        },
+        {
+          "bytes": 2105,
+          "lines": 50,
+          "path": "examples/multi-cycle/handoff.md",
+          "sha256": "5ce1c69cbeb324ff065651f8c262ed065834ef236316a50fe3e55ce92ae57dcd"
+        },
+        {
+          "bytes": 1030,
+          "lines": 44,
+          "path": "examples/multi-cycle/review.md",
+          "sha256": "1e376655e404f3f019e02417a325a66398311b54bfa0a386ab3ce89ecfc3b796"
+        },
+        {
+          "bytes": 992,
+          "lines": 22,
+          "path": "examples/multi-cycle/traceability.yaml",
+          "sha256": "96fc4a31f35bbb236932a0b3d4e63626b4d25d83985e38432baccf7b05808670"
+        },
+        {
+          "bytes": 365,
+          "lines": 17,
+          "path": "examples/single-cycle/cycles/cycle-01-author-response.md",
+          "sha256": "04540071daa228ca8096a20f3846d7502cff02b27b28f6241ea3b848f3066c5c"
+        },
+        {
+          "bytes": 385,
+          "lines": 16,
+          "path": "examples/single-cycle/cycles/cycle-01-independent-review.md",
+          "sha256": "bd9c28bd175dc3aacec8174bcae90ae311996cb819c85831f0abba520b21aebd"
+        },
+        {
+          "bytes": 364,
+          "lines": 17,
+          "path": "examples/single-cycle/cycles/cycle-01-verification.md",
+          "sha256": "6867dc46d9561f3a714cc675f255e8efe58013f7daa6bc11584b3c188875137b"
+        },
+        {
+          "bytes": 756,
+          "lines": 4,
+          "path": "examples/single-cycle/events.jsonl",
+          "sha256": "6976d7ea001df317f949ce404e39e1d11bf5adef7be1a67c525b8cb7c507b68f"
+        },
+        {
+          "bytes": 945,
+          "lines": 29,
+          "path": "examples/single-cycle/findings.yaml",
+          "sha256": "7353ebe4dc4fdb154edad4617a45b49840c140b6d5350297a90a296909d781ea"
+        },
+        {
+          "bytes": 1968,
+          "lines": 50,
+          "path": "examples/single-cycle/handoff.md",
+          "sha256": "58f713c6f5aaeaf94f28e9995eee895745d4175781ab5115cafa13ea5448ba0c"
+        },
+        {
+          "bytes": 1044,
+          "lines": 48,
+          "path": "examples/single-cycle/review.md",
+          "sha256": "5578b04ac08e41a7458f02042fdf4c7e777c760398a33e1dce0812fbacfe980e"
+        },
+        {
+          "bytes": 669,
+          "lines": 22,
+          "path": "examples/single-cycle/traceability.yaml",
+          "sha256": "bf388543fb2a95979f67d76c9e89bee75e945e74b0d4e7163cc2d855f870bc26"
+        },
+        {
+          "bytes": 602,
+          "lines": 21,
+          "path": "integrations/github-actions.example.yml",
+          "sha256": "03a5dd572ef02c4845f444e7f41b65c041a545be7ff61d33ffa652bc4ad08b3c"
+        },
+        {
+          "bytes": 666,
+          "lines": 15,
+          "path": "integrations/pre-commit.example.yaml",
+          "sha256": "d97507c3c0bbcba44ffdccf027c8370d4127f4d9fc8cf8fd90f685840b772250"
+        },
+        {
+          "bytes": 307,
+          "lines": 12,
+          "path": "pyproject.toml",
+          "sha256": "d0757f75aa91993dddc5db7091bb5b34c01ed65431667f396a516409f12dfe9f"
+        },
+        {
+          "bytes": 1369,
+          "lines": 54,
+          "path": "references/agent-separation.md",
+          "sha256": "f5b0e41876d0e9858e860b934ceb66ab17e6e228988375d9eee4f6db83a6e4fd"
+        },
+        {
+          "bytes": 1020,
+          "lines": 43,
+          "path": "references/cycle-management.md",
+          "sha256": "42984f3520e9631e3b5294407deb4e795a1fa4063dc7414ab637c03f6980d32b"
+        },
+        {
+          "bytes": 1671,
+          "lines": 43,
+          "path": "references/evidence-evaluation.md",
+          "sha256": "68279cfd25c5762c140b6c87f6b58f13047f1a8b80a777ddd872670306c24a54"
+        },
+        {
+          "bytes": 3566,
+          "lines": 107,
+          "path": "references/finding-taxonomy.md",
+          "sha256": "d5e99db80d2901286e1fe9c8c3883419aa543837c89d9dc6b356642df3b2a92b"
+        },
+        {
+          "bytes": 3849,
+          "lines": 80,
+          "path": "references/qa-principles.md",
+          "sha256": "157173ff3d07d0a79fa36ac1861e17e6143dbfed97d63a6624f6477cf18c78e0"
+        },
+        {
+          "bytes": 2978,
+          "lines": 82,
+          "path": "references/risk-profiles.md",
+          "sha256": "c0b5fd606ad912ff10b0e10cc0798fa0aaa10c20d3fbc606a0b785e62a39ea85"
+        },
+        {
+          "bytes": 1110,
+          "lines": 35,
+          "path": "references/security.md",
+          "sha256": "dc9ce92b44430979f8b1bd1dd730467e3f3ae0cf74de68e2905b974fb14e9632"
+        },
+        {
+          "bytes": 1398,
+          "lines": 56,
+          "path": "references/traceability-rules.md",
+          "sha256": "088ab3f7380160d4c54ff36af5359ee51473d418fd4551ac567e318969c3fd97"
+        },
+        {
+          "bytes": 1519,
+          "lines": 64,
+          "path": "references/workflow-state-machine.md",
+          "sha256": "9203babc49ea554e6ca2c2c844ad7cb22bca9eaff2df7505828e0af5b6701bbf"
+        },
+        {
+          "bytes": 2191,
+          "lines": 63,
+          "path": "schemas/contract-v1.2.schema.json",
+          "sha256": "4d965e93467a39e4ac8cea0f225e3d4fe03df1f73139e594c8de7dbeb241ad75"
+        },
+        {
+          "bytes": 707,
+          "lines": 43,
+          "path": "schemas/event.schema.json",
+          "sha256": "bb5548fc94834a1dc84c3899cc08eda036ea6fc5ab7832f93abbb865daf606dc"
+        },
+        {
+          "bytes": 1469,
+          "lines": 38,
+          "path": "schemas/evidence.schema.json",
+          "sha256": "9abedc519fd9a20684365d8144793f825610812a8d5fdd9db11b954671d974f6"
+        },
+        {
+          "bytes": 2128,
+          "lines": 89,
+          "path": "schemas/findings.schema.json",
+          "sha256": "a3ef80c736df09a2dc43a90ebcaeca7c7576d73cd6c9ef57b0c9388d0335021e"
+        },
+        {
+          "bytes": 803,
+          "lines": 18,
+          "path": "schemas/handoff.schema.json",
+          "sha256": "a2784d97c3988e083c828efbd1d11670268143327d5aad0e26877ff1565702e5"
+        },
+        {
+          "bytes": 1121,
+          "lines": 60,
+          "path": "schemas/review-case.schema.json",
+          "sha256": "6646cebd834bf0d78c9e8b55ee8054a1e5d658aa30948ae6d29c1a03c30343fa"
+        },
+        {
+          "bytes": 884,
+          "lines": 46,
+          "path": "schemas/traceability.schema.json",
+          "sha256": "6ca4e55f4e52ba9a51f0387927c7e58af4fe9dd1e46c18c31755f7a44430bb5f"
+        },
+        {
+          "bytes": 75,
+          "lines": 1,
+          "path": "scripts/__init__.py",
+          "sha256": "b4f04ff1cc487be0746c826539c427a9c6820bebbe709a5866f25bc0283781f3"
+        },
+        {
+          "bytes": 1243,
+          "lines": 38,
+          "path": "scripts/append_event.py",
+          "sha256": "6d2ccc7b843cc5c84b81f7cfc7bbbf335522c7205111d0088285502d815dd4d7"
+        },
+        {
+          "bytes": 760,
+          "lines": 27,
+          "path": "scripts/cli_json.py",
+          "sha256": "bda13f1ffe59bd62c8e9a7cdf105a7afe4b571e946afb280032711270dfb007f"
+        },
+        {
+          "bytes": 1397,
+          "lines": 44,
+          "path": "scripts/close_review_case.py",
+          "sha256": "89209d81a3e234768b2c288b70b7e87061920a812702edb9dccdc623b997f1c5"
+        },
+        {
+          "bytes": 4703,
+          "lines": 137,
+          "path": "scripts/common.py",
+          "sha256": "8c8acdcd0aaadc84a4bc115f3355053d196fca791176f6639253478eed20434d"
+        },
+        {
+          "bytes": 3110,
+          "lines": 81,
+          "path": "scripts/create_review_case.py",
+          "sha256": "0e4163cb006d0dc889a2dd3eef435b541c7e87270cea0d091c8dbefc93378d15"
+        },
+        {
+          "bytes": 814,
+          "lines": 29,
+          "path": "scripts/cycle_limit.py",
+          "sha256": "cc2582989a8aa5ae99c55addebd60aa670e2357ae73edd351ee4757635ffbf32"
+        },
+        {
+          "bytes": 2005,
+          "lines": 59,
+          "path": "scripts/detect_unresolved_markers.py",
+          "sha256": "c6582ae68ecdac9006e482792adb0b6a3c15195154b9cb2c6e6a4d8ab04b772f"
+        },
+        {
+          "bytes": 1872,
+          "lines": 71,
+          "path": "scripts/digest.py",
+          "sha256": "b977350557593e0639be48bd5077bb1fda61a731c8ef2582830b9efb7b89fa5b"
+        },
+        {
+          "bytes": 2778,
+          "lines": 63,
+          "path": "scripts/evidence.py",
+          "sha256": "fd9bfe64cfe3b1040e3697201b4b7323af758f4e3aaf57c58017e59a5364d2ff"
+        },
+        {
+          "bytes": 2175,
+          "lines": 64,
+          "path": "scripts/freshness.py",
+          "sha256": "7391f878522f8a9db7a9b494d0815c9511b8fe2b0ae00025bbefbc65720d6148"
+        },
+        {
+          "bytes": 1358,
+          "lines": 39,
+          "path": "scripts/legacy_adapter.py",
+          "sha256": "ada11ef019ed3eeaa622069c17f0bc833a54dd9fea3d622776fec213bfd2cb96"
+        },
+        {
+          "bytes": 1146,
+          "lines": 25,
+          "path": "scripts/link_validator.py",
+          "sha256": "c9e962e3ca3cd91032745815c0e2cc8096a991838adeef413f0b254421f9556d"
+        },
+        {
+          "bytes": 1112,
+          "lines": 31,
+          "path": "scripts/openspec_bridge.py",
+          "sha256": "61e0a788c1e03d1902170cf92a36caa65c18611a135deaabe1d6b51fd38a09bb"
+        },
+        {
+          "bytes": 8209,
+          "lines": 188,
+          "path": "scripts/render_handoff.py",
+          "sha256": "4e817cdfa02bfa4970779f865e2bf5d261c565ce55d435e95932c9cb4ca7ecf8"
+        },
+        {
+          "bytes": 918,
+          "lines": 29,
+          "path": "scripts/secret_guard.py",
+          "sha256": "e054b4b70f1159cdbebe10900db9d67807acc9d3cb4d10b3dbffcd8597d53f96"
+        },
+        {
+          "bytes": 2403,
+          "lines": 64,
+          "path": "scripts/state_machine.py",
+          "sha256": "d4c94d8322f34e58e6bf2c53d177cc2cbe2be4413b6fc539354ee731911f72fd"
+        },
+        {
+          "bytes": 2506,
+          "lines": 57,
+          "path": "scripts/submission_validator.py",
+          "sha256": "e065f363bf1a53c4d124e01875bfec8cc7dcaabd9e43d4cc11c8a24da8c7da55"
+        },
+        {
+          "bytes": 1146,
+          "lines": 35,
+          "path": "scripts/terminal_record.py",
+          "sha256": "658837aa07a03853ff20bceaf93b32afafd453f0790c8cc3440f5454ccb7b4db"
+        },
+        {
+          "bytes": 2679,
+          "lines": 65,
+          "path": "scripts/update_review_summary.py",
+          "sha256": "e903dbf2ee3ebffb8dba219e27ec93f210a508594e899426ad267a5bc0174fd7"
+        },
+        {
+          "bytes": 4830,
+          "lines": 109,
+          "path": "scripts/validate_contract_v1_2.py",
+          "sha256": "791852b97bacb4e7119ec5ce86f164ec56eca4764194923d56a8268ae54fc23b"
+        },
+        {
+          "bytes": 1944,
+          "lines": 42,
+          "path": "scripts/validate_handoff_contract.py",
+          "sha256": "baf0c1eeb8407e7e963347036631a79378642f97490d4f4a5f8a9350f3213cd6"
+        },
+        {
+          "bytes": 671,
+          "lines": 18,
+          "path": "scripts/validate_handoff_origin.py",
+          "sha256": "f687749737a1d5e1665b0e66adfe5cd2a1424c9ecdb105397be24fee10035ca4"
+        },
+        {
+          "bytes": 6455,
+          "lines": 150,
+          "path": "scripts/validate_review_case.py",
+          "sha256": "d95393b529ccf0fe5d53250ed972fefa6d79b872c112cdbabf0d07624aa11d35"
+        },
+        {
+          "bytes": 759,
+          "lines": 41,
+          "path": "templates/author-response.md",
+          "sha256": "08ce81d169dfe3aee216f010fbdf0e72ab9d11ba0a16a48938049c48a59cefc1"
+        },
+        {
+          "bytes": 184,
+          "lines": 1,
+          "path": "templates/events.jsonl",
+          "sha256": "bf840b8348144f1d5ffa63770a850ed20047a9efa4a98b1dd23aeedbd1c4b5ea"
+        },
+        {
+          "bytes": 986,
+          "lines": 34,
+          "path": "templates/findings.yaml",
+          "sha256": "34e9c6c20d6b31edbebe3ba9d2446b42d5d1cb33a6e92321e51db61346c2344a"
+        },
+        {
+          "bytes": 2049,
+          "lines": 50,
+          "path": "templates/handoff.md",
+          "sha256": "a42da999b61b22c92ea4a40757e40447853b7bcd34c0096ee81c5474aae7d9cc"
+        },
+        {
+          "bytes": 996,
+          "lines": 47,
+          "path": "templates/independent-review.md",
+          "sha256": "2f3c7a831f1e27cfa14138eada47eba5fde5f7f453b8c13ac3e65114e83e4da2"
+        },
+        {
+          "bytes": 295,
+          "lines": 11,
+          "path": "templates/purpose.yaml",
+          "sha256": "2d53c1ee916e32b487bd8c15ededddcece2fcf6d822d80df0894bf41a71f0ac0"
+        },
+        {
+          "bytes": 2056,
+          "lines": 105,
+          "path": "templates/review-case.md",
+          "sha256": "9054b79f2f9c275c6f92a55b7b38045d05ce3e05c374b46163917b55b1e8cd18"
+        },
+        {
+          "bytes": 733,
+          "lines": 34,
+          "path": "templates/reviewer-verification.md",
+          "sha256": "54fc7c573335b5186d5342d21df612c6062a19b7eaa45a71585903f3b9ad6ba3"
+        },
+        {
+          "bytes": 514,
+          "lines": 19,
+          "path": "templates/traceability.yaml",
+          "sha256": "2221169b028c3237bd3c23f043ebf55890eafe9de327018206b4358ed6aed868"
+        },
+        {
+          "bytes": 1113,
+          "lines": 36,
+          "path": "tests/test_cli_json.py",
+          "sha256": "9a813267c3c0081375003619e10838d6f565d548e5a5746fce665ed1728144bf"
+        },
+        {
+          "bytes": 1477,
+          "lines": 48,
+          "path": "tests/test_contract_v1_2.py",
+          "sha256": "e630f8c07df3a860c618645f6b2b10ac7530051f3ccafb34ec89c1ef1a9eb82f"
+        },
+        {
+          "bytes": 847,
+          "lines": 29,
+          "path": "tests/test_cycle_limit.py",
+          "sha256": "10ad1d2706fba54ca969b5c2176d196ac4d180c56468497505141ffc55a9252f"
+        },
+        {
+          "bytes": 2592,
+          "lines": 75,
+          "path": "tests/test_digest.py",
+          "sha256": "61cca3b9b8b24a708bd7a305b5dc7a0b716336281083ffcc1c44554ecde2c80f"
+        },
+        {
+          "bytes": 1747,
+          "lines": 56,
+          "path": "tests/test_evidence.py",
+          "sha256": "2b1c084a2679a67901a3f442cd0ca6f22bf629e27ee22144ff841f1c3f77c379"
+        },
+        {
+          "bytes": 2421,
+          "lines": 81,
+          "path": "tests/test_freshness.py",
+          "sha256": "6d2797c69a548d1f9dcdb08d3287b2953ec748c6ea3ddab9d3928c3dbd3d27f2"
+        },
+        {
+          "bytes": 1793,
+          "lines": 46,
+          "path": "tests/test_handoff_contract.py",
+          "sha256": "6943440316456b41d0cb8a4c4f093b4409fb79828da2664635e7814a1f2ba27b"
+        },
+        {
+          "bytes": 1775,
+          "lines": 47,
+          "path": "tests/test_handoff_validator.py",
+          "sha256": "0be540db3f4c91aa160ea3c4e2fbaeb5f71ad9663a46248c52e744eb5820df1e"
+        },
+        {
+          "bytes": 1256,
+          "lines": 39,
+          "path": "tests/test_legacy_adapter.py",
+          "sha256": "3b9f58ea48a6427aaab65b53d54673368555f6da9b337f9d030ebb1219ca6b2f"
+        },
+        {
+          "bytes": 868,
+          "lines": 22,
+          "path": "tests/test_link_validator.py",
+          "sha256": "b9c90a415a28593ecb0e45a585c6603ead3582e33606d58280a0db14743919f7"
+        },
+        {
+          "bytes": 1274,
+          "lines": 30,
+          "path": "tests/test_openspec_bridge.py",
+          "sha256": "826b7f85b2327dbe19936066dbb91e24c7884647f083e41d438de3a506b11cd6"
+        },
+        {
+          "bytes": 773,
+          "lines": 24,
+          "path": "tests/test_secret_guard.py",
+          "sha256": "56972fb5a6d0efcd0b08762b73d5bc3491119024fa3a3562b0d193959a79863a"
+        },
+        {
+          "bytes": 1625,
+          "lines": 50,
+          "path": "tests/test_state_machine.py",
+          "sha256": "632fdbc25ee87af5bb2b9c29f3b8a58e5e03fbe0a0e7ab8a696faf493a99fe0f"
+        },
+        {
+          "bytes": 2662,
+          "lines": 78,
+          "path": "tests/test_submission_validator.py",
+          "sha256": "a650587adeb9922c81d578146f47ff4726eb0b51f840a93c6be164912012e524"
+        },
+        {
+          "bytes": 1386,
+          "lines": 42,
+          "path": "tests/test_terminal_record.py",
+          "sha256": "95e82c8184078a61a13bf62cb0b65645d5c160e4c0bbe3ac33b84e2a14d4e874"
+        },
+        {
+          "bytes": 1594,
+          "lines": 46,
+          "path": "tests/test_validation.py",
+          "sha256": "7b464192b9348efb78975b85957b768be1a1ce6279e282ffee7803258a06743e"
+        }
+      ],
+      "manifest": null,
+      "resident_files": [
+        "SKILL.md"
+      ],
+      "root": "/Users/myamaguchi/.agents/skills/spec-driven-qa-review",
+      "schema_version": "size-metrics-1"
+    }
+  },
+  "source": "read-only",
+  "total": {
+    "bytes": 190260,
+    "files": 130,
+    "lines": 5287
+  }
+}

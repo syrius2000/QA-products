@@ -1,0 +1,26 @@
+{
+  "adapter": "Candidateはcompactと共通の構造化fixture入口を持たず、互換Adapter未実装",
+  "bundle": {
+    "kind": "directory",
+    "name": "candidate",
+    "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+    "version": "contract-v1.2-candidate-20260826"
+  },
+  "command": null,
+  "execution_status": "unverified",
+  "exit_code": null,
+  "fixture": {
+    "class": "negative",
+    "digest": "32f3a7ae186c308cd89c488930f37b95152b68ab2a8dd9b42a3d39b468d8ece4",
+    "path": "fixtures/negative.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: version-specific adapter is not defined"
+  ]
+}

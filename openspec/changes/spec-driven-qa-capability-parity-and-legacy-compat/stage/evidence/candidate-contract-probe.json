@@ -1,0 +1,10 @@
+{
+  "accepted": true,
+  "actual": "accept",
+  "control": "empty-or-missing-evidence",
+  "errors": [],
+  "expected": "reject",
+  "policy": "Candidateの現行実装を改造せず、観測された契約挙動をEvidence化する",
+  "schema_version": "candidate-contract-probe-1",
+  "status": "observed-violation"
+}

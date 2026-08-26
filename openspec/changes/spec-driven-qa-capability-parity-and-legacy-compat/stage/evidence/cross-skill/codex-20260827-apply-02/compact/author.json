@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-compact-spec-driven-qa-skills/stage/spec-driven-qa-bundle/spec-driven-qa-author-response/launcher.py",
+    "respond",
+    "--json",
+    "{\"request_id\": \"cross-skill-parity\", \"fixture_path\": \"input.json\"}"
+  ],
+  "stdout": "{\"operation\": \"respond\", \"request_id\": \"cross-skill-parity\", \"role\": \"author\", \"status\": \"ok\"}\n",
+  "stderr": "",
+  "exit_code": 0
+}

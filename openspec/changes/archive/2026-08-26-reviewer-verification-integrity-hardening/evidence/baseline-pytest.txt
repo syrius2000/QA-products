@@ -1,0 +1,4 @@
+# Baseline pytest (before hardening)
+# date: 2026-08-26T12:05 JST
+# command: pytest openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests -q
+# result: 21 passed in 0.19s

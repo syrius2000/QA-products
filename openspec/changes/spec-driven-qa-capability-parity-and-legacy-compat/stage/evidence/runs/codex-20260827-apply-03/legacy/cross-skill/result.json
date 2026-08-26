@@ -1,0 +1,38 @@
+{
+  "adapter": "legacy Reviewer create_review_case.py",
+  "bundle": {
+    "kind": "zip",
+    "name": "legacy",
+    "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+    "version": "legacy-20260825"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-ioy4o_yo/legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+    "--root",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-ioy4o_yo",
+    "--title",
+    "parity-cross-skill",
+    "--target",
+    "fixture-input",
+    "--profile",
+    "lite"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "cross-skill",
+    "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+    "path": "fixtures/cross-skill.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

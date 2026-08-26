@@ -1,0 +1,25 @@
+{
+  "authority": {
+    "spec": "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md",
+    "spec_digest": "fixture-spec-digest",
+    "rule": "spec_compliance_overrides_candidate_behavior"
+  },
+  "cases": [
+    {"id": "valid-review", "expected": {"exit_code": 0, "contract": "v1.2", "state": "needs-response", "side_effects": ["handoff"]}},
+    {"id": "author-direct-write", "expected": {"exit_code": 2, "contract": "v1.2", "state": "unchanged", "side_effects": []}}
+  ],
+  "results": {
+    "legacy": {
+      "valid-review": {"exit_code": 0, "contract": "v1.1", "state": "needs-response", "side_effects": ["handoff"], "spec_compliant": true},
+      "author-direct-write": {"exit_code": 2, "contract": "v1.1", "state": "unchanged", "side_effects": [], "spec_compliant": true}
+    },
+    "contract-v1.2-candidate": {
+      "valid-review": {"exit_code": 0, "contract": "v1.2", "state": "needs-response", "side_effects": ["handoff"], "spec_compliant": true},
+      "author-direct-write": {"exit_code": 2, "contract": "v1.2", "state": "unchanged", "side_effects": [], "spec_compliant": true}
+    },
+    "compact-candidate": {
+      "valid-review": {"exit_code": 0, "contract": "v1.2", "state": "needs-response", "side_effects": ["handoff"], "spec_compliant": true},
+      "author-direct-write": {"exit_code": 2, "contract": "v1.2", "state": "unchanged", "side_effects": [], "spec_compliant": true}
+    }
+  }
+}

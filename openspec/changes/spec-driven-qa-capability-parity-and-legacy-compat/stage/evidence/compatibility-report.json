@@ -1,0 +1,720 @@
+{
+  "classification_counts": {
+    "compatible": 2,
+    "intentional-noncompatibility": 20,
+    "missing-or-unverified": 22,
+    "presentation-only": 0
+  },
+  "cross_skill": {
+    "candidate": {
+      "digest": "observed",
+      "handoff": "observed",
+      "revision": "observed",
+      "submission": "observed"
+    },
+    "compact": {
+      "digest": "observed",
+      "handoff": "observed",
+      "revision": "observed",
+      "submission": "observed"
+    },
+    "legacy": {
+      "digest": "evidence-gap",
+      "handoff": "observed",
+      "revision": "evidence-gap",
+      "submission": "evidence-gap"
+    }
+  },
+  "decisions": [
+    {
+      "classification": "intentional-noncompatibility",
+      "evidence_ref": "cross-skill/codex-20260827-chain-api-03/manifest.json",
+      "id": "legacy-cross-skill-submission-gap",
+      "reason": "Legacy版の旧契約にはAuthor submission、semantic/content digest、revisionの連鎖契約が存在しない。アーカイブを改造せず、Candidateとcompactの安全契約をLegacyへ引き下げない。",
+      "scope": "legacy.cross-skill.submission-digest-revision",
+      "spec_ref": "../../specs/spec-driven-qa-capability-parity/spec.md#三版を同一条件で比較する"
+    }
+  ],
+  "features": [
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "author:INSTALL_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "INSTALL.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "author",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "author:README_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "README.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "author",
+      "status": "unverified"
+    },
+    {
+      "classification": "compatible",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "author:SKILL_MD",
+      "path": "SKILL.md",
+      "presence": {
+        "candidate": true,
+        "compact": true,
+        "legacy": true
+      },
+      "reason": "三版Bundleに同一役割の公開文書入口が存在する",
+      "role": "author",
+      "status": "observed"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "author:SCRIPTS_INIT_PY",
+      "path": "scripts/__init__.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "author",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "author:SCRIPTS_EXECUTION_POLICY_PY",
+      "path": "scripts/execution_policy.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "author",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "author:SCRIPTS_SUBMISSION_STORE_PY",
+      "path": "scripts/submission_store.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "author",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "author:SCRIPTS_VALIDATE_AUTHOR_RESPONSE_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/validate_author_response.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "author",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:INSTALL_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "INSTALL.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:README_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "README.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "compatible",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SKILL_MD",
+      "path": "SKILL.md",
+      "presence": {
+        "candidate": true,
+        "compact": true,
+        "legacy": true
+      },
+      "reason": "三版Bundleに同一役割の公開文書入口が存在する",
+      "role": "reviewer",
+      "status": "observed"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_INIT_PY",
+      "path": "scripts/__init__.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_APPEND_EVENT_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/append_event.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_CLI_JSON_PY",
+      "path": "scripts/cli_json.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_CLOSE_REVIEW_CASE_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/close_review_case.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_COMMON_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/common.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_CREATE_REVIEW_CASE_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/create_review_case.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_CYCLE_LIMIT_PY",
+      "path": "scripts/cycle_limit.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_DETECT_UNRESOLVED_MARKERS_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/detect_unresolved_markers.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_DIGEST_PY",
+      "path": "scripts/digest.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_EVIDENCE_PY",
+      "path": "scripts/evidence.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_FRESHNESS_PY",
+      "path": "scripts/freshness.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_LEGACY_ADAPTER_PY",
+      "path": "scripts/legacy_adapter.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_LINK_VALIDATOR_PY",
+      "path": "scripts/link_validator.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_OPENSPEC_BRIDGE_PY",
+      "path": "scripts/openspec_bridge.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_RENDER_HANDOFF_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/render_handoff.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_SECRET_GUARD_PY",
+      "path": "scripts/secret_guard.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_STATE_MACHINE_PY",
+      "path": "scripts/state_machine.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_SUBMISSION_VALIDATOR_PY",
+      "path": "scripts/submission_validator.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_TERMINAL_RECORD_PY",
+      "path": "scripts/terminal_record.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_UPDATE_REVIEW_SUMMARY_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/update_review_summary.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_VALIDATE_CONTRACT_V1_2_PY",
+      "path": "scripts/validate_contract_v1_2.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_VALIDATE_HANDOFF_CONTRACT_PY",
+      "path": "scripts/validate_handoff_contract.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "intentional-noncompatibility",
+      "comparison_basis": "feature inventory legacy_presence=false",
+      "feature_id": "reviewer:SCRIPTS_VALIDATE_HANDOFF_ORIGIN_PY",
+      "path": "scripts/validate_handoff_origin.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": false
+      },
+      "reason": "Legacyに存在しない新規Contract機能であり、Legacy完全互換の欠落には数えない",
+      "role": "reviewer",
+      "status": "new-contract-feature"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:SCRIPTS_VALIDATE_REVIEW_CASE_PY",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "scripts/validate_review_case.py",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_AUTHOR_RESPONSE_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/author-response.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_EVENTS_JSONL",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/events.jsonl",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_FINDINGS_YAML",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/findings.yaml",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_HANDOFF_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/handoff.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_INDEPENDENT_REVIEW_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/independent-review.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_PURPOSE_YAML",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/purpose.yaml",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_REVIEW_CASE_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/review-case.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_REVIEWER_VERIFICATION_MD",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/reviewer-verification.md",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    },
+    {
+      "classification": "missing-or-unverified",
+      "comparison_basis": "bundle manifest path presence",
+      "feature_id": "reviewer:TEMPLATES_TRACEABILITY_YAML",
+      "missing_bundles": [
+        "compact"
+      ],
+      "path": "templates/traceability.yaml",
+      "presence": {
+        "candidate": true,
+        "compact": false,
+        "legacy": true
+      },
+      "reason": "Legacy互換対象の入口がCandidateまたはcompactに存在しない",
+      "role": "reviewer",
+      "status": "unverified"
+    }
+  ],
+  "inputs": {
+    "bundle_manifest_schema": "parity-manifest-1",
+    "cross_skill_run_id": "codex-20260827-compat-01",
+    "inventory_schema": "feature-surface-inventory-1",
+    "run_manifest_id": "codex-20260827-compat-01"
+  },
+  "legacy_full_compatibility": false,
+  "overall_status": "evidence-gap",
+  "schema_version": "compatibility-report-1",
+  "unverified_reasons": [
+    "Legacy互換対象の入口がCandidateまたはcompactに存在しない"
+  ]
+}

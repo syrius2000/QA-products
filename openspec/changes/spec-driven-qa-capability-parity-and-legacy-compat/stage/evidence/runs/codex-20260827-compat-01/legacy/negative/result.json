@@ -1,0 +1,32 @@
+{
+  "adapter": "legacy Author validate_author_response.py (negative)",
+  "bundle": {
+    "kind": "zip",
+    "name": "legacy",
+    "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+    "version": "legacy-20260825"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-rlhq3z9r/legacy-bundle/spec-driven-qa-author-response/scripts/validate_author_response.py",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-rlhq3z9r/missing-case",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/runs/codex-20260827-compat-01/legacy/negative/input.json"
+  ],
+  "execution_status": "observed",
+  "exit_code": 1,
+  "fixture": {
+    "class": "negative",
+    "digest": "32f3a7ae186c308cd89c488930f37b95152b68ab2a8dd9b42a3d39b468d8ece4",
+    "path": "fixtures/negative.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

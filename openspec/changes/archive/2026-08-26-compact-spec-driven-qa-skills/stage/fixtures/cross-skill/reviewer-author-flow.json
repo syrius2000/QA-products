@@ -1,0 +1,15 @@
+{
+  "fixture_id": "cross-skill-reviewer-author-flow",
+  "kind": "cross-skill",
+  "steps": [
+    {"actor": "reviewer", "operation": "render-handoff", "writes": ["handoff.md"]},
+    {"actor": "author", "operation": "read-handoff", "reads": ["handoff.md"]},
+    {"actor": "author", "operation": "submit-response", "writes": ["submission/submission-001.json"]},
+    {"actor": "reviewer", "operation": "accept-submission", "reads": ["submission/submission-001.json"], "writes": ["reviewer-candidate"]}
+  ],
+  "forbidden": [
+    {"actor": "author", "operation": "write-review"},
+    {"actor": "author", "operation": "write-events"},
+    {"actor": "author", "operation": "close-case"}
+  ]
+}

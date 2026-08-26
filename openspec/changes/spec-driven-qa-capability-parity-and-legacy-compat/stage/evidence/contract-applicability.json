@@ -1,0 +1,135 @@
+{
+  "blocking_rows": 1,
+  "pass_eligible": false,
+  "policy": "not-applicableとevidence-gapは合格とみなさず、Legacyの後発契約不在は意図的非互換として分離する",
+  "rows": [
+    {
+      "control": "author-self-close",
+      "detail": "後発の状態Firewall契約がLegacyにない",
+      "evidence": "cross-skill/codex-20260827-compat-01/manifest.json",
+      "status": "not-applicable",
+      "version": "legacy"
+    },
+    {
+      "control": "author-self-close-and-reviewer-write",
+      "detail": "CandidateのReviewer所有フィールド拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "candidate"
+    },
+    {
+      "control": "author-self-close-and-reviewer-write",
+      "detail": "compactのAuthor役割境界とReviewer所有フィールド拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "compact"
+    },
+    {
+      "control": "unknown-finding",
+      "detail": "Legacyに後発Finding validator契約がない",
+      "evidence": "cross-skill/codex-20260827-compat-01/manifest.json",
+      "status": "not-applicable",
+      "version": "legacy"
+    },
+    {
+      "control": "unknown-finding",
+      "detail": "Candidateの未知Finding拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "candidate"
+    },
+    {
+      "control": "unknown-finding",
+      "detail": "compactの未知Finding拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "compact"
+    },
+    {
+      "control": "empty-or-missing-evidence",
+      "detail": "LegacyにEvidence validator契約がない",
+      "evidence": "compatibility-report.json",
+      "status": "not-applicable",
+      "version": "legacy"
+    },
+    {
+      "control": "empty-or-missing-evidence",
+      "detail": "Candidateは空Evidenceを受理したため、期待rejectに対する観測違反として記録",
+      "evidence": "candidate-contract-probe.json",
+      "status": "failed",
+      "version": "candidate"
+    },
+    {
+      "control": "empty-or-missing-evidence",
+      "detail": "compact連鎖APIはEvidence bundle契約を定義していない",
+      "evidence": "spec-driven-qa-bundle/shared_core/chain.py",
+      "status": "not-applicable",
+      "version": "compact"
+    },
+    {
+      "control": "workspace-outside-path",
+      "detail": "Legacyに共通Workspace境界契約がない",
+      "evidence": "compatibility-report.json",
+      "status": "not-applicable",
+      "version": "legacy"
+    },
+    {
+      "control": "workspace-outside-path",
+      "detail": "Candidateのrepository-relative参照拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "candidate"
+    },
+    {
+      "control": "workspace-outside-path",
+      "detail": "compactのWorkspace外パス拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "compact"
+    },
+    {
+      "control": "digest-contract",
+      "detail": "Legacyにsemantic/content digest契約がない",
+      "evidence": "cross-skill/codex-20260827-compat-01/manifest.json",
+      "status": "not-applicable",
+      "version": "legacy"
+    },
+    {
+      "control": "stale-semantic-digest",
+      "detail": "Candidateに実在するsemantic digestのstale拒否を実測",
+      "evidence": "candidate-digest-probe.json",
+      "status": "observed",
+      "version": "candidate"
+    },
+    {
+      "control": "content-digest-and-version",
+      "detail": "Candidateの現行Bundleに分離content digest/version契約がない",
+      "evidence": "compatibility-report.json",
+      "status": "not-applicable",
+      "version": "candidate"
+    },
+    {
+      "control": "stale-semantic-and-content-digest",
+      "detail": "compactのstale semantic/content digest拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "compact"
+    },
+    {
+      "control": "unknown-digest-version",
+      "detail": "compactの未知digest version拒否を確認",
+      "evidence": "safety-regression.json",
+      "status": "observed",
+      "version": "compact"
+    },
+    {
+      "control": "legacy-equivalent-digest",
+      "detail": "QA-0007の旧同値digest拒否プローブを参照",
+      "evidence": "docs/ADR/QA/QA-0007-separate-semantic-content-digests/review.md",
+      "status": "observed",
+      "version": "compact"
+    }
+  ],
+  "schema_version": "contract-applicability-1",
+  "status": "evidence-gap"
+}

@@ -1,0 +1,14 @@
+usage: create_review_case.py [-h] [--root ROOT] --title TITLE --target TARGET
+                             [--profile {lite,standard,strict}]
+                             [--implementer IMPLEMENTER] [--reviewer REVIEWER]
+
+Create a Spec-Driven QA Review Case
+
+options:
+  -h, --help            show this help message and exit
+  --root ROOT           Repository root
+  --title TITLE
+  --target TARGET
+  --profile {lite,standard,strict}
+  --implementer IMPLEMENTER
+  --reviewer REVIEWER

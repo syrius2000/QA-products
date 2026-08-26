@@ -1,0 +1,16 @@
+{
+  "accepted": false,
+  "actual": "reject",
+  "canonical_semantic_digest": "9cacb9bc861fe739478f82dafb8c65faa09cf6b1a4fdd6987dce42a5ddac6993",
+  "content_digest_contract": "not-applicable",
+  "control": "stale-semantic-digest",
+  "digest_version_contract": "not-applicable",
+  "errors": [
+    "submission semantic digest is stale"
+  ],
+  "expected": "reject",
+  "policy": "Candidateに実在するsemantic digestだけを実測し、content/version契約を推測しない",
+  "schema_version": "candidate-digest-probe-1",
+  "semantic_digest_contract": "observed",
+  "status": "observed"
+}

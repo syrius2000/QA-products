@@ -1,0 +1,347 @@
+schema_version: "1.0"
+case_id: QA-0006
+findings:
+  - id: QA-0006-F01
+    title: "stale digest照合が正本(findings.yaml)ではなくhandoff自己整合のみで行われる"
+    category: spec-drift
+    purpose_classification: spec-required
+    severity: high
+    severity_rationale: "Author Specおよび共有specは『現行正本から再計算したdigest』との一致をMUSTとする。実装はhandoff本文から正規表現抽出したFinding IDでdigestを再計算するため、正本と乖離した自己整合handoffを受理する。偽の受理はReviewer検証前に不正提出を通す。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 3.1（正本から再計算して照合）"
+      - "evidence/completion-boundary.md（stale digestを拒否）"
+    requirement_refs:
+      - "specs/spec-driven-qa-author-response-submission/spec.md: stale handoffを参照する修正を提出する"
+      - "specs/spec-driven-qa/spec.md: semantic digestが不一致になる / Authorが有効なhandoffを受け取る"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        note: "Cycle1後: canonical_case_dir指定時はfindings.yaml使用。省略時はhandoff構造化IDのみ。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0006-author-response-submission-stage/evidence/verification-cycle01-probes.txt"
+        note: "case_dir付きは改善。case_dir無しforgeは依然受理。validate_and_saveはcase_dir未渡し。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0006-author-response-submission-stage/evidence/verification-cycle02-probes.txt"
+        note: "case_dir必須・save配線は確認。closed混在でopen-only digestがstale拒否。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0006-author-response-submission-stage/evidence/verification-cycle03-probes.txt"
+        note: "closed混在でもopen-only digestを受理。59 passed。"
+        revision: "unverified-no-git"
+    limitations:
+      - "statusインデントが標準4スペース以外のYAMLではopen検出を逃す可能性（現行正本形式では非該当）。"
+    requested_action: "なし（Cycle3で検証済み）"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: spec-drift
+      requirement_id: "stale-handoff-vs-canonical"
+      primary_path: "stage/spec_driven_qa_author_response_submission/submission.py"
+      semantic_key: "digest-recomputed-from-handoff-not-canonical"
+    author_response:
+      cycle: 3
+      disposition: fix-submitted
+      note: "canonical_finding_idsをstatus=openのみに制限しinteropテストを追加。"
+      test_evidence: "pytest 59 passed; test_closed_canonical_findings_are_excluded_from_reviewer_digest"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 3
+      result: fixed-and-verified
+      verified_at: "2026-08-26T22:20:48+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2220
+      note: "open-only digest整合をコード・プローブ・pytestで確認。"
+      residual_risk: "非標準インデントのstatus検出漏れ（低・現行形式外）。"
+      evidence:
+        - docs/ADR/QA/QA-0006-author-response-submission-stage/evidence/verification-cycle03-probes.txt
+        - docs/ADR/QA/QA-0006-author-response-submission-stage/cycles/cycle-03-verification.md
+  - id: QA-0006-F02
+    title: "Finding ID許可集合がhandoff全文の正規表現抽出であり、本文言及で未知IDが既知化する"
+    category: coverage-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "未知Finding拒否はMUST。全文findallだと説明文中のIDも許可集合に入り、正本/対象リストにないFindingへの回答を通し得る。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 2.1 / 3.2"
+    requirement_refs:
+      - "specs/spec-driven-qa-author-response-submission/spec.md: 未知Findingを提出する"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        note: "open_finding_ids構造化ブロックのみ抽出。"
+        revision: "unverified-no-git"
+      - type: test
+        reference: "stage/tests/test_submission.py::test_finding_in_prose_is_not_an_allowed_finding"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "なし（Cycle1で検証済み）"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: coverage-gap
+      requirement_id: "unknown-finding-allowlist"
+      primary_path: "stage/spec_driven_qa_author_response_submission/submission.py"
+      semantic_key: "finding-ids-via-fulltext-regex"
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      note: "全文regex廃止、open_finding_ids+正本照合。"
+      test_evidence: "test_finding_in_prose_is_not_an_allowed_finding"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T20:58:58+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2058
+      note: "本文F99は許可集合に入らず拒否。"
+      residual_risk: null
+      evidence:
+        - docs/ADR/QA/QA-0006-author-response-submission-stage/evidence/verification-cycle01-probes.txt
+
+  - id: QA-0006-F03
+    title: "公開CLIは検証のみで、許可提出先への保存経路が未配線"
+    category: coverage-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "Purpose/SKILL/designは回答提出の保存を要求。launcherはvalidateのみで validate_and_save 未接続。公開入口だけでは提出記録が残らない。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "design.md Decision 2 / Decision 3"
+      - "SKILL.md 手順4"
+    requirement_refs:
+      - "specs/spec-driven-qa-author-response-submission/spec.md: Findingを受理する回答を提出する"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/launcher.py"
+        note: "--save / --case-dir / --cycle 追加。"
+        revision: "unverified-no-git"
+      - type: test
+        reference: "stage/tests/test_submission.py::test_cli_save_wires_public_submission_path"
+        revision: "unverified-no-git"
+    limitations:
+      - "SKILL.md本文に--save未記載（文書遅延）。"
+      - "validate_and_save内の再検証がcase_dir無し（F01残差）。"
+    requested_action: "なし（機能は検証済み）。任意でSKILL/READMEへ--saveを追記。"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: coverage-gap
+      requirement_id: "public-cli-persist"
+      primary_path: "stage/spec_driven_qa_author_response_submission/launcher.py"
+      semantic_key: "launcher-validate-only-no-save"
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      note: "CLIへ--save配線。"
+      test_evidence: "test_cli_save_wires_public_submission_path"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/launcher.py"
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T20:58:58+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2058
+      note: "保存配線をpytestで確認。"
+      residual_risk: "save再検証のcase_dir欠落はF01へ集約。"
+      evidence:
+        - stage/tests/test_submission.py::test_cli_save_wires_public_submission_path
+
+  - id: QA-0006-F04
+    title: "Write Allowlistのファイルシステム拒否テストが欠落（JSONキー拒否のみ）"
+    category: evidence-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "tasks 4.1は review/findings/handoff/events/closure への書込み拒否テストを要求。実装の author_write_path_allowed はヘルパとして存在するが、拒否パスの自動テストが無く、公開CLIも書込みを行わないため境界強制のEvidenceが弱い。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 4.1"
+      - "design.md Decision 3"
+    requirement_refs:
+      - "specs/spec-driven-qa-author-response-submission/spec.md: AuthorがReviewer正本を変更しようとする"
+    evidence:
+      - type: test
+        reference: "stage/tests/test_submission.py::test_filesystem_write_allowlist_rejects_reviewer_paths"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        note: "write_submissionにもallowlist適用。"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "なし"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: evidence-gap
+      requirement_id: "write-allowlist-fs-tests"
+      primary_path: "stage/tests/test_submission.py"
+      semantic_key: "missing-fs-allowlist-negative-tests"
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      note: "FS拒否テストとsubmission保存時allowlist検査を追加。"
+      test_evidence: "test_filesystem_write_allowlist_rejects_reviewer_paths"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T20:58:58+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2058
+      note: "allowlist拒否をテストで確認。"
+      residual_risk: null
+      evidence:
+        - stage/tests/test_submission.py::test_filesystem_write_allowlist_rejects_reviewer_paths
+
+  - id: QA-0006-F05
+    title: "file:// Evidence拒否は実装済みだが専用negativeテストが無い"
+    category: evidence-gap
+    purpose_classification: spec-required
+    severity: low
+    severity_rationale: "tasks 3.3は file:// 拒否を含む。実装は拒否するが、絶対パス/脱出のテストに file:// 断言が無い。回帰で消えやすい。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "tasks.md 3.3"
+    requirement_refs:
+      - "specs/spec-driven-qa-author-response-submission/spec.md: Evidence境界"
+    evidence:
+      - type: test
+        reference: "stage/tests/test_submission.py::test_file_uri_evidence_is_rejected"
+        revision: "unverified-no-git"
+    limitations: []
+    requested_action: "なし"
+    risk_acceptance:
+      owner: null
+      rationale: null
+      scope_or_assumptions: null
+      compensating_controls: []
+      expiry_or_review_trigger: null
+    fingerprint:
+      category: evidence-gap
+      requirement_id: "file-uri-negative-test"
+      primary_path: "stage/tests/test_submission.py"
+      semantic_key: "file-uri-untested"
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      note: "file://専用negativeテストを追加。"
+      test_evidence: "test_file_uri_evidence_is_rejected"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-author-response-submission/stage/tests/test_submission.py"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T20:58:58+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2058
+      note: "専用テスト合格を確認。"
+      residual_risk: null
+      evidence:
+        - stage/tests/test_submission.py::test_file_uri_evidence_is_rejected
+
+  - id: QA-0006-F06
+    title: "content_digestとsemantic_digestが同一値比較で、内容のみ変更シナリオを区別できない"
+    category: coverage-gap
+    purpose_classification: spec-required
+    severity: medium
+    severity_rationale: "共有specは content_digest のみ不一致時に再生成と人間確認を要求。Author実装（および現行Reviewer render）は両digestを同一 content_digest 出力へ畳み込むため、シナリオを機械的に満たせない。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: risk-accepted
+    first_seen_cycle: 1
+    claim_refs:
+      - "Reviewer lifecycle compute_handoff_digests（同一値）"
+    requirement_refs:
+      - "specs/spec-driven-qa/spec.md: 内容だけが変更される"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-author-response-submission/stage/spec_driven_qa_author_response_submission/submission.py"
+        note: "expected_semantic と expected_content を同一 canonical_digest と比較。"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        note: "compute_handoff_digests が content/semantic に同一値を返す（継承ギャップ）。"
+        revision: "unverified-no-git"
+    limitations:
+      - "GitリビジョンをコミットSHAで固定できない（unverified-no-git）。"
+      - "外部Skill配置後の動作は未検証であり、配置は別Changeの対象とする。"
+    requested_action: "なし。共有基盤ChangeのQA-0007 Evidenceにより技術検証済み。"
+    risk_acceptance:
+      owner: human-owner
+      rationale: "共有基盤Changeでsemantic/content digest分離が実装され、QA-0007で67件の回帰テストと独立プローブ5項目が合格したため、F06の技術リスク解消を受入れる。"
+      scope_or_assumptions: "stage実装とQA Evidenceの範囲に限定し、外部Skill配置や旧版削除を含めない。"
+      compensating_controls:
+        - "QA-0007の独立QA Evidenceを参照する。"
+        - "本番配置は別Changeでbackup、dry-run、rollback検証後に行う。"
+      expiry_or_review_trigger: "外部Skill配置時、digest契約変更時、またはGit管理導入時に再評価する。"
+    fingerprint:
+      category: coverage-gap
+      requirement_id: "content-vs-semantic-distinction"
+      primary_path: "stage/spec_driven_qa_author_response_submission/submission.py"
+      semantic_key: "semantic-content-digest-collapsed"
+    author_response:
+      cycle: 3
+      disposition: deferred
+      note: "共有コア同値契約のためdeferred継続。本Change範囲外。"
+      test_evidence: "evidence/author-fix-cycle03.txt"
+      modified_files: []
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 1
+      result: fixed-and-verified
+      verified_at: "2026-08-26T23:36:00+09:00"
+      reviewer_agent_id: cursor-composer-20260826-2220
+      note: "QA-0007の独立QAでsemantic/content分離、本文改変検知、旧同値digest拒否を確認。"
+      residual_risk: "Git revision固定不可および外部Skill未配備。"
+      evidence:
+        - docs/ADR/QA/QA-0007-separate-semantic-content-digests/review.md
+        - docs/ADR/QA/QA-0007-separate-semantic-content-digests/evidence/pytest-results.txt

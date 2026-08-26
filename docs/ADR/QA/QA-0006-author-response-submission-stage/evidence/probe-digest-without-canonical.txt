@@ -1,0 +1,7 @@
+probe: self-consistent-handoff-without-findings-yaml
+timestamp: 2026-08-26T20:32:04+09:00
+result: accepted=true, errors=[]
+note: validate_submission(submission, handoff_text, workspace_root) は findings.yaml / case_dir を受け取らない。
+観測: handoff本文から抽出したFinding ID集合で content_digest を再計算し、handoff内digestと照合するのみ。
+結論: 正本と不一致でも、handoffが自己整合していればAuthor Validatorは受理する。
+pytest再実行: 53 passed in 0.25s（Author stage + Reviewer lifecycle）

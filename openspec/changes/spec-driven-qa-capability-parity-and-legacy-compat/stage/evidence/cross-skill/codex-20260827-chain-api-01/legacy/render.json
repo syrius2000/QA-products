@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-s68jqxwx/bundle/spec-driven-qa-review/scripts/render_handoff.py",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-s68jqxwx/docs/ADR/QA/QA-0001-parity-cross-skill"
+  ],
+  "stdout": "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-s68jqxwx/docs/ADR/QA/QA-0001-parity-cross-skill/handoff.md\n",
+  "stderr": "",
+  "exit_code": 0
+}

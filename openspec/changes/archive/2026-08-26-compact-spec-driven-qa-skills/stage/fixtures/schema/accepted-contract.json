@@ -1,0 +1,11 @@
+{
+  "case_id": "QA-0002",
+  "case_revision": 1,
+  "case_status": "needs-response",
+  "next_action": "author-response",
+  "semantic_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "content_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "findings": [{"id": "QA-0002-F1", "classification": "high", "status": "fix-submitted"}],
+  "evidence": [{"id": "E-001", "status": "verified"}],
+  "digest_target": {"paths": ["handoff.md", "findings.yaml"]}
+}

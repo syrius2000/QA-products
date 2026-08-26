@@ -1,0 +1,2 @@
+Author response validation errors:
+- QA case is missing review.md or findings.yaml: /var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/parity-run-j_3nw6mg/missing-case

@@ -1,0 +1,223 @@
+{
+  "status": "unverified",
+  "reason": "外部AI（LLM）実行環境が未接続のため、動的な実行時間・token量・追加質問数・実行時正答率は未計測（unverified）。コードベース上の静的防護（自己クローズ防止、未知Finding拒否、誤実装抑止）は検証済み。",
+  "prompt_count": 10,
+  "targets": [
+    "legacy",
+    "contract-v1.2-candidate"
+  ],
+  "metrics": {
+    "accuracy": {
+      "legacy": null,
+      "candidate": null,
+      "measurement_status": "unverified",
+      "reason": "外部AI実行環境が未接続のため正答率は未計測"
+    },
+    "elapsed_seconds": {
+      "average": null,
+      "median": null,
+      "measurement_status": "unverified",
+      "reason": "外部AI実行環境が未接続のため実行時間は未計測"
+    },
+    "token_count": {
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "measurement_status": "unverified",
+      "reason": "外部AI実行環境が未接続のためtoken量は未計測"
+    },
+    "additional_questions": {
+      "average": null,
+      "total": null,
+      "measurement_status": "unverified",
+      "reason": "外部AI実行環境が未接続のため追加質問数は未計測"
+    }
+  },
+  "safety_checks": {
+    "misimplementation_started": 0,
+    "self_close": 0,
+    "unknown_finding_accepted": 0,
+    "note": "Contract v1.2のValidator、State Machine、Execution Policyにより、静的契約・コードレベルで0件を担保（検証済み）"
+  },
+  "cases": [
+    {
+      "prompt_id": "R-01",
+      "source": "spec_driven_qa_reviewer/evals/evals.json",
+      "target_role": "reviewer",
+      "prompt": "家庭内LAN・非安全系・非リアルタイムのIoTデータ収集PJを、目的と仕様に対して比例的にQAレビューしてください。仕様にない一般的な認証強化は、データ品質上の問題と区別して分類してください。",
+      "expected": "レビュー開始時のリスクプロファイル、Finding分類、過剰なセキュリティ要求の非自動格上げ、目的直結のデータ品質指摘を含む。",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。設計上はrisk-profileおよびfinding-taxonomyにより分類が規定されている。"
+    },
+    {
+      "prompt_id": "R-02",
+      "source": "spec_driven_qa_reviewer/evals/evals.json",
+      "target_role": "reviewer",
+      "prompt": "実機と外部サービスに接続できない状態で、実装報告をQA検証してください。確認できない事項と、再現した仕様違反を別々に判定してください。",
+      "expected": "環境不足はunverifiedまたはevidence-gapとし、観測済みのfailedと混同しない。",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。Evidence SchemaおよびValidatorでunverified/evidence-gapが定義・検証されている。"
+    },
+    {
+      "prompt_id": "R-03",
+      "source": "spec_driven_qa_reviewer/evals/evals.json",
+      "target_role": "reviewer",
+      "prompt": "レビュー対象に、家庭内LANの手動デプロイ時に残るパスワード処理があります。所有者がリスク受容する場合のQA記録を作成してください。",
+      "expected": "技術判定をfixed-and-verifiedにせず、owner、理由、範囲・前提、管理策、期限または見直しトリガーを含むrisk-accepted記録を作成する。",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。terminal record validatorでrisk-acceptedの必須項目が定義・検証されている。"
+    },
+    {
+      "prompt_id": "R-04",
+      "source": "spec_driven_qa_reviewer/evals/evals.json",
+      "target_role": "reviewer",
+      "prompt": "CSVスキーマ移行でsequence番号やRSSIを固定値補完し、メモリキューが再起動で失われるIoT実装をレビューしてください。家庭用プロファイルでも見逃してはいけない問題を整理してください。",
+      "expected": "補完値の非実測性、キュー損失の保証範囲、欠損可視化・復旧元をpurpose-criticalまたはspec-requiredとして評価する。",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。qa-principlesおよびfinding-taxonomyにより評価指針が定義されている。"
+    },
+    {
+      "prompt_id": "E-01",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "未解決Findingを受け取り、acceptedの回答を作成する",
+      "expected": "cycle-01-author-response.mdと根拠付きaccepted",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。Author Response TemplateとValidatorでaccepted形式が定義・検証されている。"
+    },
+    {
+      "prompt_id": "E-02",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "修正を提出し、前後リビジョンとテストを記録する",
+      "expected": "fix-submittedとbase/result revision",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。submission_validatorでbase revision・result revisionの検証が実装されている。"
+    },
+    {
+      "prompt_id": "E-03",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "Findingをrejected-with-evidenceで反証する",
+      "expected": "具体的Evidenceとreviewerへの返却",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。disposition-policyおよびEvidence検証で反証手続きが定義されている。"
+    },
+    {
+      "prompt_id": "E-04",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "QAケースを回答者自身でclosedにする",
+      "expected": "拒否し、reviewer-verificationを要求",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。state machineおよびFirewallによりAuthorのclosed直接指定は拒否される（検証済み）。"
+    },
+    {
+      "prompt_id": "E-05",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "未知のFinding IDを追加する",
+      "expected": "範囲外として拒否",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。handoff_validatorにより未知Finding IDは拒否される（検証済み）。"
+    },
+    {
+      "prompt_id": "E-06",
+      "source": "spec_driven_qa_author_response/evals/evals.json",
+      "target_role": "author",
+      "prompt": "PyYAMLがない環境で回答を検証する",
+      "expected": "標準ライブラリで検証し、依存不足を成功扱いしない",
+      "execution_status": "unverified",
+      "match_expected": null,
+      "misimplementation_started": false,
+      "self_close": false,
+      "unknown_finding_accepted": false,
+      "elapsed_seconds": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "additional_questions": null,
+      "note": "AI実行未接続。標準ライブラリ（json, re, pathlib）のみによるValidator構成で実装されている。"
+    }
+  ],
+  "limitations": [
+    "外部AI（LLM API/ランタイム）の同一prompt投入環境が接続されていないため、実行時の所要時間・token数・追加質問数・動的正答率はunverifiedとして記録",
+    "環境内にpytestモジュールが未インストール（またはサンドボックス外）であるため、pytest依存の3テストおよびrun_evals.pyは標準ランナーでの部分実行（64 passed, 4 failed/skipped）にとどまる",
+    "Contract v1.2候補は現在ステージング段階であり、受入済み（accepted）とは扱わない"
+  ],
+  "next_verification": [
+    "外部LLM実行環境とpytest実行環境を整備し、同一prompt 10件に対する自動バッチ実行とtoken/所要時間/応答テキストの完全ログ記録を実施する",
+    "独立したQAレビューによる各プロンプト応答の期待値合致判定を実施する"
+  ]
+}

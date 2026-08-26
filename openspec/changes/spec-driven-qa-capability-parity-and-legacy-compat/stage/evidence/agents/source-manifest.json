@@ -1,0 +1,148 @@
+{
+  "agent_runs": [
+    {
+      "agent_id": "antigravity-20260826-0903",
+      "files": [
+        {
+          "bytes": 2615,
+          "path": "manifest.json",
+          "sha256": "bf9a288c6bd9603853a4a38fb962b719fc4691533cb2422868ac8c3a847f0755"
+        },
+        {
+          "bytes": 179,
+          "path": "pytest-output.txt",
+          "sha256": "76251ebe53d769dacc9218ed28148727615bf827143304e5074f03d95326f400"
+        },
+        {
+          "bytes": 8067,
+          "path": "report.md",
+          "sha256": "adce625b1448e2c9f6090000c3fa98e5f6c3056b05d47121352a7d4b871789bb"
+        },
+        {
+          "bytes": 20425,
+          "path": "results.json",
+          "sha256": "ed462ade2c6872eff74aa8b3cea3b5ee2a05fac4eaced334973cd2fda0cb1304"
+        }
+      ],
+      "run_id": "antigravity-20260826-0903-001",
+      "source_dir": "antigravity-20260826-0903/antigravity-20260826-0903-001"
+    },
+    {
+      "agent_id": "codex-20260826-0904",
+      "files": [
+        {
+          "bytes": 1367,
+          "path": "manifest.json",
+          "sha256": "1418093a3e78382e3be4b903130ec46db97dd25da2ecd75989409f9cc7302638"
+        },
+        {
+          "bytes": 179,
+          "path": "pytest-output.txt",
+          "sha256": "c5f7f79f7158806b4b7e9e83b60b7f2d737fb6fc18a6dadd9c464bbb0ecb872b"
+        },
+        {
+          "bytes": 3181,
+          "path": "report.md",
+          "sha256": "775259ec4eaa2dd6015ac1c84c3c550c480f80f1acc9a6b2a28acfda4b584044"
+        },
+        {
+          "bytes": 2849,
+          "path": "results.json",
+          "sha256": "a3bf30d051e4ef152ab5e5f2608c424ac93ca58a94a55bf3bbabe2e152fda8ba"
+        }
+      ],
+      "run_id": "codex-20260826-0904-001",
+      "source_dir": "codex-20260826-0904/codex-20260826-0904-001"
+    },
+    {
+      "agent_id": "composer-20260826-0840",
+      "files": [
+        {
+          "bytes": 5190,
+          "path": "manifest.json",
+          "sha256": "87e408963f17d8e0cc2a59c1dfd3ce5449441b93bf60ec6a94c645ac7cc77b61"
+        },
+        {
+          "bytes": 6134,
+          "path": "report.md",
+          "sha256": "7f663eefeb670cfa5637ccae0472de554c74acf172ca2a6e6b25c7c2657b6bf4"
+        },
+        {
+          "bytes": 48390,
+          "path": "results.json",
+          "sha256": "6de61bc3c9fe585d91f57ad9d12a954287256099e3f3898c6107d17378374a3b"
+        },
+        {
+          "bytes": 164,
+          "path": "tmp-self-close.md",
+          "sha256": "a61b0c24e30f4991ddc130e53d667921804a79069dae6c957208f0fe356d0288"
+        },
+        {
+          "bytes": 136,
+          "path": "tmp-unknown.md",
+          "sha256": "3e5d94c72df3ca62055241e18e446287ad01146e45415712a7d1dc9fe4c62b5b"
+        }
+      ],
+      "run_id": "composer-20260826-0840-001",
+      "source_dir": "composer-20260826-0840/composer-20260826-0840-001"
+    },
+    {
+      "agent_id": "cursor-20260826-0903",
+      "files": [
+        {
+          "bytes": 4254,
+          "path": "manifest.json",
+          "sha256": "83f06208d242865badfca44386322d44daec4e8092ad32a019261882acd2081a"
+        },
+        {
+          "bytes": 179,
+          "path": "pytest-output.txt",
+          "sha256": "c5f7f79f7158806b4b7e9e83b60b7f2d737fb6fc18a6dadd9c464bbb0ecb872b"
+        },
+        {
+          "bytes": 4498,
+          "path": "report.md",
+          "sha256": "304e04707b730d2ed1345e8145dcbea800abc1c8ddc36d91417f402562d38ddb"
+        },
+        {
+          "bytes": 60162,
+          "path": "results.json",
+          "sha256": "25c6a7ce38930496c8f4bf60afc2258e388e86fcc7636cbb340cd93f9a71e424"
+        }
+      ],
+      "run_id": "cursor-20260826-0903-001",
+      "source_dir": "cursor-20260826-0903/cursor-20260826-0903-001"
+    },
+    {
+      "agent_id": "gemini-3-7-flash-20260826-0840",
+      "files": [
+        {
+          "bytes": 20464,
+          "path": "execution_logs.json",
+          "sha256": "a50d5d9e31870b4c01f939f4c91a8f417173f6d2195f776a324e77549d0cc92f"
+        },
+        {
+          "bytes": 1181,
+          "path": "manifest.json",
+          "sha256": "0df7ce1204d3711f9bd43df6077dc2f67832ee226c3b5cab13658a77847cf6a5"
+        },
+        {
+          "bytes": 7701,
+          "path": "report.md",
+          "sha256": "c799fc10f99210250569d139b8411f4765592c5b184f57b3d865ff5dff773e61"
+        },
+        {
+          "bytes": 22220,
+          "path": "results.json",
+          "sha256": "e22417c39b0947711ae6e3ebfcba0a82a84cc7d5780508afd71ed05eb0f6954f"
+        }
+      ],
+      "run_id": "gemini-3-7-flash-20260826-0840-001",
+      "source_dir": "gemini-3-7-flash-20260826-0840/gemini-3-7-flash-20260826-0840-001"
+    }
+  ],
+  "retention_policy": "元Agent／Run Evidenceはアーカイブ側で不変保持し、現Changeには識別子とSHA-256だけを固定する",
+  "schema_version": "agent-source-manifest-1",
+  "source_root": "openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/improve-contract-evidence/agents",
+  "status": "observed"
+}

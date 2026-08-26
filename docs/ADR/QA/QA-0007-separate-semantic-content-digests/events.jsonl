@@ -1,0 +1,2 @@
+{"timestamp": "2026-08-26T23:36:00+09:00", "case_id": "QA-0007", "role": "reviewer", "action": "init", "status": "initialized", "target": "openspec/changes/separate-semantic-content-digests", "profile": "standard"}
+{"timestamp": "2026-08-26T23:36:05+09:00", "case_id": "QA-0007", "role": "reviewer", "action": "review", "cycle": 1, "findings_count": 0, "status": "accepted-with-residual-risk"}

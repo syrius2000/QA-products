@@ -1,0 +1,47 @@
+schema_version: "1.2"
+case_id: QA-0003
+matrix:
+  - requirement_id: REQ-ROLE-SEPARATION
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L7-L25"
+    implementation_files:
+      - "stage/spec-driven-qa-bundle/shared_core/authorization.py"
+      - "stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py"
+      - "stage/spec-driven-qa-bundle/spec-driven-qa-author-response/launcher.py"
+    evidence:
+      - test: "stage/tests/test_bundle.py:test_valid_bundle_and_role_firewall"
+        status: CONFIRMED (exit code 2 for unauthorized ops)
+
+  - requirement_id: REQ-CONTRACT-INVARIANTS
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L26-L44"
+    implementation_files:
+      - "stage/spec-driven-qa-bundle/shared_core/contract.py"
+      - "stage/spec-driven-qa-bundle/shared_core/digest.py"
+    evidence:
+      - test: "stage/tests/test_schema_and_modules.py"
+        status: CONFIRMED
+
+  - requirement_id: REQ-COMPATIBILITY
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L45-L63"
+    implementation_files:
+      - "stage/spec-driven-qa-bundle/shared_core/cli.py"
+    evidence:
+      - test: "stage/tests/test_compare_versions.py"
+        status: CONFIRMED
+
+  - requirement_id: REQ-SIZE-BUDGET
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L83-L101"
+    implementation_files:
+      - "stage/scripts/measure_size.py"
+      - "stage/spec-driven-qa-bundle/"
+    evidence:
+      - metric: "stage/scripts/measure_size.py -> 276 lines / 16 files / 10.8KB (Goal: <=1,760 lines)"
+        status: CONFIRMED (95% reduction from baseline 5,287 lines)
+
+  - requirement_id: REQ-STAGING-ROLLBACK
+    spec_reference: "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L102-L120"
+    implementation_files:
+      - "stage/manifest.json"
+      - "stage/scripts/check_staging_boundary.py"
+    evidence:
+      - verification: "External skills untouched, staging contained within repo"
+        status: CONFIRMED

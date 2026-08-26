@@ -1,0 +1,26 @@
+{
+  "schema_version": "staging-manifest-1",
+  "purpose": "圧縮候補をリポジトリ内で検証するためのstaging境界",
+  "external_targets": {
+    "reviewer": "/Users/myamaguchi/.agents/skills/spec-driven-qa-review",
+    "author": "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response"
+  },
+  "allowed_write_root": ".",
+  "forbidden_operations": [
+    "外部Skill配置先の直接変更",
+    "旧版ファイルの削除または移動",
+    "remoteへのpush",
+    "明示承認なしのcommit"
+  ],
+  "backup": {
+    "status": "not-created",
+    "required_before_external_deploy": true,
+    "scope": "明示された対象Manifestのパスだけ"
+  },
+  "rollback": {
+    "status": "design-only",
+    "required_before_external_deploy": true,
+    "fail_closed_on_manifest_mismatch": true
+  },
+  "phase": "phase-0-baseline"
+}

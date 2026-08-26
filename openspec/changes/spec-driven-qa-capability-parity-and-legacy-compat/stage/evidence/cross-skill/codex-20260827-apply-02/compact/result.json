@@ -1,0 +1,32 @@
+{
+  "author": {
+    "exit_code": 0,
+    "status": "observed"
+  },
+  "bundle": "compact",
+  "bundle_identity": {
+    "name": "compact",
+    "source_sha256": "a9efcd835b1a422e70a566b3500668f92870e23e6208face35c97e2758020cf1",
+    "version": "compact-20260826"
+  },
+  "digest": {
+    "reason": "handoff由来digestを取得できない",
+    "status": "evidence-gap"
+  },
+  "handoff": {
+    "reason": "Launcher出力に永続handoffがない",
+    "status": "evidence-gap"
+  },
+  "reviewer": {
+    "exit_code": 0,
+    "status": "observed"
+  },
+  "revision": {
+    "reason": "ケースrevisionを取得できない",
+    "status": "evidence-gap"
+  },
+  "submission": {
+    "reason": "Author submission APIがない",
+    "status": "evidence-gap"
+  }
+}

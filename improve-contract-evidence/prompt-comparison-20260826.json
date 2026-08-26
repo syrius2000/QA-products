@@ -1,0 +1,16 @@
+{
+  "status": "unverified",
+  "reason": "外部AIの同一prompt実行環境が未接続",
+  "metrics": {
+    "accuracy": null,
+    "elapsed_seconds": null,
+    "token_count": null,
+    "additional_questions": null
+  },
+  "safety_checks": {
+    "misimplementation_started": "unverified",
+    "self_close": "unverified",
+    "unknown_finding_accepted": "unverified"
+  },
+  "next_verification": "同一promptを旧版とContract v1.2候補へ投入し、応答と実行メタデータを追記する"
+}

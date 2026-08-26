@@ -1,0 +1,480 @@
+{
+  "files": [
+    {
+      "bytes": 167,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/events.jsonl",
+      "sha256": "9f4502e240f098c1819c2ac6aa368c0a0267d8ff66ebb860693fa11396a023a8"
+    },
+    {
+      "bytes": 88,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/evidence/README.md",
+      "sha256": "3eda3d1e318bc28675311263a0674dee597ddb30bef4df48878fa373a7e76de5"
+    },
+    {
+      "bytes": 969,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/findings.yaml",
+      "sha256": "5d2c3cd40d2354506e408364d52bb4b1cbc782e6f4abcb05e16aa373c73896ab"
+    },
+    {
+      "bytes": 1985,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/handoff.md",
+      "sha256": "1933232097e00966d78cc00d01740aec2a0e06365b2d4475c64e658ebd49b535"
+    },
+    {
+      "bytes": 1935,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/review.md",
+      "sha256": "8ff454938084e9977b97037d0a1f0082298b411383046681efdb9221f13211c5"
+    },
+    {
+      "bytes": 497,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/traceability.yaml",
+      "sha256": "690ce159433cce485c388ff6ce8397af30b90d3ea1e631d479497a7b107036b7"
+    },
+    {
+      "bytes": 297,
+      "path": "legacy-bundle/spec-driven-qa-author-response/CHANGELOG.md",
+      "sha256": "03695be536e1102361fbab38468f00842451594a5c6f212c7035a3dd932fd8bc"
+    },
+    {
+      "bytes": 507,
+      "path": "legacy-bundle/spec-driven-qa-author-response/INSTALL.md",
+      "sha256": "18e9d4e0c32ce4ae588faf1569964144dc215fd5870b8c442195995f4a9b84f4"
+    },
+    {
+      "bytes": 862,
+      "path": "legacy-bundle/spec-driven-qa-author-response/MANIFEST.txt",
+      "sha256": "a8a1481f5a9acfc70fa4aa80f4c1068ec4abd5d886c3cde49e054835e0cd58be"
+    },
+    {
+      "bytes": 731,
+      "path": "legacy-bundle/spec-driven-qa-author-response/README.md",
+      "sha256": "98074ca5244bd112dea5e02016d716902385bab8a2c22d3dbaeb3d83863f673e"
+    },
+    {
+      "bytes": 3310,
+      "path": "legacy-bundle/spec-driven-qa-author-response/SKILL.md",
+      "sha256": "37bf448e667876a71b55a4aed9554c5e0df83c6b58ec2f89ff813bd0db8e01a5"
+    },
+    {
+      "bytes": 959,
+      "path": "legacy-bundle/spec-driven-qa-author-response/evals/evals.json",
+      "sha256": "7f4b78646cc17f93b941cdf2b01696e21cf38668a48da2fe00464f277e2989d9"
+    },
+    {
+      "bytes": 357,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/accepted/cycles/cycle-01-author-response.md",
+      "sha256": "af623b1d9dadacd2a5c1f6250fa1bfb4a4e5ec9ca2de46a06d0de66f33c6df15"
+    },
+    {
+      "bytes": 126,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/accepted/events.jsonl",
+      "sha256": "3d487e8c2de91e9f75b561b1c76f9eee1d3a8d27a134c4f89aac54410d8e16c2"
+    },
+    {
+      "bytes": 120,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/accepted/findings.yaml",
+      "sha256": "f70ab6b4100df3aeec0400e3f45f08d1ebe7d2f292b561c4ab01911823a01817"
+    },
+    {
+      "bytes": 162,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/accepted/handoff.md",
+      "sha256": "ea67b88248edcb09966648f487ee42b3ff6a8b914a071ebb5045cf68a786893a"
+    },
+    {
+      "bytes": 119,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/accepted/review.md",
+      "sha256": "65c6a23875b73384aeef80c977147c62fbe6c29b1215b454deea161736cbb539"
+    },
+    {
+      "bytes": 318,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/fix-submitted/cycles/cycle-01-author-response.md",
+      "sha256": "7c71120199be9e58e5f13ab8875992a1c1d5cf56db56a853d49236a5b4452eec"
+    },
+    {
+      "bytes": 176,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/fix-submitted/events.jsonl",
+      "sha256": "f046195035802d29b7af5b2f58029e1ca454da4b6ca4599fea130f5527f1106e"
+    },
+    {
+      "bytes": 130,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/fix-submitted/findings.yaml",
+      "sha256": "c37912ddd04ef08c59e2bd99118e2ca170bc817045fa3eb582c9b0abf8e4de84"
+    },
+    {
+      "bytes": 162,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/fix-submitted/handoff.md",
+      "sha256": "3c594c9f2fc7ea2d098266b0dae058d3fe02578868ed89763de23965609f2738"
+    },
+    {
+      "bytes": 119,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/fix-submitted/review.md",
+      "sha256": "7cfcaaf73f3c6e6af83fc000ac19ec7bbedb4218b29e7dd38cf16d2e8d3c9b25"
+    },
+    {
+      "bytes": 334,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/rejected-with-evidence/cycles/cycle-01-author-response.md",
+      "sha256": "40ddae9c7bc0520d1e7c410791229669399642c390886bc62ddd063aeb6227eb"
+    },
+    {
+      "bytes": 126,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/rejected-with-evidence/events.jsonl",
+      "sha256": "80a3b2bce850f4f88610624829b848450ceae50092ece443c380ca6e25571a67"
+    },
+    {
+      "bytes": 113,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/rejected-with-evidence/findings.yaml",
+      "sha256": "4f834e1f375e98f55990bb2a44bc9971de8d0b77ccf403b8660da8402b8a2419"
+    },
+    {
+      "bytes": 162,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/rejected-with-evidence/handoff.md",
+      "sha256": "48c8fd4f664dc0d1effe1455299cf82ac5d98b618671c91f703700f8334b1461"
+    },
+    {
+      "bytes": 119,
+      "path": "legacy-bundle/spec-driven-qa-author-response/examples/rejected-with-evidence/review.md",
+      "sha256": "7688a94692858629bf3cdf044d564e10896a02ed1eb54a51376e4c5c2d286843"
+    },
+    {
+      "bytes": 325,
+      "path": "legacy-bundle/spec-driven-qa-author-response/pyproject.toml",
+      "sha256": "f6bccee858cf798e3e903a001a11e070b8f3e433f37d0a9f6f9de468854cc81d"
+    },
+    {
+      "bytes": 594,
+      "path": "legacy-bundle/spec-driven-qa-author-response/references/disposition-policy.md",
+      "sha256": "99f2a17aebc50015aea19468b486b4a3cb003d5f5bf0047afe068ecd8697480b"
+    },
+    {
+      "bytes": 503,
+      "path": "legacy-bundle/spec-driven-qa-author-response/references/security.md",
+      "sha256": "319d044f9c4b7f6523f6eab10b405f12961e4f7f917fe7afc365f2cba2566093"
+    },
+    {
+      "bytes": 410,
+      "path": "legacy-bundle/spec-driven-qa-author-response/references/state-transition-policy.md",
+      "sha256": "46046747533a4b428fbab79d42d8f86d65c5b49ea2ca2461c0a83bd7f2dc2de2"
+    },
+    {
+      "bytes": 5030,
+      "path": "legacy-bundle/spec-driven-qa-author-response/scripts/validate_author_response.py",
+      "sha256": "0a19a34c58002c1f82d0174ddcb4598a0b1ca297b8a8d703102ff89ba9cf18e2"
+    },
+    {
+      "bytes": 2614,
+      "path": "legacy-bundle/spec-driven-qa-author-response/tests/test_author_response.py",
+      "sha256": "7020ffec5c3557c6ee348691fed1eabde91d74d6193b25c24043d56404fa055b"
+    },
+    {
+      "bytes": 964,
+      "path": "legacy-bundle/spec-driven-qa-review/CHANGELOG.md",
+      "sha256": "a9ce9384441481c591d83f72041ea5375d50d718a00f45d0d5e78f7585c84ef2"
+    },
+    {
+      "bytes": 1121,
+      "path": "legacy-bundle/spec-driven-qa-review/INSTALL.md",
+      "sha256": "1c91e20b1d4796b771f1b8f078e00385e0fdbb92818c6df3d709a1f74e7ef749"
+    },
+    {
+      "bytes": 1923,
+      "path": "legacy-bundle/spec-driven-qa-review/MANIFEST.txt",
+      "sha256": "74f0682e2c5678b7c86037e36220a2130342abb40aa8f7f7bd51de375c01957e"
+    },
+    {
+      "bytes": 4468,
+      "path": "legacy-bundle/spec-driven-qa-review/README.md",
+      "sha256": "43c2c2b14df0a937c3c6ba07357021088ca913b25d716a872174a3d8b331cb15"
+    },
+    {
+      "bytes": 13322,
+      "path": "legacy-bundle/spec-driven-qa-review/SKILL.md",
+      "sha256": "803bd9f83c927ae87858688ecbe51bc6724f334b426d08dd65706c374842b8b3"
+    },
+    {
+      "bytes": 821,
+      "path": "legacy-bundle/spec-driven-qa-review/adapters/generic-sdd.md",
+      "sha256": "949c151b0986c4745782d8c36fcdb832d642f6fbb4bfb1dca1d53027e79f27f5"
+    },
+    {
+      "bytes": 1162,
+      "path": "legacy-bundle/spec-driven-qa-review/adapters/openspec.md",
+      "sha256": "15f4de693ef0ae8b3f219f6f7b204ad0ba48a3deb535d6dbd63eb5695392b8a3"
+    },
+    {
+      "bytes": 985,
+      "path": "legacy-bundle/spec-driven-qa-review/adapters/spec-kit.md",
+      "sha256": "85d142ad3f0216dbc0b62accf066fd970f10eae2b9fb8bb50b35671e2193b5fd"
+    },
+    {
+      "bytes": 1871,
+      "path": "legacy-bundle/spec-driven-qa-review/evals/evals.json",
+      "sha256": "2762eff74f77e06f5aafebd8a603c8547a17a5fbe688b5f1c246a3cba0a96d2b"
+    },
+    {
+      "bytes": 1859,
+      "path": "legacy-bundle/spec-driven-qa-review/evals/evaluation-20260825.md",
+      "sha256": "3c6d3ed4630cebf8ecff2ae83a7a779c8a7c4676cfb3cc366f3009827c7a79d9"
+    },
+    {
+      "bytes": 126,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/cycles/cycle-01-author-response.md",
+      "sha256": "6cfca3091c040a2ef705c476586bca648149ffc686dba2b26d9ee916cf38084a"
+    },
+    {
+      "bytes": 108,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/cycles/cycle-01-independent-review.md",
+      "sha256": "def356cb77a653fe6132bab2cc07632448b417384a5c4c0f2822e4ab1db29b5d"
+    },
+    {
+      "bytes": 155,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/cycles/cycle-01-verification.md",
+      "sha256": "5bfe972279931b33152253f6f4edc652516f3172e41927eab60f8076dd8430a8"
+    },
+    {
+      "bytes": 175,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/cycles/cycle-02-independent-review.md",
+      "sha256": "2f529d482042cb4cc66b9fa5f162b6c94c27ee2ba3ca034e8954a3dc601d4ac8"
+    },
+    {
+      "bytes": 963,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/events.jsonl",
+      "sha256": "12f63cf8de44c340d8baa34f1ad490a32591a247458d418f8cab5caf38ae16a6"
+    },
+    {
+      "bytes": 1544,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/findings.yaml",
+      "sha256": "5b662241a0ea2fefaaecd7e44084107a7ad152c0cb0cf40f7e0d50f81eec6dec"
+    },
+    {
+      "bytes": 2105,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/handoff.md",
+      "sha256": "5ce1c69cbeb324ff065651f8c262ed065834ef236316a50fe3e55ce92ae57dcd"
+    },
+    {
+      "bytes": 1030,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/review.md",
+      "sha256": "1e376655e404f3f019e02417a325a66398311b54bfa0a386ab3ce89ecfc3b796"
+    },
+    {
+      "bytes": 992,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/multi-cycle/traceability.yaml",
+      "sha256": "96fc4a31f35bbb236932a0b3d4e63626b4d25d83985e38432baccf7b05808670"
+    },
+    {
+      "bytes": 365,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/cycles/cycle-01-author-response.md",
+      "sha256": "04540071daa228ca8096a20f3846d7502cff02b27b28f6241ea3b848f3066c5c"
+    },
+    {
+      "bytes": 385,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/cycles/cycle-01-independent-review.md",
+      "sha256": "bd9c28bd175dc3aacec8174bcae90ae311996cb819c85831f0abba520b21aebd"
+    },
+    {
+      "bytes": 364,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/cycles/cycle-01-verification.md",
+      "sha256": "6867dc46d9561f3a714cc675f255e8efe58013f7daa6bc11584b3c188875137b"
+    },
+    {
+      "bytes": 756,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/events.jsonl",
+      "sha256": "6976d7ea001df317f949ce404e39e1d11bf5adef7be1a67c525b8cb7c507b68f"
+    },
+    {
+      "bytes": 945,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/findings.yaml",
+      "sha256": "7353ebe4dc4fdb154edad4617a45b49840c140b6d5350297a90a296909d781ea"
+    },
+    {
+      "bytes": 1968,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/handoff.md",
+      "sha256": "58f713c6f5aaeaf94f28e9995eee895745d4175781ab5115cafa13ea5448ba0c"
+    },
+    {
+      "bytes": 1044,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/review.md",
+      "sha256": "5578b04ac08e41a7458f02042fdf4c7e777c760398a33e1dce0812fbacfe980e"
+    },
+    {
+      "bytes": 669,
+      "path": "legacy-bundle/spec-driven-qa-review/examples/single-cycle/traceability.yaml",
+      "sha256": "bf388543fb2a95979f67d76c9e89bee75e945e74b0d4e7163cc2d855f870bc26"
+    },
+    {
+      "bytes": 602,
+      "path": "legacy-bundle/spec-driven-qa-review/integrations/github-actions.example.yml",
+      "sha256": "03a5dd572ef02c4845f444e7f41b65c041a545be7ff61d33ffa652bc4ad08b3c"
+    },
+    {
+      "bytes": 666,
+      "path": "legacy-bundle/spec-driven-qa-review/integrations/pre-commit.example.yaml",
+      "sha256": "d97507c3c0bbcba44ffdccf027c8370d4127f4d9fc8cf8fd90f685840b772250"
+    },
+    {
+      "bytes": 307,
+      "path": "legacy-bundle/spec-driven-qa-review/pyproject.toml",
+      "sha256": "d0757f75aa91993dddc5db7091bb5b34c01ed65431667f396a516409f12dfe9f"
+    },
+    {
+      "bytes": 1369,
+      "path": "legacy-bundle/spec-driven-qa-review/references/agent-separation.md",
+      "sha256": "f5b0e41876d0e9858e860b934ceb66ab17e6e228988375d9eee4f6db83a6e4fd"
+    },
+    {
+      "bytes": 1020,
+      "path": "legacy-bundle/spec-driven-qa-review/references/cycle-management.md",
+      "sha256": "42984f3520e9631e3b5294407deb4e795a1fa4063dc7414ab637c03f6980d32b"
+    },
+    {
+      "bytes": 1671,
+      "path": "legacy-bundle/spec-driven-qa-review/references/evidence-evaluation.md",
+      "sha256": "68279cfd25c5762c140b6c87f6b58f13047f1a8b80a777ddd872670306c24a54"
+    },
+    {
+      "bytes": 3566,
+      "path": "legacy-bundle/spec-driven-qa-review/references/finding-taxonomy.md",
+      "sha256": "d5e99db80d2901286e1fe9c8c3883419aa543837c89d9dc6b356642df3b2a92b"
+    },
+    {
+      "bytes": 3849,
+      "path": "legacy-bundle/spec-driven-qa-review/references/qa-principles.md",
+      "sha256": "157173ff3d07d0a79fa36ac1861e17e6143dbfed97d63a6624f6477cf18c78e0"
+    },
+    {
+      "bytes": 2978,
+      "path": "legacy-bundle/spec-driven-qa-review/references/risk-profiles.md",
+      "sha256": "c0b5fd606ad912ff10b0e10cc0798fa0aaa10c20d3fbc606a0b785e62a39ea85"
+    },
+    {
+      "bytes": 1110,
+      "path": "legacy-bundle/spec-driven-qa-review/references/security.md",
+      "sha256": "dc9ce92b44430979f8b1bd1dd730467e3f3ae0cf74de68e2905b974fb14e9632"
+    },
+    {
+      "bytes": 1398,
+      "path": "legacy-bundle/spec-driven-qa-review/references/traceability-rules.md",
+      "sha256": "088ab3f7380160d4c54ff36af5359ee51473d418fd4551ac567e318969c3fd97"
+    },
+    {
+      "bytes": 1519,
+      "path": "legacy-bundle/spec-driven-qa-review/references/workflow-state-machine.md",
+      "sha256": "9203babc49ea554e6ca2c2c844ad7cb22bca9eaff2df7505828e0af5b6701bbf"
+    },
+    {
+      "bytes": 707,
+      "path": "legacy-bundle/spec-driven-qa-review/schemas/event.schema.json",
+      "sha256": "bb5548fc94834a1dc84c3899cc08eda036ea6fc5ab7832f93abbb865daf606dc"
+    },
+    {
+      "bytes": 2128,
+      "path": "legacy-bundle/spec-driven-qa-review/schemas/findings.schema.json",
+      "sha256": "a3ef80c736df09a2dc43a90ebcaeca7c7576d73cd6c9ef57b0c9388d0335021e"
+    },
+    {
+      "bytes": 803,
+      "path": "legacy-bundle/spec-driven-qa-review/schemas/handoff.schema.json",
+      "sha256": "a2784d97c3988e083c828efbd1d11670268143327d5aad0e26877ff1565702e5"
+    },
+    {
+      "bytes": 1121,
+      "path": "legacy-bundle/spec-driven-qa-review/schemas/review-case.schema.json",
+      "sha256": "6646cebd834bf0d78c9e8b55ee8054a1e5d658aa30948ae6d29c1a03c30343fa"
+    },
+    {
+      "bytes": 884,
+      "path": "legacy-bundle/spec-driven-qa-review/schemas/traceability.schema.json",
+      "sha256": "6ca4e55f4e52ba9a51f0387927c7e58af4fe9dd1e46c18c31755f7a44430bb5f"
+    },
+    {
+      "bytes": 1095,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/append_event.py",
+      "sha256": "df7fc5c07fdcddd199c0191ade516a6efbf38024d1fa14abdfc6ca9613d1c12c"
+    },
+    {
+      "bytes": 1333,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/close_review_case.py",
+      "sha256": "ba00ea5e89a2191adedfcd3c9bd8f83c4c0b46d0ec88f2f90f3357266b9c6686"
+    },
+    {
+      "bytes": 4623,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/common.py",
+      "sha256": "9589959d6adfc1e1514f94e4f9a578c8f3d10b071d31d9283f26ec08ae3dbb97"
+    },
+    {
+      "bytes": 3046,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/create_review_case.py",
+      "sha256": "2b1d7ca5986685e3e2cb0dd7445ef9021bf349490d8cd7b4c6da9f1d81c06d4d"
+    },
+    {
+      "bytes": 1578,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/detect_unresolved_markers.py",
+      "sha256": "799b8aba862887a1633c67020dc47ad81e38f546df939d06ad157b94127ac55d"
+    },
+    {
+      "bytes": 5244,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/render_handoff.py",
+      "sha256": "c7276819fe8a1a7c6d31a6d507c1e1a1a49748ffb0bb2898c133ddac9a7d1e5e"
+    },
+    {
+      "bytes": 2647,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/update_review_summary.py",
+      "sha256": "8df4fe49d3892cf620110f8ebde4e15b16b66d377c0c0515e46929131a3d15a0"
+    },
+    {
+      "bytes": 5844,
+      "path": "legacy-bundle/spec-driven-qa-review/scripts/validate_review_case.py",
+      "sha256": "f7143537ae6a2f2613fc13bf047170c4fb88f94b00174db89fb9d2616c86b8b9"
+    },
+    {
+      "bytes": 759,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/author-response.md",
+      "sha256": "08ce81d169dfe3aee216f010fbdf0e72ab9d11ba0a16a48938049c48a59cefc1"
+    },
+    {
+      "bytes": 184,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/events.jsonl",
+      "sha256": "bf840b8348144f1d5ffa63770a850ed20047a9efa4a98b1dd23aeedbd1c4b5ea"
+    },
+    {
+      "bytes": 986,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/findings.yaml",
+      "sha256": "34e9c6c20d6b31edbebe3ba9d2446b42d5d1cb33a6e92321e51db61346c2344a"
+    },
+    {
+      "bytes": 2049,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/handoff.md",
+      "sha256": "a42da999b61b22c92ea4a40757e40447853b7bcd34c0096ee81c5474aae7d9cc"
+    },
+    {
+      "bytes": 996,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/independent-review.md",
+      "sha256": "2f3c7a831f1e27cfa14138eada47eba5fde5f7f453b8c13ac3e65114e83e4da2"
+    },
+    {
+      "bytes": 295,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/purpose.yaml",
+      "sha256": "2d53c1ee916e32b487bd8c15ededddcece2fcf6d822d80df0894bf41a71f0ac0"
+    },
+    {
+      "bytes": 2056,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/review-case.md",
+      "sha256": "9054b79f2f9c275c6f92a55b7b38045d05ce3e05c374b46163917b55b1e8cd18"
+    },
+    {
+      "bytes": 733,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/reviewer-verification.md",
+      "sha256": "54fc7c573335b5186d5342d21df612c6062a19b7eaa45a71585903f3b9ad6ba3"
+    },
+    {
+      "bytes": 514,
+      "path": "legacy-bundle/spec-driven-qa-review/templates/traceability.yaml",
+      "sha256": "2221169b028c3237bd3c23f043ebf55890eafe9de327018206b4358ed6aed868"
+    },
+    {
+      "bytes": 1503,
+      "path": "legacy-bundle/spec-driven-qa-review/tests/test_validation.py",
+      "sha256": "83f14068d175dc2733ea0a8bac2f342b4806f77ff420880b0da68c198abdab8b"
+    }
+  ],
+  "status": "observed"
+}

@@ -1,0 +1,125 @@
+schema_version: qa-findings-1
+case_id: QA-0008
+status: accepted-with-residual-risk
+findings:
+  - id: QA-0008-F01
+    title: Candidateが空または欠落Evidenceを受理する観測違反
+    category: spec-drift
+    severity: high
+    status: risk-accepted
+    purpose_classification: spec-required
+    technical_disposition: failed
+    owner_disposition: risk-accepted
+    claim: 各版に存在する安全契約について、空または欠落Evidenceを合格扱いせず拒否する
+    evidence:
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/safety_regression.py:80-88
+      - openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/evidence.py:52-58
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/candidate-contract-probe.json
+    limitation: Candidateの現行validatorは空Evidenceを受理する。Candidate自体は改造せず、観測違反として記録する
+    requested_action: Candidate validatorを修正するか、明示的な人間裁定で意図的非互換として扱う
+    semantic_fingerprint: candidate-empty-evidence-acceptance
+    author_response:
+      disposition: deferred
+      response_cycle: cycle-01-author-response.md
+      note: Candidate旧契約をcompact契約へ遡及適用せず、人間裁定へ送る
+    reviewer_verification:
+      disposition: reopened
+      cycle: cycle-03-verification.md
+      evidence: stage/evidence/candidate-contract-probe.json
+    risk_acceptance:
+      owner: human-owner
+      rationale: F01はアーカイブ済みCandidate固有の観測違反として条件付きで受け入れ、fixed-and-verifiedとは扱わない
+      scope_or_assumptions: compactを本番候補とし、Candidateを本番フォールバックとして使用しない。Legacy完全互換は宣言しない
+      compensating_controls: F01、Agent／Run欠測、動的指標未検証を残余リスクとして保持し、配備を別Changeと明示承認に限定する
+      expiry_or_review_trigger: Candidate再利用、compactのEvidence契約追加、または配備前の契約変更時
+      adjudication_cycle: cycle-05-adjudication.md
+  - id: QA-0008-F02
+    title: Candidateのdigest回帰範囲がcompactと同等でない
+    category: coverage-gap
+    severity: medium
+    status: fixed-and-verified
+    purpose_classification: spec-required
+    technical_disposition: fixed-and-verified
+    claim: 各版に存在するdigest契約のstale・旧同値・未知versionを版別に回帰検証する
+    evidence:
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/safety_regression.py:80-88
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/shared_core/chain.py:180-214
+    limitation: Candidateはsemantic digestとrevisionの検証結果はあるが、content digestとdigest versionの同一形式回帰が確認できない。Legacyは当該後発契約を持たない
+    requested_action: Candidateの適用可能なdigest契約を明示し、未実装契約は意図的非互換またはevidence-gapとして分離する
+    semantic_fingerprint: versioned-digest-regression-parity
+    author_response:
+      disposition: deferred
+      response_cycle: cycle-01-author-response.md
+      note: Candidateの適用可能なdigest範囲確定を人間裁定へ送る
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-04-verification.md
+      evidence: stage/evidence/candidate-digest-probe.json, stage/evidence/contract-applicability.json, cycles/cycle-04-verification.md
+  - id: QA-0008-F03
+    title: Agent／Run Evidenceの必須項目保存粒度が不均一
+    category: evidence-gap
+    severity: medium
+    status: fixed-and-verified
+    purpose_classification: spec-required
+    technical_disposition: fixed-and-verified
+    claim: Agent／RunごとにPrompt・出力・条件・時刻・件数・Bundle digest・結果・未実行項目を追跡可能に保存する
+    evidence:
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/agent-aggregate.json:40-150
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/agent_aggregator.py:45-92
+    limitation: 5件は識別子分離・results整合性を確認できるが、Codex／Cursor／Gemini等で必須メタデータの名称と保存有無が異なる
+    requested_action: Agent Evidence schemaを統一するか、項目ごとのobserved/unverified/not-applicableを集計レポートへ追加する
+    semantic_fingerprint: agent-run-required-field-completeness
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: agent_aggregatorへ必須項目別ステータスを追加した
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-02-verification.md
+      evidence: stage/tests, stage/evidence/agent-aggregate.json
+  - id: QA-0008-F04
+    title: Agent／Run元Evidenceの現Change内再現性不足
+    category: evidence-gap
+    severity: high
+    status: fixed-and-verified
+    purpose_classification: spec-required
+    technical_disposition: fixed-and-verified
+    claim: 集約結果から元Agent／Run Evidenceを再読込し、同じ集計を再現できる
+    evidence:
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/agent_aggregator.py:136-178
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/agent-aggregate.json:3-261
+    limitation: 元EvidenceはアーカイブChange配下にあり、現Changeのstage/evidence/agents配下からは再集約できない
+    requested_action: 標準Agent／Run保存ルートへ元Evidenceを固定するか、アーカイブ参照を再現可能なSource Manifestとして固定する
+    semantic_fingerprint: agent-run-source-reproducibility
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: Source Manifestとハッシュ検証付き再集計経路を追加した
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-02-verification.md
+      evidence: stage/evidence/agents/source-manifest.json, stage/evidence/agent-aggregate.json
+  - id: QA-0008-F05
+    title: 5.1／5.2完了表示と未検証Evidenceの矛盾
+    category: contradictory-evidence
+    severity: medium
+    status: fixed-and-verified
+    purpose_classification: spec-required
+    technical_disposition: fixed-and-verified
+    claim: tasks.mdの完了チェックは、実装範囲と受入Evidence完了を混同しない
+    evidence:
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/tasks.md:39-44
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/contract-applicability.json:56-60
+      - openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/contract-applicability.json:98-109
+    limitation: Candidateの空Evidence受理はF01の観測違反として残る。一方、stale semantic digestの拒否はF02でObserved確認済みである
+    requested_action: 5.1／5.2を未完了へ戻し、未検証契約の追加検証または人間裁定を完了条件にする
+    semantic_fingerprint: task-completion-evidence-consistency
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: tasks.mdの5.1／5.2を未完了へ戻した
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-04-verification.md
+      evidence: tasks.md, stage/evidence/contract-applicability.json, cycles/cycle-04-verification.md
+    reopen_reason: F02の追加Evidenceに対して5.2のtasks表示が未更新だった

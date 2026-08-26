@@ -1,0 +1,26 @@
+{
+  "schema_version": "baseline-candidates-1",
+  "comparison_order": ["legacy", "contract-v1.2-candidate", "compact-candidate"],
+  "legacy": {
+    "status": "read-only-baseline",
+    "roots": [
+      "/Users/myamaguchi/.agents/skills/spec-driven-qa-review",
+      "/Users/myamaguchi/.agents/skills/spec-driven-qa-author-response"
+    ]
+  },
+  "contract_v1_2_candidate": {
+    "status": "unverified-candidate",
+    "change_root": "openspec/changes/improve-spec-driven-qa-contract-v1-2",
+    "evidence_policy": "OpenSpec tasks completion and valid true are not implementation proof"
+  },
+  "compact_candidate": {
+    "status": "not-created",
+    "change_root": "openspec/changes/compact-spec-driven-qa-skills/stage"
+  },
+  "authority": {
+    "behavioral_spec": "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md",
+    "design_and_tasks": "procedural evidence; cannot override behavioral spec",
+    "legacy_behavior": "compatibility evidence; not behavioral authority",
+    "unverified_candidate_behavior": "comparison evidence; not behavioral authority"
+  }
+}

@@ -1,0 +1,28 @@
+schema_version: "1.0"
+case_id: QA-0005
+claims:
+  - claim_id: QA-0005-C01
+    claim: "modified_filesは対象Workspace上の実在パスに限定される"
+    requirement_ref: "reviewer-verification-integrity/spec.md: modified_files の存在を検証する"
+    evidence_refs:
+      - "findings.yaml:QA-0005-F01"
+      - "evidence/probe-workspace-escape.txt"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-03-verification.md"
+  - claim_id: QA-0005-C02
+    claim: "C3（Evidenceパス/modified_files厳密化）の完了表記は証拠に整合している"
+    requirement_ref: "evidence/c2-c3-digestion.md"
+    evidence_refs:
+      - "findings.yaml:QA-0005-F02"
+    result: established
+    verification_status: fixed-and-verified
+    verification_ref: "cycles/cycle-03-verification.md"
+  - claim_id: QA-0005-C03
+    claim: "stale digest拒否の自動テストが存在する"
+    requirement_ref: "reviewer-verification-integrity/spec.md: Stale handoff digest"
+    evidence_refs:
+      - "stage/tests/test_verification_integrity.py"
+      - "pytest 31 passed"
+    result: established
+    verification_status: confirmed

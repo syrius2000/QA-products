@@ -1,0 +1,115 @@
+schema_version: "1.0"
+case_id: QA-0005
+findings:
+  - id: QA-0005-F01
+    title: "modified_files のWorkspace境界が強制されていない"
+    category: security-risk
+    purpose_classification: spec-required
+    severity: high
+    severity_rationale: "仕様は列挙された各パスが対象Workspace上に存在することを要求する。実装は絶対パスをmodified_filesで明示拒否せず、相対パスもWorkspace外の既存パスを受理し得るため、修正対象の真正性を保証できない。runtime probeでWorkspace外絶対パス受理を再現した。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "specs/reviewer-verification-integrity/spec.md: modified_files の存在を検証する"
+      - "design.md: Decision 4 modified_files は列挙時は全実在"
+    evidence:
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py:84-88"
+        note: "相対パスをworkspace_rootへ結合した後、p.exists()をフォールバックしておりWorkspace外境界を固定していない。絶対パスは存在すればTrueを返す。"
+        revision: "unverified-no-git"
+      - type: code
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py:448-450"
+        note: "modified_filesの存在確認はpath_exists_for_verifyの結果に依存し、絶対パス・親ディレクトリ脱出を拒否していない。"
+        revision: "unverified-no-git"
+      - type: test
+        reference: "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/test_verification_integrity.py"
+        note: "欠落相対パスは検証するが、絶対パスおよび../によるWorkspace外パスの拒否テストはない。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/evidence/probe-workspace-escape.txt"
+        note: "workspace外絶対パスのmodified_filesでverify_submissionがsuccess/verifiedになった（CONFIRMED）。"
+        revision: "unverified-no-git"
+    limitations:
+      - "シンボリックリンク経由の脱出は未追加probe（絶対パス受理で十分に反証）。"
+      - "レビューエージェントは実装にも関与（独立性 partial）。"
+    requested_action: "modified_filesは絶対パスを拒否し、resolve後にworkspace_root配下であることを確認する。../、必要ならsymlinkを含む境界テストを追加し、Workspace外の既存ファイルを受理しないことを確認する。test_evidenceと同様の境界ポリシーとの整合も取る。"
+    fingerprint:
+      category: security-risk
+      requirement_id: "modified-files-workspace-boundary"
+      primary_path: "stage/spec-driven-qa-review/lifecycle.py"
+      semantic_key: "modified-files-escapes-workspace"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "Workspace境界を resolve_in_workspace で強制。cycle-02-author-response.md 参照。"
+      test_evidence: "openspec/changes/reviewer-verification-integrity-hardening/evidence/pytest-after-f01-boundary.txt"
+      modified_files:
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/spec-driven-qa-review/lifecycle.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests/test_verification_integrity.py"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/MANIFEST.json"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 3
+      result: fixed-and-verified
+      verified_at: "2026-08-26T19:30:00+09:00"
+      reviewer_agent_id: codex-20260826-qa0005-verification
+      note: "修正後の実装を再読し、Workspace外の絶対パス・../・symlinkを拒否すること、および境界テストを含む34件の合格を確認した。"
+      evidence:
+        - docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/evidence/verification-cycle03.txt
+        - docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/cycles/cycle-03-verification.md
+  - id: QA-0005-F02
+    title: "C3消化・tasks完了表記がWorkspace境界未充足と矛盾し得る"
+    category: contradictory-evidence
+    purpose_classification: purpose-critical
+    severity: medium
+    severity_rationale: "specの『対象ワークスペース上に存在』が未充足のまま、hardening Evidence/tasksがC3消化・全タスク完了を主張すると、未検証を受入済みと誤記するリスクがある。"
+    status: fixed-and-verified
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    first_seen_cycle: 1
+    claim_refs:
+      - "openspec/changes/reviewer-verification-integrity-hardening/evidence/c2-c3-digestion.md"
+      - "openspec/changes/reviewer-verification-integrity-hardening/tasks.md（全[x]）"
+      - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/tasks.md 5.2/残余"
+    evidence:
+      - type: document
+        reference: "openspec/changes/reviewer-verification-integrity-hardening/evidence/c2-c3-digestion.md"
+        note: "C3を消化と記載。"
+        revision: "unverified-no-git"
+      - type: runtime-observation
+        reference: "docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/evidence/probe-workspace-escape.txt"
+        note: "Workspace境界が破られることを再現。"
+        revision: "unverified-no-git"
+    limitations:
+      - "欠落パス拒否などC3の一部は満たしている。全面未達ではない。"
+    requested_action: "C3/tasks/lifecycle残余表記を『Workspace境界は未達=evidence-gapまたはopen Finding』と修正し、境界実装とテスト後にのみ消化と記す。"
+    fingerprint:
+      category: contradictory-evidence
+      requirement_id: "honest-c3-completion"
+      primary_path: "evidence/c2-c3-digestion.md"
+      semantic_key: "overclaimed-c3-digestion"
+    author_response:
+      cycle: 2
+      disposition: fix-submitted
+      note: "C3全面消化の誤記を撤回。境界は F01 verification 待ち。cycle-02-author-response.md 参照。"
+      test_evidence: "openspec/changes/reviewer-verification-integrity-hardening/evidence/c2-c3-digestion.md"
+      modified_files:
+        - "openspec/changes/reviewer-verification-integrity-hardening/evidence/c2-c3-digestion.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/tasks.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/evidence/capability_matrix.md"
+        - "openspec/changes/spec-driven-qa-reviewer-case-lifecycle/evidence/security_qa_report.md"
+      base_revision: "unverified-no-git"
+      result_revision: "unverified-no-git"
+    verification:
+      cycle: 3
+      result: fixed-and-verified
+      verified_at: "2026-08-26T19:30:00+09:00"
+      reviewer_agent_id: codex-20260826-qa0005-verification
+      note: "C3全面消化の誤記が撤回され、部分消化＋evidence-gapとして明示されていることを確認した。F01の修正検証により、境界要件も解決済みである。"
+      evidence:
+        - docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/evidence/verification-cycle03.txt
+        - openspec/changes/reviewer-verification-integrity-hardening/evidence/c2-c3-digestion.md
+        - docs/ADR/QA/QA-0005-reviewer-verification-integrity-hardening/cycles/cycle-03-verification.md

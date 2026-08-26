@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "5942aeaa17a28eb0fa7b241af4e809eae632ea125f04b43fc3a6546914615d15"
+    },
+    {
+      "path": "INSTALL.md",
+      "sha256": "9336bcecf97e87ae8884ac8c9cc3b6d073a58770d38f536fd01f860459f014b7"
+    },
+    {
+      "path": "README.md",
+      "sha256": "dbb5b16d33dc3876fa93c006c102737378256657fd4e8160b666f90ac84f3ff7"
+    },
+    {
+      "path": "SPEC.md",
+      "sha256": "848f455d0790b20d1f7ba2b07359e0317b863021098ed79c5171de9435729cf5"
+    },
+    {
+      "path": "evals/README.md",
+      "sha256": "df4479a1fa568f89296205e1e63e032ae648f5535a42c76f1369c2583cc5e07b"
+    },
+    {
+      "path": "examples/multi-cycle.json",
+      "sha256": "4bcb42d236cd49462e2de2eb9516d34f33841181c9daa2cee5cd93f18b5f51f1"
+    },
+    {
+      "path": "examples/single-cycle.json",
+      "sha256": "150f173561329fa854635506d6dae5613c45f8d14b189d1794ffa95ab62bd490"
+    },
+    {
+      "path": "fixtures/README.md",
+      "sha256": "7e481618592eb0f45c3fd2dc2e9e277988325696d46ea3c4b200c8cb4b768a63"
+    },
+    {
+      "path": "schemas/README.md",
+      "sha256": "14e754f92b92dd4a7610e3271762843accf6a6130906427bfcd015065d7ae971"
+    },
+    {
+      "path": "schemas/contract.json",
+      "sha256": "be15bb8ac5276fac931bda9c20192ec5bea9f3d748d08803a4fd6965db65fa42"
+    },
+    {
+      "path": "shared_core/__init__.py",
+      "sha256": "43d7d90c125a1b1c31d32da7000c0c64aeeb56d2db37042c103459235f488106"
+    },
+    {
+      "path": "shared_core/authorization.py",
+      "sha256": "05c9891ce2a3ff9be0b0d5fa595f6cd572394e9ce8264538ebc7b21e9d2f10ea"
+    },
+    {
+      "path": "shared_core/chain.py",
+      "sha256": "cbce0583d412c5bdc026046501d85e43d69e2a82a665851820ff6b37d6fd3740"
+    },
+    {
+      "path": "shared_core/cli.py",
+      "sha256": "36ada921b2d1de11b689671a3585865d19c157ad2b4f51170f0b18f54f39c080"
+    },
+    {
+      "path": "shared_core/compat.py",
+      "sha256": "fcdc43818aea159cdb423ea60af80c8dae8907ddcc99e91ad77055096d627117"
+    },
+    {
+      "path": "shared_core/contract.py",
+      "sha256": "c87151d2615966f2b6f1509d0f1f2d0c366a7918a8829b5e89dbfdc96944d2cb"
+    },
+    {
+      "path": "shared_core/digest.py",
+      "sha256": "59adeb39e5953a93eb2c8189b17d44f110f29c6c01de687c9bf81e4e94a3279d"
+    },
+    {
+      "path": "shared_core/evidence.py",
+      "sha256": "81b8c5c39764f64ec392c7fffc95e0b33fc47f23496b09669d5a4e0bf45dad9a"
+    },
+    {
+      "path": "shared_core/guards.py",
+      "sha256": "61d3111d7ddf264f78ae0c216effc47edbb52a5fd67cbf85d91ebfab1a65633a"
+    },
+    {
+      "path": "shared_core/integration.py",
+      "sha256": "7a9f4265650ebb6989959d27e2c594af737f3aec2989253a00b6e3faa0071ec3"
+    },
+    {
+      "path": "shared_core/io.py",
+      "sha256": "f8d865174ef5f8255d0ee5f8a3c369252d26eaa14cd26e63f7a4f491b0aef634"
+    },
+    {
+      "path": "shared_core/links.py",
+      "sha256": "32531f4362df06a182772fcd0c8a33854803d5645f87044c03fd6f469f5abdc7"
+    },
+    {
+      "path": "shared_core/runtime.py",
+      "sha256": "6651f797eb5f70c497215d4ff69bc81e8ce464afd0940698adc757e6579375fd"
+    },
+    {
+      "path": "shared_core/secrets.py",
+      "sha256": "4c8d8f46fb8c24bb45dca63a5c4a7a7e4c5439a841e7ef1a62175630f7743b13"
+    },
+    {
+      "path": "shared_core/state.py",
+      "sha256": "9259dda92d79f968da6aec85b457059492ec9c11544db5ac6a74c41970cd921e"
+    },
+    {
+      "path": "spec-driven-qa-author-response/SKILL.md",
+      "sha256": "9d7ba222d05a60d6dc5300b7d53ad210ca4c2b1d49d6a5a6f9f4ec7408f1ed75"
+    },
+    {
+      "path": "spec-driven-qa-author-response/launcher.py",
+      "sha256": "78e4548a687943b6d869895eebd1d0b4c3596dd1f0ee3ccd86361be886f3ab81"
+    },
+    {
+      "path": "spec-driven-qa-review/SKILL.md",
+      "sha256": "36f6de13a17d1ef2122c1c8ba122bbaa5a6c101ffde0a85c19c0e6c99673c02a"
+    },
+    {
+      "path": "spec-driven-qa-review/launcher.py",
+      "sha256": "0448bff691fbf797bbd3cb3ea626a267efd34302246d7a2e21b0375446e5fddf"
+    },
+    {
+      "path": "templates/minimal-cycle.json",
+      "sha256": "add659fbfdac77995932e29f07840f42e4bc81aa1484218c9b771ec926e6dba1"
+    }
+  ]
+}

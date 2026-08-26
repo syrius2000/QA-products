@@ -1,0 +1,5 @@
+findings:
+  - id: QA-0102-F01
+    severity: high
+    status: open
+    requested_action: "修正と回帰テストを提出する"

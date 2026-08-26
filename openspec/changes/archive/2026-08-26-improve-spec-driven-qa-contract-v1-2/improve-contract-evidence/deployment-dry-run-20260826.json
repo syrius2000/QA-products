@@ -1,0 +1,38 @@
+{
+  "schema_version": "deployment-evidence-1",
+  "date": "2026-08-26",
+  "scope": "stageからsandboxへのdry-run、差分、backup、rollback",
+  "production_skill_changed": false,
+  "global_skill_changed": false,
+  "pytest": {
+    "command": "/Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q spec_driven_qa_reviewer/tests spec_driven_qa_author_response/tests test_deploy_tool.py",
+    "result": "81 passed in 0.19s",
+    "exit_code": 0
+  },
+  "dry_run": {
+    "source": "stage",
+    "target": "temporary sandbox",
+    "mode": "dry-run",
+    "change_count": 130,
+    "actions": ["add"],
+    "cache_or_bytecode_in_plan": false,
+    "diff_bytes": 214533
+  },
+  "backup": {
+    "status": "COMPLETE",
+    "manifest": "backup-manifest.json",
+    "target": "temporary sandbox"
+  },
+  "rollback": {
+    "dry_run_status": "DRY-RUN",
+    "apply_status": "COMPLETE",
+    "exact_target_confirmation_required": true,
+    "pre_rollback_snapshot_created": true,
+    "temporary_marker_removed": true
+  },
+  "residual_risks": [
+    "実グローバルSkillへの配備は未実施",
+    "本番環境での権限・ディスク容量・同時実行は未検証",
+    "stage内には既存のcache/bytecodeが残るため、配布前Manifest検証が必要"
+  ]
+}

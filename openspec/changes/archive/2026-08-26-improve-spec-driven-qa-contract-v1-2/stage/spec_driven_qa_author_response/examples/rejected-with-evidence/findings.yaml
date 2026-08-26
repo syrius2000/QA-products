@@ -1,0 +1,5 @@
+findings:
+  - id: QA-0103-F01
+    severity: low
+    status: open
+    requested_action: "反証Evidenceを示す"

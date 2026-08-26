@@ -1,0 +1,27 @@
+{
+  "agent_id": "codex-20260826-0904",
+  "run_id": "codex-20260826-0904-001",
+  "total_cases": 10,
+  "executed_cases": 0,
+  "unexecuted_cases": 10,
+  "self_scored": false,
+  "measurement_policy": {
+    "tokens": "unverified",
+    "latency": "unverified",
+    "reason": "別AI/APIの実行経路がこの環境に接続されておらず、回答本文を取得できないため"
+  },
+  "cases": [
+    {"case_id":"R-01","category":"reviewer","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"R-02","category":"reviewer","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"R-03","category":"reviewer","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"R-04","category":"reviewer","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-01","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-02","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-03","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-04","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-05","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}},
+    {"case_id":"E-06","category":"author","legacy":{"status":"unverified","response":null},"candidate":{"status":"unverified","response":null},"rubric":{"status":"not-assessable","hard_gate_violations":"not-assessable"}}
+  ],
+  "static_test_suite": {"status":"observed-pass","passed":78,"failed":0,"pytest_exit_code":0},
+  "candidate_hard_gate_violations": {"status":"not-assessable","count":null,"reason":"Candidate回答本文が未取得"}
+}

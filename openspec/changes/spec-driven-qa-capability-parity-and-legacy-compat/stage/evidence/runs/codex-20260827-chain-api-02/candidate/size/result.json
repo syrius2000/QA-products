@@ -1,0 +1,31 @@
+{
+  "adapter": "candidate Reviewer CLI help",
+  "bundle": {
+    "kind": "directory",
+    "name": "candidate",
+    "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+    "version": "contract-v1.2-candidate-20260826"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/create_review_case.py",
+    "--help"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "size",
+    "digest": "491537901340588ce3dd5434bcc00984df973602b7b7727256ff0bb3904b0fb3",
+    "path": "fixtures/size.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

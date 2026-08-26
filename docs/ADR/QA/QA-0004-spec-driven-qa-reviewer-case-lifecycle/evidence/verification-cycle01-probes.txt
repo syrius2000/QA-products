@@ -1,0 +1,13 @@
+pytest: 20 passed (reviewer re-run)
+launcher_init: success (QA-0810-verify)
+NO_HANDOFF_VERIFY: success verified  # residual gap
+BAD_REV: Revision conflict  # ok
+MISSING_BASE_REV: success  # residual gap
+CLOSE_REQUIRED: rejected  # ok
+CLOSE_CRITICAL_OPEN: rejected  # ok
+CLOSE_CRIT_VERIFIED_PLUS_OPEN_LOW: false-positive reject  # residual
+traceability_update: observed
+shared_core_vs_archive_digest: NOT equal
+manifest_runtime_sha_match: true
+scripts/render_handoff.py still present (188 lines)
+tasks.md still all [x]

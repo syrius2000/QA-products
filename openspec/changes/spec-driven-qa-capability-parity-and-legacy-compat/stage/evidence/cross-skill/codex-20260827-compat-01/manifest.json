@@ -1,0 +1,113 @@
+{
+  "created_at": "2026-08-26T16:31:59.730624+00:00",
+  "fixture": {
+    "class": "cross-skill",
+    "digest": "a66527f55318b4069912a7eeb1f3448fdeba12b421d37f35ab8f17cdaf8d2fa8",
+    "path": "fixtures/cross-skill.json"
+  },
+  "results": [
+    {
+      "author": {
+        "status": "observed",
+        "validation_exit_code": 0
+      },
+      "bundle": "candidate",
+      "bundle_identity": {
+        "name": "candidate",
+        "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+        "version": "contract-v1.2-candidate-20260826"
+      },
+      "digest": {
+        "semantic_digest_present": true,
+        "status": "observed"
+      },
+      "handoff": {
+        "path": "handoff.md",
+        "status": "observed"
+      },
+      "reviewer": {
+        "create_exit_code": 0,
+        "render_exit_code": 0,
+        "status": "observed"
+      },
+      "revision": {
+        "status": "observed",
+        "value": "0"
+      },
+      "submission": {
+        "exit_code": 0,
+        "status": "observed"
+      }
+    },
+    {
+      "author": {
+        "exit_code": 0,
+        "status": "observed"
+      },
+      "bundle": "compact",
+      "bundle_identity": {
+        "name": "compact",
+        "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+        "version": "compact-20260827-chain-api"
+      },
+      "digest": {
+        "content_digest": "6ea2ae6e6d34a7eb08caccce20e49da1b78b79cbfa0c76a58be0f5a3f2facf14",
+        "semantic_digest": "59467e1d3232603c6f0224eab441315ad5f18e0b5e747eefdf028ab5d123d3b3",
+        "status": "observed"
+      },
+      "handoff": {
+        "path": "workspace/qa-cases/QA-0001/handoff.md",
+        "status": "observed"
+      },
+      "reviewer": {
+        "exit_code": 0,
+        "status": "observed",
+        "verification_exit_code": 0
+      },
+      "revision": {
+        "status": "observed",
+        "value": 1
+      },
+      "submission": {
+        "path": "workspace/qa-cases/QA-0001/submissions/submission-cross-skill.json",
+        "status": "observed"
+      }
+    },
+    {
+      "author": {
+        "status": "observed",
+        "validation_exit_code": 0
+      },
+      "bundle": "legacy",
+      "bundle_identity": {
+        "name": "legacy",
+        "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+        "version": "legacy-20260825"
+      },
+      "digest": {
+        "semantic_digest_present": false,
+        "status": "evidence-gap"
+      },
+      "handoff": {
+        "path": "handoff.md",
+        "status": "observed"
+      },
+      "reviewer": {
+        "create_exit_code": 0,
+        "render_exit_code": 0,
+        "status": "observed"
+      },
+      "revision": {
+        "status": "evidence-gap",
+        "value": null
+      },
+      "submission": {
+        "reason": "対象版にhandoff submission validatorまたはdigestがない",
+        "status": "evidence-gap"
+      }
+    }
+  ],
+  "run_id": "codex-20260827-compat-01",
+  "schema_version": "cross-skill-result-1",
+  "status": "evidence-gap"
+}

@@ -1,0 +1,24 @@
+QA-0006 Author修正Evidence（Cycle 3）
+
+実施日時: 2026-08-26 22:18 JST
+実施者: Codex（Author）
+
+F01対応:
+- canonical_finding_ids は findings.yaml の status: open のFindingだけを返すよう変更した。
+- Reviewer lifecycle と同じ open-only 集合をdigest入力および許可集合に使用する。
+- closed Findingを正本に混在させ、open-only handoff digestを受理する相互運用テストを追加した。
+
+F06対応:
+- deferredを継続した。
+- semantic_digest と content_digest が共有基盤で同値となる契約は本Changeの対象外であり、共有基盤分離時に再評価する。
+
+検証:
+- コマンド: PYTHONDONTWRITEBYTECODE=1 /Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q openspec/changes/spec-driven-qa-author-response-submission/stage/tests openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests
+- 結果: 59 passed in 0.25s
+- コマンド: openspec validate "spec-driven-qa-author-response-submission" --type change --json
+- 結果: valid: true（1 passed, 0 failed）
+
+制約:
+- base/result revision: unverified-no-git（この作業環境ではGit正本を利用できない）。
+- Reviewer正本（findings.yaml、review.md、traceability.yaml、events.jsonl、handoff.md）は変更していない。
+- 本EvidenceはReviewerの独立検証およびQA終端判定を代替しない。

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "role": "author",
+  "files": [
+    "MANIFEST.json",
+    "measure_size.py",
+    "spec_driven_qa_author_response_submission/__init__.py",
+    "spec_driven_qa_author_response_submission/__main__.py",
+    "spec_driven_qa_author_response_submission/launcher.py",
+    "spec_driven_qa_author_response_submission/shared_core_adapter.py",
+    "spec_driven_qa_author_response_submission/submission.py",
+    "spec_driven_qa_author_response_submission/SKILL.md",
+    "spec_driven_qa_author_response_submission/README.md",
+    "fixtures/valid/handoff.md",
+    "fixtures/valid/submission.json",
+    "fixtures/valid/findings.yaml"
+  ],
+  "write_allowlist": [
+    "cycles/cycle-NN-author-response.md",
+    "cycles/cycle-NN-submission.json"
+  ]
+}

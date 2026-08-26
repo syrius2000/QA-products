@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer/scripts/render_handoff.py",
+    "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-lefxbkea/docs/ADR/QA/QA-0001-parity-cross-skill"
+  ],
+  "stdout": "/var/folders/w4/kqtskdyx29vdbjvlv7gx0t9h0000gn/T/cross-skill-lefxbkea/docs/ADR/QA/QA-0001-parity-cross-skill/handoff.md\n",
+  "stderr": "",
+  "exit_code": 0
+}

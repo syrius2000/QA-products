@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "bytes": 167,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/events.jsonl",
+      "sha256": "045a9a7d4851634b910119a3cb1c989e00a1c63183f587719c53c729d894d4d1"
+    },
+    {
+      "bytes": 88,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/evidence/README.md",
+      "sha256": "3eda3d1e318bc28675311263a0674dee597ddb30bef4df48878fa373a7e76de5"
+    },
+    {
+      "bytes": 969,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/findings.yaml",
+      "sha256": "5d2c3cd40d2354506e408364d52bb4b1cbc782e6f4abcb05e16aa373c73896ab"
+    },
+    {
+      "bytes": 1985,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/handoff.md",
+      "sha256": "23235f99689e2ee53d14d016a8183c59a69f567bd3dca4e92b5d0cdc493bc9c4"
+    },
+    {
+      "bytes": 1928,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/review.md",
+      "sha256": "39a34d172ff08b62922134e56bc59a801a627f695d3057dff436d3d1fa2d90ca"
+    },
+    {
+      "bytes": 497,
+      "path": "docs/ADR/QA/QA-0001-parity-golden/traceability.yaml",
+      "sha256": "690ce159433cce485c388ff6ce8397af30b90d3ea1e631d479497a7b107036b7"
+    }
+  ],
+  "status": "observed"
+}

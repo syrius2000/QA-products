@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "bytes": 167,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/events.jsonl",
+      "sha256": "045a9a7d4851634b910119a3cb1c989e00a1c63183f587719c53c729d894d4d1"
+    },
+    {
+      "bytes": 88,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/evidence/README.md",
+      "sha256": "3eda3d1e318bc28675311263a0674dee597ddb30bef4df48878fa373a7e76de5"
+    },
+    {
+      "bytes": 969,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/findings.yaml",
+      "sha256": "5d2c3cd40d2354506e408364d52bb4b1cbc782e6f4abcb05e16aa373c73896ab"
+    },
+    {
+      "bytes": 2711,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/handoff.md",
+      "sha256": "5ea46a50c827cb6f7a1240433aaa0c05cbeef14e1702af71943e389d99122fc0"
+    },
+    {
+      "bytes": 1935,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/review.md",
+      "sha256": "d0a884755ee8b5ad4970f02b5ee89f5f396262702605c9f1d279f8377c287333"
+    },
+    {
+      "bytes": 497,
+      "path": "docs/ADR/QA/QA-0001-parity-legacy-compat/traceability.yaml",
+      "sha256": "690ce159433cce485c388ff6ce8397af30b90d3ea1e631d479497a7b107036b7"
+    }
+  ],
+  "status": "observed"
+}

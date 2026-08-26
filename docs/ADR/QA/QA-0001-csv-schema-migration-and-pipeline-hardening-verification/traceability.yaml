@@ -1,0 +1,141 @@
+schema_version: "1.0"
+case_id: QA-0001
+claims:
+  - id: CLAIM-001
+    statement: "旧11列CSVを既存レコードを保持したまま新15列へ自動正規化する。"
+    source:
+      type: specification
+      reference: "openspec/specs/iot-data-pipeline/spec.md:29-34"
+    plan_refs: []
+    task_refs: ["tasks.md:3-4"]
+    implementation:
+      - path: "omron_envsensor/storage_csv.py"
+        symbol: "CsvStorage._ensure_schema"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+    evidence:
+      - "tests/test_pipeline.py:104-142"
+      - "evidence/README.md#EV-PI-CSV-01"
+    assessment:
+      result: confirmed
+      confidence: high
+      rationale: "ローカル移行テストが成功し、Pi実機CSVは15列・不正行0で、移行前11列ファイルのbakも存在する。"
+
+  - id: CLAIM-002
+    statement: "通信復旧時に蓄積データをBulk Writeし、キューをclearする。"
+    source:
+      type: specification
+      reference: "openspec/specs/iot-data-pipeline/spec.md:22-27"
+    plan_refs: []
+    task_refs: ["tasks.md:14"]
+    implementation:
+      - path: "omron_envsensor/storage_influx.py"
+        symbol: "InfluxDBStorage.write_reading"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+    evidence:
+      - "tests/test_pipeline.py:145-242"
+    assessment:
+      result: partially-confirmed
+      confidence: medium
+      rationale: "モックHTTPで復旧Bulk Writeとclearは成功したが、実障害、再起動、容量上限境界は未検証である。"
+
+  - id: CLAIM-003
+    statement: "Line ProtocolタグおよびCSV識別子の特殊文字を安全に扱う。"
+    source:
+      type: change-design
+      reference: "openspec/changes/archive/2026-08-24-csv-schema-migration-and-pipeline-hardening/design.md:34-36"
+    plan_refs: []
+    task_refs: ["tasks.md:9"]
+    implementation:
+      - path: "omron_envsensor/models.py"
+        symbol: "_escape_tag"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+    evidence:
+      - "tests/test_pipeline.py:55-87"
+    assessment:
+      result: confirmed
+      confidence: high
+      rationale: "空白・カンマを含むテスト値が期待するLine Protocolへ変換され、CSV識別子も改行・カンマをサニタイズする。"
+
+  - id: CLAIM-004
+    statement: "sensor_data_1yバケット初期化失敗を検知し、非0で終了する。"
+    source:
+      type: change-design
+      reference: "openspec/changes/archive/2026-08-24-csv-schema-migration-and-pipeline-hardening/design.md:12-13"
+    plan_refs: []
+    task_refs: ["tasks.md:10"]
+    implementation:
+      - path: "qnap/deploy_qnap.sh"
+        symbol: "deploy bucket verification"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+    evidence:
+      - "qnap/deploy_qnap.sh:41-43"
+    assessment:
+      result: confirmed
+      confidence: medium
+      rationale: "作成後の再確認と失敗時exit 1の分岐をコードで確認した。実際の失敗経路は実行していない。"
+
+  - id: CLAIM-005
+    statement: "同一sequenceは新sequence到着までInfluxDBおよびCSVへの保存を抑止する。"
+    source:
+      type: specification
+      reference: "openspec/specs/iot-data-pipeline/spec.md:36-41"
+    plan_refs: []
+    task_refs: ["tasks.md:8,14-15"]
+    implementation:
+      - path: "omron_envsensor/omron_collector.py"
+        symbol: "BeaconScanDelegate.handleDiscovery"
+        revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+    evidence:
+      - "omron_envsensor/omron_collector.py:94-102"
+      - "evidence/README.md#EV-VERIFICATION-LOCAL-01"
+      - "evidence/README.md#EV-VERIFICATION-PI-01"
+    assessment:
+      result: confirmed-with-residual-risk
+      confidence: high
+      rationale: "MAC単位dedup、CSVからの再起動復元、回帰テスト、Pi起動ログが同一revisionで整合した。月跨ぎおよび複数センサーの再起動復元は未検証。"
+
+  - id: CLAIM-006
+    statement: "認証情報を環境変数等へ外部化し、ソースへ秘密値を残さない。"
+    source:
+      type: author-claim
+      reference: "依頼文のW-05是正報告"
+    plan_refs: []
+    task_refs: ["tasks.md:3-15（認証情報外部化の明示タスクなし）"]
+    implementation:
+      - path: "omron_envsensor/storage_influx.py"
+        symbol: "DEFAULT_INFLUX_TOKEN"
+        revision: "0088b8c256878aff4e58ea9b474538693f4d93fa"
+      - path: "qnap/deploy_qnap.sh"
+        symbol: "QNAP_PASS / bucket token"
+        revision: "0088b8c256878aff4e58ea9b474538693f4d93fa"
+      - path: "qnap/docker-compose.yml"
+        symbol: "InfluxDB/Grafana environment"
+        revision: "0088b8c256878aff4e58ea9b474538693f4d93fa"
+    evidence:
+      - "evidence/README.md#EV-VERIFICATION-AUTH-01"
+      - "evidence/README.md#EV-VERIFICATION-CYCLE2-01"
+      - "evidence/README.md#EV-VERIFICATION-CYCLE3-01"
+      - "cycles/cycle-02-verification.md"
+      - "cycles/cycle-03-verification.md"
+    assessment:
+      result: contradicted
+      confidence: high
+      rationale: "固定表示と必須変数検証は改善されたが、QNAPパスワードをSSHコマンドへ、周辺資格情報をプロセス引数へ展開する経路が残る。mode 600もコードで検証されず、実機証拠も独立確認できないため、全経路の外部化主張は未成立である。"
+
+requirements:
+  - id: REQ-CSV-01
+    statement: "既存11列CSVを15列へ正規化し、全レコードを保持する。"
+    source: "openspec/specs/iot-data-pipeline/spec.md:29-34"
+    covered_by: [CLAIM-001]
+  - id: REQ-SEQ-01
+    statement: "同一sequenceの重複保存を抑止する。"
+    source: "openspec/specs/iot-data-pipeline/spec.md:36-41"
+    covered_by: [CLAIM-005]
+  - id: REQ-MULTI-01
+    statement: "将来の複数センサー拡張でデータを誤抑止しない。"
+    source: "openspec/changes/archive/2026-08-24-modern-iot-data-pipeline/proposal.md:3-7"
+    covered_by: [CLAIM-005]
+  - id: REQ-SEC-01
+    statement: "認証情報をリポジトリへ直書きせず外部管理する。"
+    source: "依頼文のW-05是正報告およびセキュリティレビュー境界"
+    covered_by: [CLAIM-006]

@@ -1,0 +1,107 @@
+schema_version: "1.2"
+case_id: QA-0002
+findings:
+  - id: QA-0002-F01
+    title: 共有コア（shared_core）のスタンドアロンSkill環境でのインポート解決境界
+    category: portability-risk
+    severity: medium
+    status: resolved
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: accepted
+    claim_reference: "openspec/changes/compact-spec-driven-qa-skills/design.md#Decision-1"
+    evidence_references:
+      - "openspec/changes/compact-spec-driven-qa-skills/design.md:L35-L46"
+      - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L23"
+    severity_rationale: "グローバルSkill配置先（~/.gemini/config/skills/等）ではSkillディレクトリごとに独立して実行されるため、共有コアの配置とPythonのsys.path解決が適切に設計されない場合、実行時ImportErrorとなるリスクがある。"
+    known_limitations: "設計・タスク定義レベルの検証完了。実装後のstandalone配置negative testで最終確認する。"
+    requested_action: "配備時において、Reviewer/Author各Skillから共有コアを解決する決定論的なパス解決メカニズム（または検証済み同期配置方式）を設計・明記すること。"
+    required_marker: null
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      action_taken: "design.mdに、各Launcherが実ファイル位置からBundleルートを決定し、shared_coreの存在・Manifest・内容digestを検証した後にBundleルートだけを限定的にimport解決対象へ追加する方式を追記した。PYTHONPATH、cwd、環境変数、未検証シンボリックリンクに依存せず、配置またはdigest不一致時はfail-closedとする。tasks.mdへstandalone配置negative testを追加した。"
+      implemented_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:45"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:23"
+      limitation: "実装コードと実配備環境での起動確認は未実施であり、Reviewer verificationが必要。"
+    reviewer_verification:
+      cycle: 1
+      disposition: fixed-and-verified
+      verified_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:L45"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L23"
+      notes: "Launcherによる限定的import解決とstandalone negative testのタスク追加を確認。"
+
+  - id: QA-0002-F02
+    title: 3版比較ハーネスにおける「正本判定基準」の曖昧さ回避
+    category: unspecified-implementation
+    severity: medium
+    status: resolved
+    purpose_classification: spec-required
+    technical_disposition: fixed-and-verified
+    owner_disposition: accepted
+    claim_reference: "openspec/changes/compact-spec-driven-qa-skills/tasks.md#Task-2.5"
+    evidence_references:
+      - "openspec/changes/compact-spec-driven-qa-skills/proposal.md:L7-L8"
+      - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L15"
+      - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L51"
+    severity_rationale: "旧版、Contract v1.2候補版、圧縮版の3版比較において、候補版自体の未検証不具合が存在した場合、何を期待値（正本）とするかの優先順位が曖昧になり、テスト結果の解釈が揺れる可能性がある。"
+    known_limitations: "設計・タスク定義レベルの検証完了。比較ハーネス実装時に正本ルールが適用されることを確認する。"
+    requested_action: "差分比較ハーネスにおいて、不一致発生時の期待値基準（spec.md / SPEC.md を正本とし、旧版挙動と候補版挙動の差異を仕様適合性に基づいて裁定するルール）をテスト手順に明記すること。"
+    required_marker: null
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      action_taken: "design.mdに、当該ChangeのOpenSpec spec.mdを判定正本とし、Bundle内のSPEC.mdはspec.mdから生成・digest固定された派生仕様に限る優先順位を追記した。design.md、tasks.md、旧版挙動、未検証Contract v1.2候補挙動は正本を上書きせず、仕様違反・旧版互換差分・診断文差分を分離記録するようtasks.mdの比較タスクを明確化した。"
+      implemented_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:69"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:15"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:51"
+      limitation: "比較ハーネスとSPEC.mdの生成・digest固定は未実装であり、Reviewer verificationが必要。"
+    reviewer_verification:
+      cycle: 1
+      disposition: fixed-and-verified
+      verified_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:L69"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L15"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L51"
+      notes: "OpenSpec spec.md を判定正本とし、レポート差分を分離する方針の明文化を確認。"
+
+  - id: QA-0002-F03
+    title: サイズ集計条件（1,760行目標）の決定論的計測スクリプトの定義
+    category: maintainability-risk
+    severity: low
+    status: resolved
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: accepted
+    claim_reference: "openspec/changes/compact-spec-driven-qa-skills/spec.md#Requirement-常駐コンテキストと配布サイズを予算内に収める"
+    evidence_references:
+      - "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md:L83-L101"
+      - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L7"
+    severity_rationale: "行数集計の条件（空行・コメント・テストコード・サンプル・スキーマの含否）によって測定値が大きく変動するため、合否判定の再現性が損なわれる恐れがある。"
+    known_limitations: "設計・タスク定義レベルの検証完了。Phase 0でスクリプトの動作を確認する。"
+    requested_action: "Manifestに基づく再現可能なサイズ集計スクリプト（例: scripts/measure_size.py または test_size.py）の提供をPhase 0の成果物に含めること。"
+    required_marker: null
+    author_response:
+      cycle: 1
+      disposition: fix-submitted
+      action_taken: "design.mdの移行計画とtasks.mdのPhase 0へ、標準ライブラリのみでManifest対象を決定論的に集計するmeasure_size.pyの作成を追加した。空行、コメント、テスト、サンプル、Schemaの含否、行数、バイト数、常駐対象をJSON出力し、size fixtureで再現性を確認する契約とした。"
+      implemented_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:103"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:7"
+      limitation: "計測スクリプト自体は未実装であり、実測値とfixtureの確認は後続タスクで行う。"
+    reviewer_verification:
+      cycle: 1
+      disposition: fixed-and-verified
+      verified_revision: working-tree
+      evidence:
+        - "openspec/changes/compact-spec-driven-qa-skills/design.md:L103"
+        - "openspec/changes/compact-spec-driven-qa-skills/tasks.md:L7"
+      notes: "標準ライブラリのみの measure_size.py をPhase 0成果物として定義したことを確認。"

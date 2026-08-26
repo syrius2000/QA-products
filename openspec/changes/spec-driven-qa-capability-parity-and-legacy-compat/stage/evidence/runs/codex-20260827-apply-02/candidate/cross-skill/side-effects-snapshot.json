@@ -1,0 +1,35 @@
+{
+  "files": [
+    {
+      "bytes": 167,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/events.jsonl",
+      "sha256": "9f4502e240f098c1819c2ac6aa368c0a0267d8ff66ebb860693fa11396a023a8"
+    },
+    {
+      "bytes": 88,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/evidence/README.md",
+      "sha256": "3eda3d1e318bc28675311263a0674dee597ddb30bef4df48878fa373a7e76de5"
+    },
+    {
+      "bytes": 969,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/findings.yaml",
+      "sha256": "5d2c3cd40d2354506e408364d52bb4b1cbc782e6f4abcb05e16aa373c73896ab"
+    },
+    {
+      "bytes": 2711,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/handoff.md",
+      "sha256": "c70878404c1b58f03d66d4c5d9f5c3135d30ddf0763c8b2774241eb95397c6c9"
+    },
+    {
+      "bytes": 1933,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/review.md",
+      "sha256": "d6f3d84d929ba4c255a2c8ecb28858f8aa617e40290801dc6f9b34dfce1bb578"
+    },
+    {
+      "bytes": 497,
+      "path": "docs/ADR/QA/QA-0001-parity-cross-skill/traceability.yaml",
+      "sha256": "690ce159433cce485c388ff6ce8397af30b90d3ea1e631d479497a7b107036b7"
+    }
+  ],
+  "status": "observed"
+}

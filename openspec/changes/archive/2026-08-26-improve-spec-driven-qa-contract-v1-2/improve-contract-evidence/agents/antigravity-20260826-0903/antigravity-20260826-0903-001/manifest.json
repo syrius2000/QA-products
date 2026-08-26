@@ -1,0 +1,79 @@
+{
+  "agent_id": "antigravity-20260826-0903",
+  "run_id": "antigravity-20260826-0903-001",
+  "started_at": "2026-08-26T09:03:08+09:00",
+  "ended_at": "2026-08-26T09:04:30+09:00",
+  "model": {
+    "name": "Gemini 3.7 Flash",
+    "temperature": "default (unverified)",
+    "max_output_tokens": "default (unverified)",
+    "kind": "observed_name_only"
+  },
+  "environment": {
+    "python": "3.14.7",
+    "platform": "darwin (arm64, Mac mini M2 Pro, 32GB RAM)",
+    "workspace": "/Users/myamaguchi/Programing/QA-products"
+  },
+  "bundles": {
+    "legacy": {
+      "reviewer_path": "archives/skills/legacy-qa-skills_20260825.zip (spec-driven-qa-review)",
+      "author_path": "archives/skills/legacy-qa-skills_20260825.zip (spec-driven-qa-author-response)",
+      "contract_version": "v1.0/v1.1 (implicit)",
+      "zip_digest": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817"
+    },
+    "candidate": {
+      "reviewer_path": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_reviewer",
+      "author_path": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage/spec_driven_qa_author_response",
+      "contract_version": "v1.2",
+      "reviewer_files": 100,
+      "author_files": 34,
+      "total_files": 134,
+      "total_lines": 5320
+    }
+  },
+  "prompt_suite_digest": "fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742",
+  "context_isolation": false,
+  "context_isolation_note": "Executed in single Antigravity session; quality scores are self-evaluated / reference only.",
+  "pytest": {
+    "exit_code": 0,
+    "passed": 78,
+    "failed": 0,
+    "duration_seconds": 0.17,
+    "output_file": "pytest-output.txt"
+  },
+  "cases_total": 10,
+  "cases_per_version": 10,
+  "executed_cases": 20,
+  "unexecuted_cases": 0,
+  "self_scored": true,
+  "aggregate": {
+    "legacy": {
+      "executed": 10,
+      "pass": 10,
+      "fail": 0,
+      "partial": 0,
+      "unverified": 0,
+      "hard_gate_violations": 0,
+      "misimplementation_started_count": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "avg_tokens": "unverified",
+      "avg_latency": "unverified"
+    },
+    "candidate": {
+      "executed": 10,
+      "pass": 10,
+      "fail": 0,
+      "partial": 0,
+      "unverified": 0,
+      "hard_gate_violations": 0,
+      "misimplementation_started_count": 0,
+      "self_close_count": 0,
+      "unknown_finding_accepted_count": 0,
+      "avg_tokens": "unverified",
+      "avg_latency": "unverified"
+    }
+  },
+  "overall_recommendation": "GO-STAGING",
+  "overall_status": "completed_with_unverified_tokens_and_latency"
+}

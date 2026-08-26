@@ -1,0 +1,16 @@
+{
+  "submission_id": "submission-fixture-001",
+  "case_id": "QA-9001",
+  "contract_version": "1.2",
+  "base_revision": 3,
+  "expected_semantic_digest": "be211554cbc4332e46f262772f8ecc07464f35ede7219cf5a78c168cf238a9c7",
+  "expected_content_digest": "365eacb83e8647adc4c1e2fc6ff4cbc4d4675190097e814ad57f11ac0c03183f",
+  "responses": {
+    "QA-9001-F01": {
+      "disposition": "accepted",
+      "justification": "仕様上の指摘を受け入れる。"
+    }
+  },
+  "evidence": ["観測結果を記録した"],
+  "modified_files": []
+}

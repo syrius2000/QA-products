@@ -1,0 +1,22 @@
+{
+  "schema_version": "contract-regression-fixture-1",
+  "cases": [
+    {
+      "id": "qa-0006-author-submission-boundary",
+      "source": "docs/ADR/QA/QA-0006-author-response-submission-stage/review.md",
+      "expected_checks": [
+        "candidate-author-reviewer-field-denied",
+        "compact-author-self-close-denied"
+      ]
+    },
+    {
+      "id": "qa-0007-separate-digests",
+      "source": "docs/ADR/QA/QA-0007-separate-semantic-content-digests/review.md",
+      "expected_checks": [
+        "compact-stale-semantic-digest-denied",
+        "compact-stale-content-digest-denied",
+        "compact-unknown-digest-version-denied"
+      ]
+    }
+  ]
+}

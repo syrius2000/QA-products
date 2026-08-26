@@ -1,0 +1,130 @@
+{
+  "bundles": [
+    {
+      "byte_count": 216758,
+      "file_count": 144,
+      "kind": "directory",
+      "line_count": 5953,
+      "line_target": {
+        "threshold": 1760,
+        "within_threshold": false
+      },
+      "name": "candidate",
+      "required_paths": [
+        {
+          "path": "bundle_validator.py",
+          "present": true
+        },
+        {
+          "path": "spec_driven_qa_reviewer/SKILL.md",
+          "present": true
+        },
+        {
+          "path": "spec_driven_qa_reviewer/tests/test_state_machine.py",
+          "present": true
+        },
+        {
+          "path": "spec_driven_qa_reviewer/tests/test_submission_validator.py",
+          "present": true
+        },
+        {
+          "path": "spec_driven_qa_author_response/tests/test_execution_policy.py",
+          "present": true
+        }
+      ],
+      "required_paths_present": true,
+      "source_sha256": "6461e3ea247ef1e9801b072fbab99ddda01a1ccac395c1695c876c80a47acb7e",
+      "version": "contract-v1.2-candidate-20260826"
+    },
+    {
+      "byte_count": 39357,
+      "file_count": 31,
+      "kind": "directory",
+      "line_count": 878,
+      "line_target": {
+        "threshold": 1760,
+        "within_threshold": true
+      },
+      "name": "compact",
+      "required_paths": [
+        {
+          "path": "MANIFEST.json",
+          "present": true
+        },
+        {
+          "path": "SPEC.md",
+          "present": true
+        },
+        {
+          "path": "schemas/contract.json",
+          "present": true
+        },
+        {
+          "path": "shared_core/chain.py",
+          "present": true
+        },
+        {
+          "path": "shared_core/runtime.py",
+          "present": true
+        },
+        {
+          "path": "shared_core/guards.py",
+          "present": true
+        },
+        {
+          "path": "shared_core/secrets.py",
+          "present": true
+        },
+        {
+          "path": "spec-driven-qa-review/SKILL.md",
+          "present": true
+        },
+        {
+          "path": "spec-driven-qa-author-response/SKILL.md",
+          "present": true
+        }
+      ],
+      "required_paths_present": true,
+      "source_sha256": "ecf17bf16ca8766e8bee52ec728ccea5c3a0cf2f007a582fd28a63d49d0f7573",
+      "version": "compact-20260827-chain-api"
+    },
+    {
+      "byte_count": 122158,
+      "file_count": 89,
+      "kind": "zip",
+      "line_count": 3407,
+      "line_target": {
+        "threshold": 1760,
+        "within_threshold": false
+      },
+      "name": "legacy",
+      "required_paths": [
+        {
+          "path": "spec-driven-qa-review/SKILL.md",
+          "present": true
+        },
+        {
+          "path": "spec-driven-qa-author-response/SKILL.md",
+          "present": true
+        },
+        {
+          "path": "spec-driven-qa-author-response/tests/test_author_response.py",
+          "present": true
+        }
+      ],
+      "required_paths_present": true,
+      "source_sha256": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817",
+      "version": "legacy-20260825"
+    }
+  ],
+  "integrity_checks": {
+    "safety_functions_and_tests_preserved": true,
+    "stage_safety_regression_present": true,
+    "stage_spec_present": true,
+    "stage_test_file_count": 12,
+    "stage_tests_present": true
+  },
+  "measurement_policy": "Manifestで固定したBundle内容を再読込し、改行とUTF-8を推測せずバイト列から行数を算出する",
+  "schema_version": "size-report-1",
+  "status": "observed"
+}

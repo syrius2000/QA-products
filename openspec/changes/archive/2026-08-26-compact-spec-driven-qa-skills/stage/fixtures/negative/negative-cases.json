@@ -1,0 +1,12 @@
+{
+  "fixture_id": "negative-contract-boundaries",
+  "kind": "negative",
+  "cases": [
+    {"id": "stale-digest", "input": {"expected_semantic_digest": "old", "current_semantic_digest": "new"}, "expected": "reject-without-write"},
+    {"id": "revision-conflict", "input": {"case_revision": 1, "current_case_revision": 2}, "expected": "reject-without-write"},
+    {"id": "author-direct-review-write", "input": {"role": "author", "target": "review.md"}, "expected": "reject-without-write"},
+    {"id": "author-self-close", "input": {"role": "author", "operation": "close"}, "expected": "reject-without-write"},
+    {"id": "unknown-major", "input": {"contract_version": "2.0"}, "expected": "fail-closed"},
+    {"id": "secret-output", "input": {"diagnostic": "token=REDACTED"}, "expected": "never-copy-secret"}
+  ]
+}

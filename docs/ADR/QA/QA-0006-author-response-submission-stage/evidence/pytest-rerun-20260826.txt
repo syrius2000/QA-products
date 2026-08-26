@@ -1,0 +1,8 @@
+実行日時: 2026-08-26T20:31:04+09:00
+コマンド:
+PYTHONDONTWRITEBYTECODE=1 python -B -m pytest --assert=plain -p no:cacheprovider -q \
+  openspec/changes/spec-driven-qa-author-response-submission/stage/tests \
+  openspec/changes/spec-driven-qa-reviewer-case-lifecycle/stage/tests
+
+結果:
+53 passed in 0.25s

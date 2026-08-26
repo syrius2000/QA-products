@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec-Driven QA Contract v1.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "case_id",
+    "case_status",
+    "next_action",
+    "case_revision",
+    "findings",
+    "terminal_result"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.2"},
+    "case_id": {"type": "string", "pattern": "^QA-[0-9]{4,}$"},
+    "case_status": {
+      "enum": [
+        "draft", "review-in-progress", "author-action-required",
+        "author-response-submitted", "verification-in-progress",
+        "adjudication-required", "ready-for-closure", "closed", "blocked",
+        "deferred", "risk-accepted", "superseded", "cancelled"
+      ]
+    },
+    "next_action": {
+      "enum": [
+        "collect-evidence", "author-response", "reviewer-verification",
+        "adjudication", "owner-decision", "reopen", "none"
+      ]
+    },
+    "case_revision": {"type": "integer", "minimum": 0},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "finding_status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^QA-[0-9]{4,}-F[0-9]+$"},
+          "severity": {"enum": ["critical", "high", "medium", "low"]},
+          "finding_status": {
+            "enum": ["open", "in-progress", "awaiting-author", "verification-required", "closed"]
+          },
+          "technical_status": {
+            "enum": ["fixed-and-verified", "partially-fixed", "unverified", "failed"]
+          },
+          "author_disposition": {
+            "type": ["string", "null"],
+            "enum": ["accepted", "rejected-with-evidence", "fix-submitted", "deferred", "risk-accepted", "not-applicable", null]
+          },
+          "owner_disposition": {"type": ["string", "null"]},
+          "required_evidence": {"type": "array"},
+          "evidence": {"type": "array"}
+        }
+      }
+    },
+    "terminal_result": {
+      "type": ["string", "null"],
+      "enum": ["fixed-and-verified", "risk-accepted", "evidence-gap", "deferred", "not-reproducible", null]
+    }
+  }
+}

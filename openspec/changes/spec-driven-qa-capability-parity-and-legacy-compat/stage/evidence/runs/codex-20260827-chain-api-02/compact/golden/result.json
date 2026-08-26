@@ -1,0 +1,33 @@
+{
+  "adapter": "compact JSON Launcher",
+  "bundle": {
+    "kind": "directory",
+    "name": "compact",
+    "source_sha256": "5ef718afaabec0528d3c3fd81546ce74db8a60b2429bc48d9c4a79f0bbda32ef",
+    "version": "compact-20260827-chain-api"
+  },
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-B",
+    "/Users/myamaguchi/Programing/QA-products/openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/spec-driven-qa-bundle/spec-driven-qa-review/launcher.py",
+    "review",
+    "--json",
+    "{\"request_id\":\"parity-golden\",\"fixture_class\":\"golden\",\"fixture_path\":\"input.json\"}"
+  ],
+  "execution_status": "observed",
+  "exit_code": 0,
+  "fixture": {
+    "class": "golden",
+    "digest": "2e438212ac77d60d7a3e016239a131c62cd2069b90833fc5ad2db524cead040c",
+    "path": "fixtures/golden.json"
+  },
+  "input": "input.json",
+  "schema_version": "parity-run-result-1",
+  "side_effects_snapshot": "side-effects-snapshot.json",
+  "state_snapshot": "state-snapshot.json",
+  "structured_output": "structured-output.json",
+  "unverified": [
+    "state snapshot: fixture-specific state adapter is not defined",
+    "cross-version semantic equivalence: not inferred from one execution"
+  ]
+}

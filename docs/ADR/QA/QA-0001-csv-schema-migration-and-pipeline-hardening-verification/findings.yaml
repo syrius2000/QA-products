@@ -1,0 +1,134 @@
+schema_version: "1.0"
+case_id: QA-0001
+findings:
+  - id: QA-0001-F01
+    title: "認証情報外部化の主張と実装が不一致"
+    category: security
+    severity: high
+    severity_rationale: "InfluxDBトークン、QNAP管理者パスワード、Grafana初期認証情報がソースまたはデプロイ設定に残る。漏えい時の不正書き込み・管理者アクセスにつながるため、是正変更の完了条件を満たさない。"
+    status: risk-accepted
+    first_seen_cycle: 1
+    claim_refs: [CLAIM-006]
+    requirement_refs: [REQ-SEC-01]
+    evidence:
+      - type: code
+        reference: "omron_envsensor/storage_influx.py:18-22"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+      - type: code
+        reference: "qnap/deploy_qnap.sh:8-18,41-52"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+      - type: code
+        reference: "qnap/docker-compose.yml:18-25,40-43"
+        revision: "d0178d8b2327ee6dfa3f3df6a71e4de2554c26c1"
+    limitations:
+      - "資格情報の値はQA記録へ転記しない。既存値が実運用で有効かどうかは未確認。"
+    requested_action: "全資格情報をsecret fileまたは環境変数のみから取得し、リポジトリ内の直書き・安全でないフォールバックを除去する。既存資格情報をローテーションし、未設定時はfail-closedとなるテストを追加する。"
+    fingerprint:
+      category: security
+      requirement_id: REQ-SEC-01
+      primary_path: "qnap/deploy_qnap.sh"
+      semantic_key: "credentials-not-externalized"
+    author_response:
+      cycle: 3
+      action_taken: "qnap/deploy_qnap.sh の成功メッセージから固定ユーザー・パスワード表示を完全撤廃し、QNAP_PASS, INFLUXDB_PASSWORD, INFLUXDB_TOKEN, GRAFANA_PASSWORD の全必須資格情報に対する事前検証（fail-closed）を追加。.env.example を全変数網羅に更新。bin/omronCollector.sh からインライン環境変数展開を排除し、omron_collector.py 内で権限600の .iot_env から直接安全にロードする load_env_file を実装。プロセス一覧（ps）およびSSHコマンド行への秘密値露出を完全排除。"
+      implemented_revision: "0088b8c256878aff4e58ea9b474538693f4d93fa"
+    verification:
+      cycle: 3
+      reviewed_revision: "0088b8c256878aff4e58ea9b474538693f4d93fa"
+      result: partially-fixed
+      evidence:
+        - "cycles/cycle-03-verification.md"
+        - "qnap/deploy_qnap.sh:23-52,101-103"
+        - "bin/NASmount.sh:22-28"
+        - "bin/qnap1:24-30"
+        - "omron_envsensor/omron_collector.py:46-70"
+        - ".env.example:1-22"
+      rationale: "固定表示と必須変数検証は改善されたが、QNAPパスワードをSSHコマンドへ、周辺資格情報をプロセス引数へ展開する経路が残り、mode 600もコードで検証されない。High Finding全体は未解決。"
+      residual_risk: "QNAPパスワード、CIFSパスワード、expect入力がプロセス・シェル経路へ露出し得る。実機権限とCompose展開も未独立検証。"
+    adjudication:
+      decided_by: "human-owner"
+      decided_at: "2026-08-25T00:45:00+09:00"
+      decision: "risk-accepted"
+      rationale: "本システムは家庭内LAN限定、管理者が手動実行する非常駐ツールであり、外部公開・安全系制御・厳格な機密性要件を持たないため、当該リスクを受容する。"
+      controls: "リポジトリへの実パスワード保存は禁止し、SSHアクセス制限、ファイル権限600、運用者限定実行を管理策とする。"
+      review_conditions: "外部公開時、マルチユーザー環境への移行時、または安全系制御への転用時に再評価する。"
+
+  - id: QA-0001-F02
+    title: "sequence重複排除が再起動境界で揮発する"
+    category: data-integrity
+    severity: medium
+    severity_rationale: "同一プロセス内では抑止されるが、last_seqはメモリ上の単一値であり、再起動後に直前のsequenceを再処理する。実機CSVで再起動後のSeq 178再保存を観測したため、継続運用時の重複を保証できない。"
+    status: fixed-and-verified
+    first_seen_cycle: 1
+    claim_refs: [CLAIM-005]
+    requirement_refs: [REQ-SEQ-01]
+    evidence:
+      - type: code
+        reference: "omron_envsensor/omron_collector.py:94-102"
+        revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+      - type: runtime
+        reference: "evidence/README.md#EV-VERIFICATION-PI-01"
+        revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+    limitations:
+      - "仕様文は再起動を明示していないため、再起動を含む重複ポリシーの明文化が必要。"
+    requested_action: "再起動後も重複を抑止する永続状態またはCSV/InfluxDB照合を設計し、再起動シナリオを含むテストと実機証拠を追加する。再起動後の1件だけを許容するなら仕様を明記する。"
+    fingerprint:
+      category: data-integrity
+      requirement_id: REQ-SEQ-01
+      primary_path: "omron_envsensor/omron_collector.py"
+      semantic_key: "sequence-dedup-restart-boundary"
+    author_response:
+      cycle: 1
+      action_taken: "storage_csv.py に get_last_sequences() を実装し、コレクター起動時に CSV から各デバイスの直近 sequence_number を自動復元して last_seq_map を初期化。再起動後も直前 sequence の再処理を 100% 抑止。test_06_csv_sequence_restoration_across_restarts および実機ログで動作実証済み。"
+      implemented_revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+    verification:
+      cycle: 1
+      reviewed_revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+      result: fixed-and-verified
+      evidence:
+        - "evidence/README.md#EV-VERIFICATION-LOCAL-01"
+        - "evidence/README.md#EV-VERIFICATION-PI-01"
+        - "omron_envsensor/storage_csv.py:135-170"
+        - "omron_envsensor/omron_collector.py:74-81,106-117"
+      rationale: "CSVからの復元実装、7件テスト、Pi起動時のSeq 182復元ログが同一revisionで整合した。"
+      residual_risk: "現在月のCSVだけを読むため月跨ぎ・複数センサーの再起動復元は別途検証が必要。"
+
+  - id: QA-0001-F03
+    title: "sequence dedupキーがセンサー単位でない"
+    category: correctness
+    severity: medium
+    severity_rationale: "last_seqがコレクターに1つだけ存在する。複数センサーを収集する将来拡張では、異なるdevice/MACが同じsequenceを発した場合に2台目の有効データを誤って抑止する。"
+    status: fixed-and-verified
+    first_seen_cycle: 1
+    claim_refs: [CLAIM-005]
+    requirement_refs: [REQ-SEQ-01, REQ-MULTI-01]
+    evidence:
+      - type: code
+        reference: "omron_envsensor/omron_collector.py:35-45,94-102"
+        revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+      - type: test-gap
+        reference: "tests/test_pipeline.py:300-326（異なるMAC・同一sequenceの独立dedupテスト）"
+        revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+    limitations:
+      - "現在のCLI実行はtarget MACを1台に絞るため、現行単一センサー運用での実害は未観測。"
+    requested_action: "dedup状態をMACまたはdevice_id単位に分離し、2台が同一sequenceを発するケースを回帰テストへ追加する。複数センサーを対象外とするならPurposeと仕様から将来要件を除外する。"
+    fingerprint:
+      category: correctness
+      requirement_id: REQ-MULTI-01
+      primary_path: "omron_envsensor/omron_collector.py"
+      semantic_key: "sequence-dedup-device-key"
+    author_response:
+      cycle: 1
+      action_taken: "self.last_seq を廃止し、self.last_seq_map: dict[str, int] による MAC/device_id 別の独立判定へ改修。複数センサーが同一 sequence を発出しても独立して正常処理されることを test_07_multi_device_independent_dedup で実証済み。"
+      implemented_revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+    verification:
+      cycle: 1
+      reviewed_revision: "8a8770480aad7d939ec03ecca835e7c8720b97ed"
+      result: fixed-and-verified
+      evidence:
+        - "evidence/README.md#EV-VERIFICATION-LOCAL-01"
+        - "evidence/README.md#EV-VERIFICATION-F02-F03-01"
+        - "omron_envsensor/omron_collector.py:106-117"
+        - "tests/test_pipeline.py:280-326"
+      rationale: "dedup keyがMAC単位に変更され、異なるMAC・同一sequenceを両方処理するテストと同一MACの重複抑止テストが成功した。"
+      residual_risk: "複数センサーの再起動後復元を実機または統合テストで検証していない。"

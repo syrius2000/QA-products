@@ -1,0 +1,263 @@
+{
+  "agent_count": 5,
+  "agent_runs": [
+    {
+      "agent_id": "antigravity-20260826-0903",
+      "bundle_digests": {
+        "candidate": null,
+        "legacy": "77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817"
+      },
+      "cases_total": 10,
+      "ended_at": "2026-08-26T09:04:30+09:00",
+      "executed_cases": 20,
+      "metrics": {
+        "input_tokens": "unverified",
+        "latency": "unverified",
+        "output_tokens": "unverified",
+        "total_tokens": "unverified"
+      },
+      "model": {
+        "kind": "observed_name_only",
+        "max_output_tokens": "default (unverified)",
+        "name": "Gemini 3.7 Flash",
+        "temperature": "default (unverified)"
+      },
+      "prompt_suite_digest": "fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742",
+      "pytest": {
+        "duration_seconds": 0.17,
+        "exit_code": 0,
+        "failed": 0,
+        "output_file": "pytest-output.txt",
+        "passed": 78
+      },
+      "required_field_status": {
+        "bundle_digest": "observed",
+        "conditions": "observed",
+        "execution_count": "observed",
+        "output": "observed",
+        "prompt_suite": "observed",
+        "results": "observed",
+        "timing": "observed",
+        "unexecuted_items": "observed"
+      },
+      "required_fields_complete": true,
+      "run_id": "antigravity-20260826-0903-001",
+      "self_scored": true,
+      "source_evidence": "antigravity-20260826-0903/antigravity-20260826-0903-001",
+      "started_at": "2026-08-26T09:03:08+09:00",
+      "unexecuted_cases": 0
+    },
+    {
+      "agent_id": "codex-20260826-0904",
+      "bundle_digests": {},
+      "cases_total": null,
+      "ended_at": null,
+      "executed_cases": null,
+      "metrics": {
+        "input_tokens": "unverified",
+        "latency": "unverified",
+        "output_tokens": "unverified",
+        "total_tokens": "unverified"
+      },
+      "model": "Codex GPT-5",
+      "prompt_suite_digest": null,
+      "pytest": {
+        "status": "unverified"
+      },
+      "required_field_status": {
+        "bundle_digest": "observed",
+        "conditions": "observed",
+        "execution_count": "unverified",
+        "output": "observed",
+        "prompt_suite": "observed",
+        "results": "observed",
+        "timing": "observed",
+        "unexecuted_items": "unverified"
+      },
+      "required_fields_complete": false,
+      "run_id": "codex-20260826-0904-001",
+      "self_scored": null,
+      "source_evidence": "codex-20260826-0904/codex-20260826-0904-001",
+      "started_at": null,
+      "unexecuted_cases": null
+    },
+    {
+      "agent_id": "composer-20260826-0840",
+      "bundle_digests": {
+        "candidate": null,
+        "legacy": null
+      },
+      "cases_total": 10,
+      "ended_at": "2026-08-26T08:40:42.958518+09:00",
+      "executed_cases": 20,
+      "metrics": {
+        "input_tokens": "unverified",
+        "latency": "unverified",
+        "output_tokens": "unverified",
+        "total_tokens": "unverified"
+      },
+      "model": {
+        "kind": "observed_name_only",
+        "max_output_tokens": "unverified",
+        "name": "Composer (Cursor Agent)",
+        "temperature": "unverified"
+      },
+      "prompt_suite_digest": "6d9565b682dbcd553617daac3ad974c0e3a89a43cf7564bf17e6e90741fca056",
+      "pytest": {
+        "status": "unverified"
+      },
+      "required_field_status": {
+        "bundle_digest": "observed",
+        "conditions": "observed",
+        "execution_count": "observed",
+        "output": "observed",
+        "prompt_suite": "observed",
+        "results": "observed",
+        "timing": "observed",
+        "unexecuted_items": "observed"
+      },
+      "required_fields_complete": true,
+      "run_id": "composer-20260826-0840-001",
+      "self_scored": null,
+      "source_evidence": "composer-20260826-0840/composer-20260826-0840-001",
+      "started_at": "2026-08-26T08:40:42.953116+09:00",
+      "unexecuted_cases": null
+    },
+    {
+      "agent_id": "cursor-20260826-0903",
+      "bundle_digests": {
+        "candidate": null,
+        "legacy": null
+      },
+      "cases_total": null,
+      "ended_at": "2026-08-26T09:08:00+09:00",
+      "executed_cases": null,
+      "metrics": {
+        "input_tokens": "unverified",
+        "latency": "unverified",
+        "output_tokens": "unverified",
+        "total_tokens": "unverified"
+      },
+      "model": {
+        "kind": "observed_name_only",
+        "name": "Composer (Cursor Agent / Auto)",
+        "settings": {
+          "max_output_tokens": "unverified",
+          "temperature": "unverified"
+        }
+      },
+      "prompt_suite_digest": null,
+      "pytest": {
+        "command": "/Users/myamaguchi/.local/venvs/ide/bin/python -B -m pytest --assert=plain -p no:cacheprovider -q spec_driven_qa_reviewer/tests spec_driven_qa_author_response/tests",
+        "cwd": "openspec/changes/improve-spec-driven-qa-contract-v1-2/stage",
+        "exit_code": 0,
+        "summary": "78 passed in 0.18s"
+      },
+      "required_field_status": {
+        "bundle_digest": "observed",
+        "conditions": "observed",
+        "execution_count": "unverified",
+        "output": "observed",
+        "prompt_suite": "unverified",
+        "results": "observed",
+        "timing": "observed",
+        "unexecuted_items": "unverified"
+      },
+      "required_fields_complete": false,
+      "run_id": "cursor-20260826-0903-001",
+      "self_scored": true,
+      "source_evidence": "cursor-20260826-0903/cursor-20260826-0903-001",
+      "started_at": "2026-08-26T09:03:31+09:00",
+      "unexecuted_cases": null
+    },
+    {
+      "agent_id": "gemini-3-7-flash-20260826-0840",
+      "bundle_digests": {},
+      "cases_total": null,
+      "ended_at": null,
+      "executed_cases": 10,
+      "metrics": {
+        "input_tokens": "unverified",
+        "latency": "unverified",
+        "output_tokens": "unverified",
+        "total_tokens": "unverified"
+      },
+      "model": "Gemini 3.7 Flash",
+      "prompt_suite_digest": "b1c77f781c30787a02de72c5b18bbe565597847082c9f0d1944564e02c30901a",
+      "pytest": {
+        "status": "unverified"
+      },
+      "required_field_status": {
+        "bundle_digest": "observed",
+        "conditions": "observed",
+        "execution_count": "unverified",
+        "output": "observed",
+        "prompt_suite": "observed",
+        "results": "observed",
+        "timing": "observed",
+        "unexecuted_items": "observed"
+      },
+      "required_fields_complete": false,
+      "run_id": "gemini-3-7-flash-20260826-0840-001",
+      "self_scored": null,
+      "source_evidence": "gemini-3-7-flash-20260826-0840/gemini-3-7-flash-20260826-0840-001",
+      "started_at": null,
+      "unexecuted_cases": 0
+    }
+  ],
+  "errors": [],
+  "metric_policy": "取得不能なToken・Latency・正答率はunverifiedのまま保持し、他Agentの値で補完しない",
+  "metric_status_summary": {
+    "input_tokens": [
+      "unverified"
+    ],
+    "latency": [
+      "unverified"
+    ],
+    "output_tokens": [
+      "unverified"
+    ],
+    "total_tokens": [
+      "unverified"
+    ]
+  },
+  "required_field_status_summary": {
+    "bundle_digest": {
+      "observed": 5,
+      "unverified": 0
+    },
+    "conditions": {
+      "observed": 5,
+      "unverified": 0
+    },
+    "execution_count": {
+      "observed": 2,
+      "unverified": 3
+    },
+    "output": {
+      "observed": 5,
+      "unverified": 0
+    },
+    "prompt_suite": {
+      "observed": 4,
+      "unverified": 1
+    },
+    "results": {
+      "observed": 5,
+      "unverified": 0
+    },
+    "timing": {
+      "observed": 5,
+      "unverified": 0
+    },
+    "unexecuted_items": {
+      "observed": 3,
+      "unverified": 2
+    }
+  },
+  "required_fields_policy": "項目名の別名は限定的に対応し、存在を確認できないPrompt・出力・条件・時刻・件数・digest・結果・未実行項目はunverifiedとする",
+  "run_count": 5,
+  "schema_version": "agent-evidence-aggregate-1",
+  "source_manifest": "openspec/changes/spec-driven-qa-capability-parity-and-legacy-compat/stage/evidence/agents/source-manifest.json",
+  "status": "observed-with-unverified"
+}
