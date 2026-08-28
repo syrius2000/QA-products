@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/quality-loop/case.schema.json",
+  "title": "Quality Loop Case",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "case_metadata",
+    "baseline",
+    "implementation_authorization",
+    "change_observation",
+    "findings",
+    "evidence",
+    "responses",
+    "verifications",
+    "adjudications",
+    "events",
+    "handoff"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "case_metadata": {
+      "type": "object",
+      "required": ["case_id", "revision", "status", "owner", "cycle_count", "cycle_limit", "created_at", "updated_at"]
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["purpose", "requirements", "acceptance_criteria", "targets", "target_revision"]
+    },
+    "implementation_authorization": {"type": "object"},
+    "change_observation": {"type": "object"},
+    "findings": {"type": "array"},
+    "evidence": {"type": "array"},
+    "responses": {"type": "array"},
+    "verifications": {"type": "array"},
+    "adjudications": {"type": "array"},
+    "events": {"type": "array"},
+    "handoff": {"type": "object"}
+  },
+  "additionalProperties": false
+}

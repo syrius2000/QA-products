@@ -1,0 +1,582 @@
+{
+  "schema_version": "1.0",
+  "case_metadata": {
+    "case_id": "QMS-README-0001",
+    "revision": 9,
+    "status": "owner-adjudication",
+    "owner": "owner-yamaguchi",
+    "cycle_count": 3,
+    "cycle_limit": 3,
+    "created_at": "2026-08-27T21:10:47.184507Z",
+    "updated_at": "2026-08-28T08:05:05.584285Z"
+  },
+  "baseline": {
+    "purpose": "初めての利用者がQuality Loopの案件開始と次工程を理解できることを確認する",
+    "requirements": [
+      {
+        "requirement_id": "REQ-README-001",
+        "text": "READMEだけでcreate-caseの入力に必要な項目と開始方法を準備できること"
+      },
+      {
+        "requirement_id": "REQ-README-002",
+        "text": "READMEが6つの公開操作とcase.jsonを直接編集しない境界を説明すること"
+      }
+    ],
+    "acceptance_criteria": [
+      "create-caseの最小入力例または同等の必須項目説明がREADMEにあること",
+      "6操作とcase.json非直接編集の説明がREADMEにあること"
+    ],
+    "exclusions": [
+      "外部Skill環境への配備",
+      "Legacy互換性",
+      "README以外の成果物"
+    ],
+    "targets": [
+      "quality-loop/README.md"
+    ],
+    "target_revision": "working-tree-dd68fae45e5b5a97a8c454fbe6233f860f2bbc14a157e1681acd7547fb89cacc"
+  },
+  "implementation_authorization": {
+    "allowed": true,
+    "finding_ids": [
+      "F-README-001"
+    ],
+    "allowed_targets": [
+      "quality-loop/README.md"
+    ]
+  },
+  "change_observation": {
+    "method": "finite-manifest",
+    "scope": [
+      "quality-loop/README.md"
+    ],
+    "baseline_evidence_id": null,
+    "exclusions": [],
+    "limitations": [
+      "本試行では対象成果物を変更しない"
+    ]
+  },
+  "findings": [
+    {
+      "finding_id": "F-README-001",
+      "classification": "evidence-gap",
+      "severity": "low",
+      "requirement_ref": "REQ-README-001",
+      "observed_fact": "READMEの1〜33行には公開操作、開発時の実行、Skillの説明はあるが、create-caseに必要なowner、baseline、case_idなどの最小入力例または必須項目説明がない。",
+      "impact": "初めての利用者はREADMEだけでは案件開始入力を準備できず、テンプレートまたは機能仕様を追加で探索する必要がある。",
+      "expected_state": "READMEにcreate-caseの最小入力例、または必須項目とtemplates/intake.jsonへの明確な導線がある。",
+      "verification_method": "READMEを再読し、案件開始に必要な項目をREADMEだけから特定できることを確認する。",
+      "evidence_refs": [
+        "EV-README-001"
+      ],
+      "status": "verified"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-README-001",
+      "level": "observed",
+      "target_revision": "working-tree-dd68fae45e5b5a97a8c454fbe6233f860f2bbc14a157e1681acd7547fb89cacc",
+      "method": "READMEの行1〜33を直接確認し、SHA-256を計算",
+      "result": "create-case最小入力例または必須項目説明は未観測",
+      "summary": "quality-loop/README.md SHA-256: dd68fae45e5b5a97a8c454fbe6233f860f2bbc14a157e1681acd7547fb89cacc"
+    },
+    {
+      "evidence_id": "EV-README-FIX-001",
+      "level": "observed",
+      "target_revision": "working-tree-39264948f0d89b58a9cf0be7647f606432725ae9169fe418d17dafea6c346c25",
+      "method": "READMEの行18〜29を直接確認し、SHA-256を計算",
+      "result": "最小入力例とテンプレート導線を確認",
+      "summary": "quality-loop/README.md SHA-256: 39264948f0d89b58a9cf0be7647f606432725ae9169fe418d17dafea6c346c25"
+    },
+    {
+      "evidence_id": "EV-README-VERIFY-001",
+      "level": "observed",
+      "target_revision": "working-tree-39264948f0d89b58a9cf0be7647f606432725ae9169fe418d17dafea6c346c25",
+      "method": "READMEの行18〜29を独立に再読",
+      "result": "passed",
+      "summary": "必須項目、テンプレート導線、create-case実行例、handoff、case.json非直接編集を確認"
+    },
+    {
+      "evidence_id": "EV-README-BEFORE-001",
+      "level": "observed",
+      "target_revision": "working-tree-dd68fae45e5b5a97a8c454fbe6233f860f2bbc14a157e1681acd7547fb89cacc",
+      "method": "変更前SHA-256記録",
+      "result": "captured",
+      "summary": "quality-loop/README.md SHA-256: dd68fae45e5b5a97a8c454fbe6233f860f2bbc14a157e1681acd7547fb89cacc"
+    },
+    {
+      "evidence_id": "EV-README-AFTER-001",
+      "level": "observed",
+      "target_revision": "working-tree-39264948f0d89b58a9cf0be7647f606432725ae9169fe418d17dafea6c346c25",
+      "method": "変更後SHA-256記録",
+      "result": "captured",
+      "summary": "quality-loop/README.md SHA-256: 39264948f0d89b58a9cf0be7647f606432725ae9169fe418d17dafea6c346c25"
+    }
+  ],
+  "responses": [
+    {
+      "finding_id": "F-README-001",
+      "disposition": "cannot-verify",
+      "rationale": "Ownerのimplementation_authorizationがfalseであり、READMEへ最小入力例または導線を追加する修正は許可されていない。変更なしではFindingの解消を検証できないため、許可範囲を含むOwner裁定が必要である。",
+      "evidence_refs": [],
+      "changed_targets": [],
+      "submission_revision": 3
+    },
+    {
+      "finding_id": "F-README-001",
+      "disposition": "cannot-verify",
+      "rationale": "Ownerの実装許可が引き続きfalseであり、READMEを変更できない。最小入力例または導線の追加にはOwner裁定が必要である。",
+      "evidence_refs": [],
+      "changed_targets": [],
+      "submission_revision": 5
+    },
+    {
+      "finding_id": "F-README-001",
+      "disposition": "fix-submitted",
+      "rationale": "READMEにcreate-caseの必須項目、templates/intake.jsonへの導線、最小実行例、次工程handoffの扱いを追加した。",
+      "evidence_refs": [
+        "EV-README-FIX-001"
+      ],
+      "changed_targets": [
+        "quality-loop/README.md"
+      ],
+      "submission_revision": 8
+    }
+  ],
+  "verifications": [
+    {
+      "finding_id": "F-README-001",
+      "result": "unverified",
+      "rationale": "Implementer提出ではREADME変更が行われず、初回レビューで観測した最小入力例または明確な導線の欠落は解消されていない。実装許可なしのため、提出内容だけから有効性を確認できない。",
+      "evidence_refs": [],
+      "verification_revision": 4,
+      "change_observation": {
+        "method": "none",
+        "scope": [],
+        "observed_changed_targets": [],
+        "limitations": []
+      }
+    },
+    {
+      "finding_id": "F-README-001",
+      "result": "unverified",
+      "rationale": "README変更Evidenceは提出されておらず、Owner実装許可もないため、有効性確認はできない。未解決Findingの次の判断はOwnerが担う。",
+      "evidence_refs": [],
+      "verification_revision": 6,
+      "change_observation": {
+        "method": "none",
+        "scope": [],
+        "observed_changed_targets": [],
+        "limitations": []
+      }
+    },
+    {
+      "finding_id": "F-README-001",
+      "result": "verified",
+      "rationale": "READMEの行18〜29にcreate-caseの必須項目、templates/intake.jsonへの導線、実行コマンド、次工程handoff、case.json非直接編集が記載され、REQ-README-001を満たすことを独立確認した。",
+      "evidence_refs": [
+        "EV-README-VERIFY-001"
+      ],
+      "verification_revision": 9,
+      "change_observation": {
+        "method": "finite-manifest",
+        "scope": [
+          "quality-loop/README.md"
+        ],
+        "before_evidence_id": "EV-README-BEFORE-001",
+        "after_evidence_id": "EV-README-AFTER-001",
+        "observed_changed_targets": [
+          "quality-loop/README.md"
+        ],
+        "limitations": [
+          "本試行の観測対象はOwnerが指定したREADMEのみであり、他の未追跡ファイルは対象外"
+        ]
+      }
+    }
+  ],
+  "adjudications": [
+    {
+      "decision": "rework-requested",
+      "rationale": "初回利用者の案件開始を支援するため、READMEに最小入力例またはテンプレートへの明確な導線を追加する。変更対象はREADMEだけとする。",
+      "conditions": [
+        "README以外の対象成果物を変更しない",
+        "既存の6操作とcase.json非直接編集の説明を維持する"
+      ],
+      "residual_risks": [],
+      "adjudication_revision": 7
+    }
+  ],
+  "events": [
+    {
+      "operation_id": "op-create-qms-readme-0001",
+      "actor_id": "owner-yamaguchi",
+      "role": "owner",
+      "invocation_id": "owner-qms-readme-0001",
+      "operation": "create-case",
+      "revision": 1,
+      "timestamp": "2026-08-27T21:10:47.184507Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 1,
+        "state_changed": true,
+        "next_role": "reviewer",
+        "next_action": "review",
+        "handoff": {
+          "handoff_id": "handoff-1b60b2cd-6ba3-42d0-9b5b-0a3fe4f5f450",
+          "issued_revision": 1,
+          "next_role": "reviewer",
+          "next_action": "review",
+          "purpose": "baselineと対象成果物を独立レビューする",
+          "inputs": [
+            "baseline",
+            "対象成果物",
+            "利用可能なEvidence"
+          ],
+          "open_items": [],
+          "expected_outputs": [
+            "FindingまたはFindingなしの根拠",
+            "次工程handoff"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-review-qms-readme-0001",
+      "actor_id": "reviewer-codex",
+      "role": "reviewer",
+      "invocation_id": "reviewer-qms-readme-initial-001",
+      "operation": "review",
+      "revision": 2,
+      "previous_handoff_id": "handoff-1b60b2cd-6ba3-42d0-9b5b-0a3fe4f5f450",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-27T21:11:13.561813Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 2,
+        "state_changed": true,
+        "next_role": "implementer",
+        "next_action": "submit-response",
+        "handoff": {
+          "handoff_id": "handoff-850994de-4776-4e45-ba96-d192e902dece",
+          "issued_revision": 2,
+          "next_role": "implementer",
+          "next_action": "submit-response",
+          "purpose": "Findingごとに回答し、許可範囲だけを修正する",
+          "inputs": [
+            "baseline",
+            "review結果",
+            "Evidence"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別回答",
+            "変更Evidence",
+            "次工程handoff"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-submit-qms-readme-0001",
+      "actor_id": "implementer-codex",
+      "role": "implementer",
+      "invocation_id": "implementer-qms-readme-001",
+      "operation": "submit-response",
+      "revision": 3,
+      "previous_handoff_id": "handoff-850994de-4776-4e45-ba96-d192e902dece",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-27T21:11:33.640423Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 3,
+        "state_changed": true,
+        "next_role": "reviewer",
+        "next_action": "verify",
+        "handoff": {
+          "handoff_id": "handoff-e6e071fc-dbc6-4759-9d94-92702539e5f0",
+          "issued_revision": 3,
+          "next_role": "reviewer",
+          "next_action": "verify",
+          "purpose": "Implementer提出と修正結果を独立検証する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "変更Evidence",
+            "変更観測"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別検証",
+            "変更範囲照合",
+            "次工程handoff"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-verify-qms-readme-0001",
+      "actor_id": "reviewer-codex-independent",
+      "role": "reviewer",
+      "invocation_id": "reviewer-qms-readme-verify-002",
+      "operation": "verify",
+      "revision": 4,
+      "previous_handoff_id": "handoff-e6e071fc-dbc6-4759-9d94-92702539e5f0",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-27T21:11:51.881585Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 4,
+        "state_changed": true,
+        "next_role": "implementer",
+        "next_action": "submit-response",
+        "handoff": {
+          "handoff_id": "handoff-6375cf09-c9ff-4136-b70b-f819db8f6c26",
+          "issued_revision": 4,
+          "next_role": "implementer",
+          "next_action": "submit-response",
+          "purpose": "未解決または新規Findingへ回答する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "Reviewer検証",
+            "Evidence"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別回答",
+            "変更Evidence"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-submit-qms-readme-0002",
+      "actor_id": "implementer-codex",
+      "role": "implementer",
+      "invocation_id": "implementer-qms-readme-002",
+      "operation": "submit-response",
+      "revision": 5,
+      "previous_handoff_id": "handoff-6375cf09-c9ff-4136-b70b-f819db8f6c26",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-27T21:13:49.386298Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 5,
+        "state_changed": true,
+        "next_role": "reviewer",
+        "next_action": "verify",
+        "handoff": {
+          "handoff_id": "handoff-62279adc-682e-4c6a-b0ab-afd42022f07c",
+          "issued_revision": 5,
+          "next_role": "reviewer",
+          "next_action": "verify",
+          "purpose": "Implementer提出と修正結果を独立検証する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "変更Evidence",
+            "変更観測"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別検証",
+            "変更範囲照合",
+            "次工程handoff"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-verify-qms-readme-0002",
+      "actor_id": "reviewer-codex-independent",
+      "role": "reviewer",
+      "invocation_id": "reviewer-qms-readme-verify-003",
+      "operation": "verify",
+      "revision": 6,
+      "previous_handoff_id": "handoff-62279adc-682e-4c6a-b0ab-afd42022f07c",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-27T21:14:03.857763Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 6,
+        "state_changed": true,
+        "next_role": "owner",
+        "next_action": "adjudicate",
+        "handoff": {
+          "handoff_id": "handoff-919525a6-0e9e-42fc-98cc-b01ba295e177",
+          "issued_revision": 6,
+          "next_role": "owner",
+          "next_action": "adjudicate",
+          "purpose": "実装許可がない未解決Findingを裁定する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "Reviewer検証",
+            "Evidence"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Owner裁定"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-adjudicate-qms-readme-rework-001",
+      "actor_id": "owner-yamaguchi",
+      "role": "owner",
+      "invocation_id": "owner-qms-readme-rework-002",
+      "operation": "adjudicate",
+      "revision": 7,
+      "previous_handoff_id": "handoff-919525a6-0e9e-42fc-98cc-b01ba295e177",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-28T08:03:55.049092Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 7,
+        "state_changed": true,
+        "next_role": "implementer",
+        "next_action": "submit-response",
+        "handoff": {
+          "handoff_id": "handoff-ab9d7666-aca0-42ca-b758-2a648cb9ac9b",
+          "issued_revision": 7,
+          "next_role": "implementer",
+          "next_action": "submit-response",
+          "purpose": "Owner裁定に基づき追加改善を提出する",
+          "inputs": [
+            "Owner裁定",
+            "未解決Finding"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別回答",
+            "変更Evidence"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-submit-qms-readme-fix-001",
+      "actor_id": "implementer-codex",
+      "role": "implementer",
+      "invocation_id": "implementer-qms-readme-fix-003",
+      "operation": "submit-response",
+      "revision": 8,
+      "previous_handoff_id": "handoff-ab9d7666-aca0-42ca-b758-2a648cb9ac9b",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-28T08:04:28.486713Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 8,
+        "state_changed": true,
+        "next_role": "reviewer",
+        "next_action": "verify",
+        "handoff": {
+          "handoff_id": "handoff-57ebb35f-746c-4bb9-8107-c75944928b8e",
+          "issued_revision": 8,
+          "next_role": "reviewer",
+          "next_action": "verify",
+          "purpose": "Implementer提出と修正結果を独立検証する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "変更Evidence",
+            "変更観測"
+          ],
+          "open_items": [
+            "F-README-001"
+          ],
+          "expected_outputs": [
+            "Finding別検証",
+            "変更範囲照合",
+            "次工程handoff"
+          ],
+          "status": "issued"
+        }
+      }
+    },
+    {
+      "operation_id": "op-verify-qms-readme-fix-001",
+      "actor_id": "reviewer-codex-independent",
+      "role": "reviewer",
+      "invocation_id": "reviewer-qms-readme-verify-fix-004",
+      "operation": "verify",
+      "revision": 9,
+      "previous_handoff_id": "handoff-57ebb35f-746c-4bb9-8107-c75944928b8e",
+      "handoff_acknowledged": true,
+      "timestamp": "2026-08-28T08:05:05.584285Z",
+      "result": {
+        "status": "ok",
+        "case_id": "QMS-README-0001",
+        "case_revision": 9,
+        "state_changed": true,
+        "next_role": "owner",
+        "next_action": "adjudicate",
+        "handoff": {
+          "handoff_id": "handoff-2eb85b11-f614-4194-9ac0-11724929824a",
+          "issued_revision": 9,
+          "next_role": "owner",
+          "next_action": "adjudicate",
+          "purpose": "独立検証結果と残余リスクを裁定する",
+          "inputs": [
+            "Finding",
+            "Implementer回答",
+            "Reviewer検証",
+            "Evidence"
+          ],
+          "open_items": [],
+          "expected_outputs": [
+            "Owner裁定"
+          ],
+          "status": "issued"
+        }
+      }
+    }
+  ],
+  "handoff": {
+    "handoff_id": "handoff-2eb85b11-f614-4194-9ac0-11724929824a",
+    "issued_revision": 9,
+    "next_role": "owner",
+    "next_action": "adjudicate",
+    "purpose": "独立検証結果と残余リスクを裁定する",
+    "inputs": [
+      "Finding",
+      "Implementer回答",
+      "Reviewer検証",
+      "Evidence"
+    ],
+    "open_items": [],
+    "expected_outputs": [
+      "Owner裁定"
+    ],
+    "status": "issued"
+  }
+}
