@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AssessRiskPayload",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "previous_handoff_id",
+    "expected_case_revision",
+    "overall_recommendation",
+    "rationale",
+    "residual_risks"
+  ],
+  "properties": {
+    "operation_id": { "type": "string" },
+    "actor_id": { "type": "string" },
+    "role": { "type": "string", "const": "reviewer" },
+    "invocation_id": { "type": "string" },
+    "previous_handoff_id": { "type": "string" },
+    "expected_case_revision": { "type": "integer" },
+    "overall_recommendation": {
+      "type": "string",
+      "enum": ["accept", "accept-with-conditions", "require-remediation", "defer"]
+    },
+    "rationale": { "type": "string" },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "current_status",
+          "severity",
+          "residual_risk_description",
+          "likelihood",
+          "impact",
+          "qa_recommendation",
+          "confidence"
+        ],
+        "properties": {
+          "finding_id": { "type": "string" },
+          "current_status": {
+            "type": "string",
+            "enum": [
+              "remediated",
+              "verified",
+              "partially-remediated",
+              "not-remediated",
+              "unverified",
+              "finding-withdrawn",
+              "converted-to-suggestion",
+              "not-applicable",
+              "open"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "implemented_controls": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "residual_risk_description": { "type": "string" },
+          "assumptions_supporting_acceptance": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "likelihood": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "unknown"]
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "alternatives": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "proportionality_assessment": { "type": "string" },
+          "qa_recommendation": {
+            "type": "string",
+            "enum": ["accept", "accept-with-conditions", "require-remediation", "defer"]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low", "unknown"]
+          },
+          "reassessment_triggers": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

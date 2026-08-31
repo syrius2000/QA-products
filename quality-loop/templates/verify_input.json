@@ -1,0 +1,55 @@
+{
+  "operation_id": "op-verify-001",
+  "actor_id": "reviewer-ai",
+  "role": "reviewer",
+  "invocation_id": "inv-reviewer-002",
+  "previous_handoff_id": "hnd-response-001",
+  "expected_case_revision": 3,
+  "verifications": [
+    {
+      "finding_id": "F-001",
+      "result": "verified",
+      "rationale": "修正内容を独立検証し、要求REQ-001を満たしたことを確認",
+      "evidence_refs": ["EV-VER-001"],
+      "regression_detected": false
+    }
+  ],
+  "new_findings": [],
+  "change_observation": {
+    "method": "finite-manifest",
+    "scope": ["src/example.py"],
+    "before_evidence_id": "EV-OBS-BEFORE",
+    "after_evidence_id": "EV-OBS-AFTER",
+    "observed_changed_targets": ["src/example.py"],
+    "limitations": []
+  },
+  "evidence": [
+    {
+      "evidence_id": "EV-OBS-BEFORE",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "manifest-check",
+      "result": "before hash recorded",
+      "path": "evidence/manifest_before.txt",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    },
+    {
+      "evidence_id": "EV-OBS-AFTER",
+      "level": "observed",
+      "target_revision": "rev-fix-1",
+      "method": "manifest-check",
+      "result": "after hash recorded",
+      "path": "evidence/manifest_after.txt",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    },
+    {
+      "evidence_id": "EV-VER-001",
+      "level": "observed",
+      "target_revision": "rev-fix-1",
+      "method": "verification-run",
+      "result": "verified passed",
+      "path": "evidence/verify_log.txt",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    }
+  ]
+}

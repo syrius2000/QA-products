@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VerifyInput",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "previous_handoff_id",
+    "expected_case_revision",
+    "verifications",
+    "new_findings",
+    "evidence"
+  ],
+  "properties": {
+    "operation_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "role": {"type": "string", "enum": ["reviewer"]},
+    "invocation_id": {"type": "string"},
+    "previous_handoff_id": {"type": "string"},
+    "expected_case_revision": {"type": "integer", "minimum": 1},
+    "verifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "result", "rationale", "evidence_refs"],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "result": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "not-verified",
+              "unverified",
+              "remediated",
+              "not-remediated",
+              "partially-remediated",
+              "finding-withdrawn",
+              "converted-to-suggestion",
+              "not-applicable"
+            ]
+          },
+          "rationale": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "regression_detected": {"type": "boolean", "default": false}
+        }
+      }
+    },
+    "new_findings": {"type": "array"},
+    "change_observation": {"type": ["object", "null"]},
+    "evidence": {"type": "array"},
+    "early_risk_assessment": {"type": "boolean", "default": false},
+    "early_risk_rationale": {"type": "string"}
+  }
+}

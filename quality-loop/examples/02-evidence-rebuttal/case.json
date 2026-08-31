@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0",
+  "case_metadata": {
+    "case_id": "CASE-EXAMPLE-02",
+    "case_revision": 5,
+    "revision": 5,
+    "status": "accepted",
+    "owner": "owner-user",
+    "created_at": "2026-08-28T11:00:00Z",
+    "updated_at": "2026-08-28T11:45:00Z",
+    "cycle_count": 1,
+    "cycle_limit": 3
+  },
+  "baseline": {
+    "purpose": "データパーサーの例外処理検証",
+    "intended_use": {
+      "users": "データエンジニア",
+      "environment": "ETLパイプライン",
+      "operational_context": "外部JSONデータの取り込み"
+    },
+    "risk_context": {
+      "criticality": "medium",
+      "safety_impact": "なし",
+      "data_integrity_impact": "中",
+      "security_context": "内部データストア連携"
+    },
+    "requirements": [
+      {
+        "requirement_id": "REQ-PARSE-01",
+        "text": "不正なJSON入力に対して適切なParseErrorを送出すること"
+      }
+    ],
+    "acceptance_criteria": [
+      "不正JSONに対してParseErrorが送出されること"
+    ],
+    "exclusions": [],
+    "targets": [
+      "src/parser.py"
+    ],
+    "target_revision": "rev-1"
+  },
+  "implementation_authorization": {
+    "allowed": false,
+    "finding_ids": [],
+    "allowed_targets": []
+  },
+  "change_observation": {
+    "method": "none",
+    "scope": [],
+    "observed_changed_targets": [],
+    "limitations": []
+  },
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "classification": "requirement-violation",
+      "severity": "medium",
+      "requirement_ref": "REQ-PARSE-01",
+      "observed_fact": "空文字入力時にParseErrorではなくValueErrorが送出される",
+      "impact": "呼び出し元での例外補足不整合",
+      "expected_state": "ParseErrorを送出する",
+      "verification_method": "例外捕捉テスト",
+      "evidence_refs": [],
+      "status": "finding-withdrawn"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-REBUTTAL-01",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "spec-cross-check",
+      "result": "ParseErrorはValueErrorのサブクラスとして定義済みであることを確認",
+      "summary": "クラス階層定義の確認記録"
+    }
+  ],
+  "plans": [],
+  "plan_reviews": [],
+  "responses": [
+    {
+      "finding_id": "F-001",
+      "disposition": "disagreed-with-evidence",
+      "rationale": "ParseErrorはValueErrorを継承しており、既存の呼び出し元契約に適合しています",
+      "evidence_refs": ["EV-REBUTTAL-01"]
+    }
+  ],
+  "verifications": [
+    {
+      "finding_id": "F-001",
+      "result": "finding-withdrawn",
+      "rationale": "反証Evidenceに基づき継承関係を確認したため、指摘を撤回",
+      "evidence_refs": ["EV-REBUTTAL-01"]
+    }
+  ],
+  "final_risk_assessments": [],
+  "adjudications": [
+    {
+      "decision": "accepted",
+      "rationale": "反証成立による指摘撤回を確認し、本版を受入",
+      "conditions": [],
+      "residual_risks": []
+    }
+  ],
+  "events": [
+    {
+      "operation_id": "op-create-02",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-01",
+      "operation": "create-case",
+      "revision": 1,
+      "timestamp": "2026-08-28T11:00:00Z"
+    },
+    {
+      "operation_id": "op-rev-02",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-01",
+      "operation": "review",
+      "revision": 2,
+      "timestamp": "2026-08-28T11:10:00Z"
+    },
+    {
+      "operation_id": "op-sub-02",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-01",
+      "operation": "submit-response",
+      "revision": 3,
+      "timestamp": "2026-08-28T11:20:00Z"
+    },
+    {
+      "operation_id": "op-ver-02",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-02",
+      "operation": "verify",
+      "revision": 4,
+      "timestamp": "2026-08-28T11:30:00Z"
+    },
+    {
+      "operation_id": "op-adj-02",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-02",
+      "operation": "adjudicate",
+      "revision": 5,
+      "timestamp": "2026-08-28T11:45:00Z"
+    }
+  ],
+  "handoff": {
+    "handoff_id": "hnd-term-002",
+    "issued_revision": 5,
+    "next_role": null,
+    "next_action": null,
+    "status": "terminal",
+    "terminal_result": "accepted"
+  }
+}

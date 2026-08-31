@@ -25,7 +25,7 @@ baseline:
   spec:
     - "openspec/changes/compact-spec-driven-qa-skills/specs/compact-spec-driven-qa-skills/spec.md"
   plan:
-    - "docs/Artifacts/implementation_plan_005_0825.md"
+    - "docs/Archives/archived_summary_002_0828.md"
   tasks:
     - "openspec/changes/compact-spec-driven-qa-skills/tasks.md"
 participants:

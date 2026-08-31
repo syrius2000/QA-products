@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://example.invalid/quality-loop/status.schema.json","title":"Quality Loop status input","type":"object","required":["case_id"],"properties":{"case_id":{"type":"string"},"resume_format":{"const":"markdown"}},"additionalProperties":false}

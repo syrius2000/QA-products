@@ -20,6 +20,7 @@ class CliTest(unittest.TestCase):
             created = subprocess.run(
                 [
                     sys.executable,
+                    "-S",
                     "-B",
                     "-m",
                     "quality_loop.cli",
@@ -40,6 +41,7 @@ class CliTest(unittest.TestCase):
             status = subprocess.run(
                 [
                     sys.executable,
+                    "-S",
                     "-B",
                     "-m",
                     "quality_loop.cli",
@@ -65,6 +67,7 @@ class CliTest(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
+                    "-S",
                     "-B",
                     "-m",
                     "quality_loop.cli",
@@ -82,6 +85,51 @@ class CliTest(unittest.TestCase):
             result = json.loads(completed.stdout)
             self.assertEqual("invalid-input", result["error_code"])
             self.assertFalse(result["state_changed"])
+
+    def test_active_case_auto_discovery_omits_case_id(self) -> None:
+        """Phase 5: アクティブ案件が1件の時は--case-idを省略してstatusやreviewを実行できる"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = Path(temp_dir) / "intake.json"
+            input_path.write_text(
+                json.dumps(complete_intake(), ensure_ascii=False), encoding="utf-8"
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    "-B",
+                    "-m",
+                    "quality_loop.cli",
+                    "--case-root",
+                    temp_dir,
+                    "create-case",
+                    "--input",
+                    str(input_path),
+                ],
+                check=True,
+                capture_output=True,
+            )
+
+            # status without --case-id
+            status = subprocess.run(
+                [
+                    sys.executable,
+                    "-S",
+                    "-B",
+                    "-m",
+                    "quality_loop.cli",
+                    "--case-root",
+                    temp_dir,
+                    "status",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, status.returncode, status.stderr)
+            status_result = json.loads(status.stdout)
+            self.assertEqual("QMS-0001", status_result["case_id"])
+            self.assertEqual("reviewer-action", status_result["current_state"])
 
 
 if __name__ == "__main__":

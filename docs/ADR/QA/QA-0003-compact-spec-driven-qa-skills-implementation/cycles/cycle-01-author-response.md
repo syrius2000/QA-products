@@ -47,7 +47,7 @@ QA証拠で確認できる7.4（サイズ測定）と7.5（9件のテスト・su
 
 ## 5. 次の担当
 
-本ケースは既にReviewerによりclosedであるため、追加のReviewer判定は要求しない。実際の本番配備を行う場合は、別途ユーザー承認を取得し、`docs/Artifacts/implementation_plan_006_0826.md`の手順に従って配備担当が実施する。
+本ケースは既にReviewerによりclosedであるため、追加のReviewer判定は要求しない。旧配備計画を含む移行期の経緯は [統合アーカイブ要約](../../../../Archives/archived_summary_002_0828.md) を参照する。外部配備には別途ユーザー承認が必要である。
 
 ## 6. Author Response検証結果
 

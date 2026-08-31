@@ -20,9 +20,64 @@ FINDING_CLASSIFICATIONS = {
     "purpose-risk",
     "evidence-gap",
     "improvement-proposal",
+    "regression",
+    "unverified-claim",
 }
 
 SEVERITIES = {"critical", "high", "medium", "low"}
+
+PLAN_REQUIRED_SEVERITIES = {"critical", "high"}
+
+VERIFICATION_RESULTS = {
+    "verified",
+    "not-verified",
+    "unverified",
+    "remediated",
+    "not-remediated",
+    "partially-remediated",
+    "finding-withdrawn",
+    "converted-to-suggestion",
+    "not-applicable",
+}
+
+RESOLVED_VERIFICATION_RESULTS = {
+    "verified",
+    "remediated",
+    "finding-withdrawn",
+    "converted-to-suggestion",
+    "not-applicable",
+}
+
+FINDING_STATUSES = {
+    "open",
+    "verified",
+    "unverified",
+    "remediated",
+    "not-remediated",
+    "partially-remediated",
+    "finding-withdrawn",
+    "converted-to-suggestion",
+    "not-applicable",
+    "requires-rereview",
+    "held",
+}
+
+
+def derive_plan_required(finding: dict) -> bool:
+    """Findingの内容から、Coreが下げられないPlan要否を導出する。"""
+    if finding["classification"] == "improvement-proposal":
+        return False
+    if finding["severity"] in PLAN_REQUIRED_SEVERITIES:
+        return True
+    if finding["severity"] == "medium":
+        return bool(
+            finding.get("multi_file_impact")
+            or finding.get("destructive")
+            or finding.get("security_impact")
+            or finding.get("data_integrity_impact")
+            or finding.get("ambiguous_requirements")
+        )
+    return False
 
 
 def validate_findings(findings: object, existing_ids: set[str]) -> list[dict]:
@@ -54,20 +109,21 @@ def validate_findings(findings: object, existing_ids: set[str]) -> list[dict]:
             raise QualityLoopError("invalid-finding", "未対応のFinding分類です。")
         if finding["severity"] not in SEVERITIES:
             raise QualityLoopError("invalid-finding", "未対応のSeverityです。")
-        evidence_refs = finding["evidence_refs"]
-        if not isinstance(evidence_refs, list) or not all(
-            isinstance(item, str) and item for item in evidence_refs
-        ):
-            raise QualityLoopError(
-                "invalid-finding",
-                "Findingのevidence_refsは空でないEvidence ID配列で指定してください。",
-            )
-        if not evidence_refs:
-            if not finding.get("unverified_reason") or not finding.get("required_evidence"):
-                raise QualityLoopError(
-                    "finding-evidence-required",
-                    "FindingにはEvidence参照が必要です。Evidence不足の場合はunverified_reasonとrequired_evidenceを指定してください。",
-                )
+
+        # Review/verifyの入力は新規Findingであり、状態を自己申告させない。
+        # Plan approvalや実装済み状態は、それぞれCoreの後続操作でのみ付与する。
+        finding["status"] = "open"
+
+        # Adaptive Plan Gate policy is canonicalized by Core. A caller cannot
+        # lower a mandatory Critical/High (or risk-triggered Medium) gate.
+        derived_plan_required = derive_plan_required(finding)
+        if finding["classification"] == "improvement-proposal":
+            finding["plan_required"] = False
+        elif derived_plan_required:
+            finding["plan_required"] = True
+        elif "plan_required" not in finding:
+            finding["plan_required"] = False
+
         observed_ids.add(finding_id)
         validated.append(finding)
     return validated

@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0",
+  "case_metadata": {
+    "case_id": "CASE-EXAMPLE-01",
+    "case_revision": 7,
+    "revision": 7,
+    "status": "accepted",
+    "owner": "owner-user",
+    "created_at": "2026-08-28T10:00:00Z",
+    "updated_at": "2026-08-28T10:30:00Z",
+    "cycle_count": 1,
+    "cycle_limit": 3
+  },
+  "baseline": {
+    "purpose": "計算機モジュールの品質確認",
+    "intended_use": {
+      "users": "一般ユーザー・開発者",
+      "environment": "ローカル実行環境",
+      "operational_context": "基本算術演算ライブラリ"
+    },
+    "risk_context": {
+      "criticality": "high",
+      "safety_impact": "なし",
+      "data_integrity_impact": "高",
+      "security_context": "内部演算処理"
+    },
+    "requirements": [
+      {
+        "requirement_id": "REQ-001",
+        "text": "ゼロ除算時に適切なZeroDivisionErrorが送出されること"
+      }
+    ],
+    "acceptance_criteria": [
+      "ゼロ除算テストが正常に通過すること"
+    ],
+    "exclusions": [],
+    "targets": [
+      "src/calculator.py"
+    ],
+    "target_revision": "rev-1"
+  },
+  "implementation_authorization": {
+    "allowed": true,
+    "finding_ids": [
+      "F-001"
+    ],
+    "allowed_targets": [
+      "src/calculator.py"
+    ]
+  },
+  "change_observation": {
+    "method": "finite-manifest",
+    "scope": ["src/calculator.py"],
+    "before_evidence_id": "EV-REV-001",
+    "after_evidence_id": "EV-VER-001",
+    "observed_changed_targets": ["src/calculator.py"],
+    "limitations": []
+  },
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "classification": "requirement-violation",
+      "severity": "high",
+      "requirement_ref": "REQ-001",
+      "observed_fact": "ゼロ除算で未補足クラッシュが発生する",
+      "impact": "システム全体の停止",
+      "expected_state": "ZeroDivisionErrorを明示的に送出する",
+      "verification_method": "ゼロ除算例外テスト",
+      "evidence_refs": ["EV-REV-001"],
+      "status": "verified"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-REV-001",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "file-inspection",
+      "result": "クラッシュを確認",
+      "summary": "初回レビュー時の観測記録"
+    },
+    {
+      "evidence_id": "EV-FIX-001",
+      "level": "observed",
+      "target_revision": "rev-2",
+      "method": "unit-test-run",
+      "result": "passed",
+      "summary": "ゼロ除算ハンドリング修正後テスト合格"
+    },
+    {
+      "evidence_id": "EV-VER-001",
+      "level": "reproduced",
+      "target_revision": "rev-2",
+      "method": "independent-verification",
+      "result": "verified",
+      "summary": "独立検証で不適合解消を確認"
+    }
+  ],
+  "plans": [
+    {
+      "finding_id": "F-001",
+      "understanding": "ゼロ除算時の未捕捉例外を処理する",
+      "disposition_intent": "fix",
+      "proposed_actions": ["ZeroDivisionErrorハンドリングの追加"],
+      "planned_evidence": ["EV-FIX-001"],
+      "risk_assessment": "低"
+    }
+  ],
+  "plan_reviews": [
+    {
+      "finding_id": "F-001",
+      "outcome": "plan-accepted",
+      "rationale": "例外送出方針に合意"
+    }
+  ],
+  "responses": [
+    {
+      "finding_id": "F-001",
+      "disposition": "fix-submitted",
+      "rationale": "ZeroDivisionErrorの明示送出を追加",
+      "evidence_refs": ["EV-FIX-001"]
+    }
+  ],
+  "verifications": [
+    {
+      "finding_id": "F-001",
+      "result": "verified",
+      "rationale": "例外送出テストの独立合格を確認",
+      "evidence_refs": ["EV-VER-001"]
+    }
+  ],
+  "final_risk_assessments": [],
+  "adjudications": [
+    {
+      "decision": "accepted",
+      "rationale": "全件適合を確認したため受入",
+      "conditions": [],
+      "residual_risks": []
+    }
+  ],
+  "events": [
+    {
+      "operation_id": "op-create-01",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-01",
+      "operation": "create-case",
+      "revision": 1,
+      "timestamp": "2026-08-28T10:00:00Z"
+    },
+    {
+      "operation_id": "op-rev-01",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-01",
+      "operation": "review",
+      "revision": 2,
+      "timestamp": "2026-08-28T10:05:00Z"
+    },
+    {
+      "operation_id": "op-plan-01",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-01",
+      "operation": "submit-plan",
+      "revision": 3,
+      "timestamp": "2026-08-28T10:10:00Z"
+    },
+    {
+      "operation_id": "op-rp-01",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-02",
+      "operation": "review-plan",
+      "revision": 4,
+      "timestamp": "2026-08-28T10:15:00Z"
+    },
+    {
+      "operation_id": "op-sub-01",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-02",
+      "operation": "submit-response",
+      "revision": 5,
+      "timestamp": "2026-08-28T10:20:00Z"
+    },
+    {
+      "operation_id": "op-ver-01",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-03",
+      "operation": "verify",
+      "revision": 6,
+      "timestamp": "2026-08-28T10:25:00Z"
+    },
+    {
+      "operation_id": "op-adj-01",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-02",
+      "operation": "adjudicate",
+      "revision": 7,
+      "timestamp": "2026-08-28T10:30:00Z"
+    }
+  ],
+  "handoff": {
+    "handoff_id": "hnd-term-001",
+    "issued_revision": 7,
+    "next_role": null,
+    "next_action": null,
+    "status": "terminal",
+    "terminal_result": "accepted"
+  }
+}

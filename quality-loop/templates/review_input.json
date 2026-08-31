@@ -1,0 +1,33 @@
+{
+  "operation_id": "op-review-001",
+  "actor_id": "reviewer-ai",
+  "role": "reviewer",
+  "invocation_id": "inv-reviewer-001",
+  "previous_handoff_id": "hnd-create-001",
+  "expected_case_revision": 1,
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "classification": "requirement-violation",
+      "severity": "high",
+      "requirement_ref": "REQ-001",
+      "observed_fact": "要求仕様と異なる挙動が観測された事実を客観的に記述",
+      "impact": "品質や後続工程に与える具体的な影響を記述",
+      "expected_state": "本来あるべき状態を具体的に記述",
+      "verification_method": "検証・再現手順を記述",
+      "evidence_refs": ["EV-REV-001"],
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-REV-001",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "file-inspection",
+      "result": "不適合の観測",
+      "path": "evidence/review_log.txt",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    }
+  ]
+}

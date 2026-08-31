@@ -26,13 +26,13 @@ def build_parser() -> argparse.ArgumentParser:
     create = subparsers.add_parser("create-case")
     create.add_argument("--input", required=True)
 
-    for command in ("review", "submit-response", "verify", "adjudicate"):
+    for command in ("review", "submit-plan", "review-plan", "submit-response", "verify", "assess-risk", "adjudicate"):
         operation = subparsers.add_parser(command)
-        operation.add_argument("--case-id", required=True)
+        operation.add_argument("--case-id", required=False, default=None)
         operation.add_argument("--input", required=True)
 
     status = subparsers.add_parser("status")
-    status.add_argument("--case-id", required=True)
+    status.add_argument("--case-id", required=False, default=None)
     status.add_argument("--resume-format", choices=("markdown",))
     return parser
 
@@ -63,20 +63,60 @@ def read_payload(path_text: str) -> dict:
     return payload
 
 
+def resolve_case_id(loop: QualityLoop, specified_id: str | None) -> str:
+    if specified_id:
+        return specified_id
+    active_cases = loop.store.list_active_cases()
+    if len(active_cases) == 1:
+        return active_cases[0]
+    if len(active_cases) == 0:
+        all_cases = loop.store.list_cases()
+        if len(all_cases) == 1:
+            return all_cases[0]
+        if len(all_cases) == 0:
+            raise QualityLoopError(
+                "no-cases-found",
+                "案件が存在しません。まずはcreate-caseを実行してください。",
+                exit_code=3,
+                remediation="create-case で新しい品質案件を作成してください。",
+            )
+        raise QualityLoopError(
+            "no-active-cases-found",
+            f"進行中のアクティブ案件がありません（終了済み案件: {', '.join(all_cases)}）。--case-id を明示してください。",
+            exit_code=3,
+            remediation="--case-id <case_id> を指定して実行してください。",
+        )
+    raise QualityLoopError(
+        "multiple-active-cases",
+        f"複数のアクティブ案件が存在します（{', '.join(active_cases)}）。--case-id を明示してください。",
+        exit_code=3,
+        remediation="--case-id <case_id> を指定して対象案件を選択してください。",
+    )
+
+
 def run(argv: list[str] | None = None) -> int:
     case_id: str | None = None
     try:
         args = build_parser().parse_args(argv)
         loop = QualityLoop(args.case_root)
-        case_id = getattr(args, "case_id", None)
         if args.command == "create-case":
             result = loop.create_case(read_payload(args.input))
-        elif args.command == "review":
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
+
+        case_id = resolve_case_id(loop, getattr(args, "case_id", None))
+        if args.command == "review":
             result = loop.review(case_id, read_payload(args.input))
+        elif args.command == "submit-plan":
+            result = loop.submit_plan(case_id, read_payload(args.input))
+        elif args.command == "review-plan":
+            result = loop.review_plan(case_id, read_payload(args.input))
         elif args.command == "submit-response":
             result = loop.submit_response(case_id, read_payload(args.input))
         elif args.command == "verify":
             result = loop.verify(case_id, read_payload(args.input))
+        elif args.command == "assess-risk":
+            result = loop.assess_risk(case_id, read_payload(args.input))
         elif args.command == "adjudicate":
             result = loop.adjudicate(case_id, read_payload(args.input))
         else:

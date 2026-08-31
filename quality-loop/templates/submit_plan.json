@@ -1,0 +1,21 @@
+{
+  "operation_id": "op-plan-001",
+  "actor_id": "implementer-ai",
+  "role": "implementer",
+  "invocation_id": "inv-implementer-plan-001",
+  "previous_handoff_id": "REPLACE_WITH_CURRENT_HANDOFF_ID",
+  "expected_case_revision": 2,
+  "plans": [
+    {
+      "finding_id": "F-001",
+      "understanding": "指摘の事実、要求への影響、修正対象を記述",
+      "disposition_intent": "fix",
+      "proposed_actions": ["修正内容と確認方法を記述"],
+      "not_planned": [],
+      "questions": [],
+      "evidence_refs": [],
+      "implementation_status": "not-started"
+    }
+  ],
+  "evidence": []
+}

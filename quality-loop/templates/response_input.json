@@ -1,0 +1,28 @@
+{
+  "operation_id": "op-submit-001",
+  "actor_id": "implementer-ai",
+  "role": "implementer",
+  "invocation_id": "inv-implementer-001",
+  "previous_handoff_id": "hnd-review-001",
+  "expected_case_revision": 2,
+  "changed_targets": ["src/example.py"],
+  "responses": [
+    {
+      "finding_id": "F-001",
+      "disposition": "fix-submitted",
+      "rationale": "指摘箇所を修正し、テストEvidenceを添付しました",
+      "evidence_refs": ["EV-FIX-001"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-FIX-001",
+      "level": "observed",
+      "target_revision": "rev-fix-1",
+      "method": "unit-test-run",
+      "result": "passed",
+      "path": "evidence/test_output.txt",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    }
+  ]
+}

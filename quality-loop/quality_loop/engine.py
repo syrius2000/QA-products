@@ -10,7 +10,7 @@ from .case_store import CaseStore
 from .errors import QualityLoopError
 from .evidence import validate_evidence
 from .handoff import issue_handoff, terminal_handoff
-from .model import validate_findings
+from .model import RESOLVED_VERIFICATION_RESULTS, validate_findings
 from .transitions import ALLOWED_FIELDS, EXPECTED_ROLE, EXPECTED_STATE
 
 
@@ -28,8 +28,14 @@ class QualityLoop:
     def create_case(self, payload: dict) -> dict:
         self._validate_create(payload)
         case_id = payload["case_id"]
+        if self.store.case_path(case_id).is_file():
+            current = self.store.load(case_id)
+            duplicate = self._duplicate_result(current, payload.get("operation_id"))
+            if duplicate is not None:
+                return duplicate
         now = utc_now()
         handoff = issue_handoff(
+            case_id=case_id,
             revision=1,
             next_role="reviewer",
             next_action="review",
@@ -54,7 +60,7 @@ class QualityLoop:
                 "status": "reviewer-action",
                 "owner": payload["owner"],
                 "cycle_count": 0,
-                "cycle_limit": 3,
+                "cycle_limit": payload.get("cycle_limit", 3),
                 "created_at": now,
                 "updated_at": now,
             },
@@ -79,8 +85,11 @@ class QualityLoop:
             ),
             "findings": [],
             "evidence": [],
+            "plans": [],
+            "plan_reviews": [],
             "responses": [],
             "verifications": [],
+            "final_risk_assessments": [],
             "adjudications": [],
             "events": [
                 {
@@ -109,9 +118,6 @@ class QualityLoop:
                 payload.get("findings"),
                 {item["finding_id"] for item in current["findings"]},
             )
-            rereviews = self._validate_rereviews(
-                current, payload.get("rereviews", [])
-            )
             evidence = validate_evidence(
                 self.store.case_dir(case_id),
                 payload.get("evidence", []),
@@ -127,38 +133,30 @@ class QualityLoop:
                         "unknown-evidence-id",
                         f"未知のEvidence IDです: {', '.join(sorted(unknown_refs))}",
                     )
-            for rereview in rereviews:
-                unknown_refs = set(rereview["evidence_refs"]) - available_evidence_ids
-                if unknown_refs:
-                    raise QualityLoopError(
-                        "unknown-evidence-id",
-                        f"未知のEvidence IDです: {', '.join(sorted(unknown_refs))}",
-                    )
             updated = deepcopy(current)
-            rereview_by_id = {item["finding_id"]: item for item in rereviews}
-            for finding in updated["findings"]:
-                rereview = rereview_by_id.get(finding["finding_id"])
-                if rereview is not None:
-                    record = deepcopy(rereview)
-                    record["rereview_revision"] = current["case_metadata"]["revision"] + 1
-                    finding.setdefault("rereviews", []).append(record)
-                    finding["status"] = rereview["result"]
             updated["findings"].extend(deepcopy(findings))
             updated["evidence"].extend(evidence)
             revision = current["case_metadata"]["revision"] + 1
             blocking_findings = [
                 item
-                for item in updated["findings"]
+                for item in findings
                 if item["classification"] != "improvement-proposal"
-                and item.get("status") != "verified"
             ]
             if blocking_findings:
-                next_role = "implementer"
-                next_action = "submit-response"
-                state = "implementer-action"
-                purpose = "Findingごとに回答し、許可範囲だけを修正する"
+                plan_needed = any(item.get("plan_required", False) for item in blocking_findings)
+                if plan_needed:
+                    next_role = "implementer"
+                    next_action = "submit-plan"
+                    state = "implementer-plan"
+                    purpose = "重要Findingへの修正方針・反証計画(Response Plan)を提出する"
+                    expected_outputs = ["Response Plan", "次工程handoff"]
+                else:
+                    next_role = "implementer"
+                    next_action = "submit-response"
+                    state = "implementer-action"
+                    purpose = "Findingごとに回答し、許可範囲だけを修正する"
+                    expected_outputs = ["Finding別回答", "変更Evidence", "次工程handoff"]
                 open_items = [item["finding_id"] for item in blocking_findings]
-                expected_outputs = ["Finding別回答", "変更Evidence", "次工程handoff"]
             else:
                 next_role = "owner"
                 next_action = "adjudicate"
@@ -167,6 +165,7 @@ class QualityLoop:
                 open_items = []
                 expected_outputs = ["Owner裁定"]
             handoff = issue_handoff(
+                case_id=case_id,
                 revision=revision,
                 next_role=next_role,
                 next_action=next_action,
@@ -196,6 +195,208 @@ class QualityLoop:
 
         return self.store.mutate(case_id, mutation)
 
+    def submit_plan(self, case_id: str, payload: dict) -> dict:
+        def mutation(current: dict) -> tuple[dict | None, dict]:
+            duplicate = self._duplicate_result(current, payload.get("operation_id"))
+            if duplicate is not None:
+                return None, duplicate
+            self._validate_update(current, payload, "submit-plan")
+            plans = self._validate_plans(current, payload.get("plans"))
+            plan_finding_ids = {item["finding_id"] for item in plans}
+            evidence = validate_evidence(
+                self.store.case_dir(case_id),
+                payload.get("evidence", []),
+                {item["evidence_id"] for item in current["evidence"]},
+            )
+            available_evidence_ids = {
+                item["evidence_id"] for item in current["evidence"] + evidence
+            }
+            for plan in plans:
+                unknown_refs = set(plan.get("evidence_refs", [])) - available_evidence_ids
+                if unknown_refs:
+                    raise QualityLoopError(
+                        "unknown-evidence-id",
+                        f"未知のEvidence IDです: {', '.join(sorted(unknown_refs))}",
+                    )
+            updated = deepcopy(current)
+            revision = current["case_metadata"]["revision"] + 1
+            for plan in plans:
+                record = deepcopy(plan)
+                record["submission_revision"] = revision
+                updated["plans"].append(record)
+            updated["evidence"].extend(evidence)
+            for finding in updated["findings"]:
+                if finding["finding_id"] in plan_finding_ids:
+                    finding["status"] = "plan-submitted"
+            next_role = "reviewer"
+            next_action = "review-plan"
+            state = "reviewer-plan-review"
+            purpose = "Implementerが提出したResponse Planを評価・合意する"
+            expected_outputs = ["Plan Review結果", "次工程handoff"]
+            handoff = issue_handoff(
+                case_id=case_id,
+                revision=revision,
+                next_role=next_role,
+                next_action=next_action,
+                purpose=purpose,
+                inputs=["Finding", "Response Plan", "Evidence"],
+                open_items=sorted(plan_finding_ids),
+                expected_outputs=expected_outputs,
+            )
+            result = self._result(
+                case_id=case_id,
+                revision=revision,
+                state_changed=True,
+                next_role=next_role,
+                next_action=next_action,
+                handoff=handoff,
+            )
+            self._finish_update(
+                updated=updated,
+                payload=payload,
+                operation="submit-plan",
+                revision=revision,
+                state=state,
+                handoff=handoff,
+                result=result,
+            )
+            return updated, result
+
+        return self.store.mutate(case_id, mutation)
+
+    def review_plan(self, case_id: str, payload: dict) -> dict:
+        def mutation(current: dict) -> tuple[dict | None, dict]:
+            duplicate = self._duplicate_result(current, payload.get("operation_id"))
+            if duplicate is not None:
+                return None, duplicate
+            self._validate_update(current, payload, "review-plan")
+            latest_submission_rev = max(
+                (item.get("submission_revision", 1) for item in current["plans"]),
+                default=1,
+            )
+            submitted_plans = [
+                item
+                for item in current["plans"]
+                if item.get("submission_revision") == latest_submission_rev
+            ]
+            plan_reviews = self._validate_plan_reviews(submitted_plans, payload.get("plan_reviews"))
+            evidence = validate_evidence(
+                self.store.case_dir(case_id),
+                payload.get("evidence", []),
+                {item["evidence_id"] for item in current["evidence"]},
+            )
+            available_evidence_ids = {
+                item["evidence_id"] for item in current["evidence"] + evidence
+            }
+            for review in plan_reviews:
+                unknown_refs = set(review.get("evidence_refs", [])) - available_evidence_ids
+                if unknown_refs:
+                    raise QualityLoopError(
+                        "unknown-evidence-id",
+                        f"未知のEvidence IDです: {', '.join(sorted(unknown_refs))}",
+                    )
+            updated = deepcopy(current)
+            revision = current["case_metadata"]["revision"] + 1
+            review_by_id = {item["finding_id"]: item for item in plan_reviews}
+            for review in plan_reviews:
+                record = deepcopy(review)
+                record["review_revision"] = revision
+                updated["plan_reviews"].append(record)
+            for finding in updated["findings"]:
+                review = review_by_id.get(finding["finding_id"])
+                if review is not None:
+                    outcome = review["outcome"]
+                    if outcome in {"finding-withdrawn", "converted-to-suggestion", "not-applicable"}:
+                        finding["status"] = outcome
+                    elif outcome in {"plan-accepted", "plan-accepted-with-comments"}:
+                        finding["status"] = "plan-approved"
+                    elif outcome == "plan-revision-required":
+                        finding["status"] = "plan-revision-required"
+                    elif outcome == "owner-decision-required":
+                        finding["status"] = "owner-decision-required"
+            updated["evidence"].extend(evidence)
+
+            # Determine next routing. A partial Plan is allowed, but the
+            # implementation phase is not opened until every required Finding
+            # has its own approved Plan.
+            revision_needed = any(
+                item["outcome"] == "plan-revision-required" for item in plan_reviews
+            )
+            owner_needed = any(
+                item["outcome"] == "owner-decision-required" for item in plan_reviews
+            )
+            pending_required = self._pending_required_plan_finding_ids(updated)
+            fix_executable = [
+                item["finding_id"]
+                for item in plan_reviews
+                if item["outcome"] in {"plan-accepted", "plan-accepted-with-comments"}
+            ]
+
+            from .model import RESOLVED_VERIFICATION_RESULTS
+            open_items = [
+                item["finding_id"]
+                for item in updated["findings"]
+                if item.get("status") not in RESOLVED_VERIFICATION_RESULTS
+                and item.get("classification") != "improvement-proposal"
+            ]
+
+            if owner_needed:
+                next_role = "owner"
+                next_action = "adjudicate"
+                state = "owner-adjudication"
+                purpose = "Planレビューでの要判断事項についてOwnerが裁定する"
+                expected_outputs = ["Owner裁定"]
+            elif revision_needed or pending_required:
+                next_role = "implementer"
+                next_action = "submit-plan"
+                state = "implementer-plan"
+                purpose = "未承認のrequired FindingについてResponse Planを提出または再提出する"
+                expected_outputs = ["未承認Finding別Response Plan", "次工程handoff"]
+            elif fix_executable:
+                next_role = "implementer"
+                next_action = "submit-response"
+                state = "implementer-action"
+                purpose = "承認されたPlanおよびOwner許可範囲に基づき修正とEvidenceを提出する"
+                expected_outputs = ["Finding別修正提出", "変更Evidence", "次工程handoff"]
+            else:
+                # All plans resulted in finding-withdrawn, converted-to-suggestion, etc.
+                next_role = "owner"
+                next_action = "adjudicate"
+                state = "owner-adjudication"
+                purpose = "全Plan合意・自己訂正完了に伴い最終裁定を行う"
+                expected_outputs = ["Owner裁定"]
+
+            handoff = issue_handoff(
+                case_id=case_id,
+                revision=revision,
+                next_role=next_role,
+                next_action=next_action,
+                purpose=purpose,
+                inputs=["Response Plan", "Plan Review結果", "Evidence"],
+                open_items=(sorted(pending_required) if next_action == "submit-plan" else open_items),
+                expected_outputs=expected_outputs,
+            )
+            result = self._result(
+                case_id=case_id,
+                revision=revision,
+                state_changed=True,
+                next_role=next_role,
+                next_action=next_action,
+                handoff=handoff,
+            )
+            self._finish_update(
+                updated=updated,
+                payload=payload,
+                operation="review-plan",
+                revision=revision,
+                state=state,
+                handoff=handoff,
+                result=result,
+            )
+            return updated, result
+
+        return self.store.mutate(case_id, mutation)
+
     def submit_response(self, case_id: str, payload: dict) -> dict:
         def mutation(current: dict) -> tuple[dict | None, dict]:
             duplicate = self._duplicate_result(current, payload.get("operation_id"))
@@ -204,6 +405,16 @@ class QualityLoop:
             self._validate_update(current, payload, "submit-response")
             responses = self._validate_responses(current, payload.get("responses"))
             response_finding_ids = {item["finding_id"] for item in responses}
+            missing_plan_approval = sorted(
+                response_finding_ids & self._pending_required_plan_finding_ids(current)
+            )
+            if missing_plan_approval:
+                raise QualityLoopError(
+                    "plan-approval-required",
+                    "Plan-required Findingは対象Finding自身のPlan承認後にResponseを提出できます: "
+                    + ", ".join(missing_plan_approval),
+                    remediation="未承認FindingのResponse Planを提出し、ReviewerのPlan承認を取得してください。",
+                )
             changed_targets = validate_changed_targets(
                 current["implementation_authorization"],
                 finding_ids=response_finding_ids,
@@ -259,6 +470,7 @@ class QualityLoop:
                 purpose = "Implementer提出と修正結果を独立検証する"
                 expected_outputs = ["Finding別検証", "変更範囲照合", "次工程handoff"]
             handoff = issue_handoff(
+                case_id=case_id,
                 revision=revision,
                 next_role=next_role,
                 next_action=next_action,
@@ -356,26 +568,50 @@ class QualityLoop:
             updated["evidence"].extend(evidence)
             cycle_count = current["case_metadata"].get("cycle_count", 0) + 1
             updated["case_metadata"]["cycle_count"] = cycle_count
-            all_verified = all(
-                item["result"] == "verified" for item in verifications
-            ) and not new_findings
-            authorization_missing = (
-                not current["implementation_authorization"].get("allowed", False)
-                and not all_verified
+            material_unresolved = self._material_unresolved_finding_ids(updated)
+            all_resolved = not material_unresolved
+            pending_plan_required = self._pending_required_plan_finding_ids(updated)
+            cycle_limit = current["case_metadata"].get("cycle_limit", 3)
+            early_risk = bool(payload.get("early_risk_assessment"))
+            has_unresolved_critical = any(
+                f.get("severity") == "critical"
+                for f in updated["findings"]
+                if f.get("status") not in RESOLVED_VERIFICATION_RESULTS
             )
-            if (
-                all_verified
-                or authorization_missing
-                or cycle_count >= current["case_metadata"].get("cycle_limit", 3)
-            ):
+            if early_risk:
+                early_rationale = str(payload.get("early_risk_rationale", "")).strip()
+                if not early_rationale:
+                    raise QualityLoopError(
+                        "invalid-input",
+                        "early_risk_assessment を指定する場合は early_risk_rationale (移行理由) が必須です。",
+                        remediation="早期リスク評価へ移行する根拠と妥当性を early_risk_rationale に記載してください。",
+                    )
+                if has_unresolved_critical:
+                    raise QualityLoopError(
+                        "critical-finding-unresolved",
+                        "未解決のCritical指摘が存在するため、早期Final Risk Assessmentへ移行できません。",
+                        remediation="Critical指摘を解消するか、Ownerによる明示的指示を受けてください。",
+                    )
+
+            if (cycle_count >= cycle_limit or early_risk) and not all_resolved:
+                next_role = "reviewer"
+                next_action = "assess-risk"
+                state = "reviewer-final-assessment"
+                reason_note = "サイクル上限到達" if cycle_count >= cycle_limit else "早期リスク移行判定"
+                purpose = f"{reason_note}に伴い残余リスク評価(Final Risk Assessment)を実施する"
+                expected_outputs = ["Final Risk Assessment", "次工程handoff"]
+            elif all_resolved:
                 next_role = "owner"
                 next_action = "adjudicate"
                 state = "owner-adjudication"
-                if authorization_missing:
-                    purpose = "実装許可がない未解決Findingを裁定する"
-                else:
-                    purpose = "独立検証結果と残余リスクを裁定する"
+                purpose = "独立検証結果と残余リスクを裁定する"
                 expected_outputs = ["Owner裁定"]
+            elif pending_plan_required:
+                next_role = "implementer"
+                next_action = "submit-plan"
+                state = "implementer-plan"
+                purpose = "未承認のPlan-required Findingについて次のResponse Planを提出する"
+                expected_outputs = ["未承認Finding別Response Plan", "次工程handoff"]
             else:
                 next_role = "implementer"
                 next_action = "submit-response"
@@ -385,10 +621,13 @@ class QualityLoop:
             open_items = [
                 item["finding_id"]
                 for item in updated["findings"]
-                if item.get("status") != "verified"
+                if item.get("status") not in RESOLVED_VERIFICATION_RESULTS
                 and item.get("classification") != "improvement-proposal"
             ]
+            if next_action == "submit-plan":
+                open_items = sorted(pending_plan_required)
             handoff = issue_handoff(
+                case_id=case_id,
                 revision=revision,
                 next_role=next_role,
                 next_action=next_action,
@@ -418,6 +657,90 @@ class QualityLoop:
 
         return self.store.mutate(case_id, mutation)
 
+    def assess_risk(self, case_id: str, payload: dict) -> dict:
+        def mutation(current: dict) -> tuple[dict | None, dict]:
+            duplicate = self._duplicate_result(current, payload.get("operation_id"))
+            if duplicate is not None:
+                return None, duplicate
+            self._validate_update(current, payload, "assess-risk")
+            overall_rec = payload.get("overall_recommendation")
+            allowed_recs = {"accept", "accept-with-conditions", "require-remediation", "defer"}
+            if overall_rec not in allowed_recs:
+                raise QualityLoopError(
+                    "invalid-input",
+                    f"overall_recommendationが不正です: {overall_rec}",
+                )
+            if not payload.get("rationale"):
+                raise QualityLoopError(
+                    "invalid-input",
+                    "assess-riskにはrationaleが必要です。",
+                )
+            residual_risks = self._validate_residual_risks(current, payload.get("residual_risks", []))
+
+            updated = deepcopy(current)
+            revision = current["case_metadata"]["revision"] + 1
+            record = {
+                "operation_id": payload["operation_id"],
+                "actor_id": payload["actor_id"],
+                "role": payload["role"],
+                "invocation_id": payload["invocation_id"],
+                "revision": revision,
+                "overall_recommendation": overall_rec,
+                "rationale": payload["rationale"],
+                "residual_risks": residual_risks,
+            }
+            updated["final_risk_assessments"].append(record)
+
+            next_role = "owner"
+            next_action = "adjudicate"
+            state = "owner-adjudication"
+            purpose = "ReviewerのFinal Risk Assessmentを評価し、受入・条件・再作業を裁定する"
+            expected_outputs = ["Owner裁定"]
+
+            from .model import RESOLVED_VERIFICATION_RESULTS
+            open_items = [
+                item["finding_id"]
+                for item in updated["findings"]
+                if item.get("status") not in RESOLVED_VERIFICATION_RESULTS
+                and item.get("classification") != "improvement-proposal"
+            ]
+            handoff = issue_handoff(
+                case_id=case_id,
+                revision=revision,
+                next_role=next_role,
+                next_action=next_action,
+                purpose=purpose,
+                inputs=["Final Risk Assessment", "Finding", "Reviewer検証"],
+                open_items=open_items,
+                expected_outputs=expected_outputs,
+            )
+            result = self._result(
+                case_id=case_id,
+                revision=revision,
+                state_changed=True,
+                next_role=next_role,
+                next_action=next_action,
+                handoff=handoff,
+            )
+            self._finish_update(
+                updated=updated,
+                payload=payload,
+                operation="assess-risk",
+                revision=revision,
+                state=state,
+                handoff=handoff,
+                result=result,
+            )
+            # Generate final-risk-assessment.md as a derived artifact
+            from .markdown_report import generate_final_risk_assessment_markdown
+            md_text = generate_final_risk_assessment_markdown(updated)
+            self.store.atomic_write_text(
+                self.store.case_dir(case_id) / "final-risk-assessment.md", md_text
+            )
+            return updated, result
+
+        return self.store.mutate(case_id, mutation)
+
     def adjudicate(self, case_id: str, payload: dict) -> dict:
         def mutation(current: dict) -> tuple[dict | None, dict]:
             duplicate = self._duplicate_result(current, payload.get("operation_id"))
@@ -441,10 +764,11 @@ class QualityLoop:
                 raise QualityLoopError(
                     "invalid-adjudication", "Owner裁定にはrationaleが必要です。"
                 )
+            from .model import RESOLVED_VERIFICATION_RESULTS
             unresolved = [
                 item["finding_id"]
                 for item in current["findings"]
-                if item.get("status") != "verified"
+                if item.get("status") not in RESOLVED_VERIFICATION_RESULTS
                 and item.get("classification") != "improvement-proposal"
             ]
             if decision == "accepted" and unresolved:
@@ -461,13 +785,8 @@ class QualityLoop:
                     )
                 if not payload.get("conditions"):
                     raise QualityLoopError(
-                        "risk-conditions-required",
-                        "リスク付き受入にはconditionsが必要です。",
-                    )
-                if not payload.get("review_trigger"):
-                    raise QualityLoopError(
-                        "risk-review-trigger-required",
-                        "リスク付き受入には期限または再確認トリガーとなるreview_triggerが必要です。",
+                        "conditions-required",
+                        "リスク付き受入には補償策または再確認トリガーとなるconditionsが必要です。",
                     )
             baseline_update = payload.get("baseline_update")
             if baseline_update is not None:
@@ -515,6 +834,7 @@ class QualityLoop:
                     handoff=current["handoff"],
                     status="dry-run",
                 )
+                preview["dry_run"] = True
                 preview["preview_decision"] = decision
                 preview["unresolved_findings"] = unresolved
                 return None, preview
@@ -531,7 +851,6 @@ class QualityLoop:
                 "rationale": payload["rationale"],
                 "conditions": deepcopy(payload.get("conditions", [])),
                 "residual_risks": deepcopy(payload.get("residual_risks", [])),
-                "review_trigger": payload.get("review_trigger"),
                 "adjudication_revision": revision,
             }
             updated["adjudications"].append(adjudication)
@@ -548,6 +867,7 @@ class QualityLoop:
                 next_action = "review"
                 state = "reviewer-action"
                 handoff = issue_handoff(
+                    case_id=case_id,
                     revision=revision,
                     next_role=next_role,
                     next_action=next_action,
@@ -558,22 +878,33 @@ class QualityLoop:
                 )
             elif decision == "rework-requested":
                 next_role = "implementer"
-                next_action = "submit-response"
-                state = "implementer-action"
+                pending_plan_required = self._pending_required_plan_finding_ids(updated)
+                if pending_plan_required:
+                    next_action = "submit-plan"
+                    state = "implementer-plan"
+                    purpose = "Owner裁定に基づき未承認のPlan-required FindingへResponse Planを提出する"
+                    expected_outputs = ["Response Plan"]
+                else:
+                    next_action = "submit-response"
+                    state = "implementer-action"
+                    purpose = "Owner裁定に基づき追加改善を提出する"
+                    expected_outputs = ["Finding別回答", "変更Evidence"]
                 handoff = issue_handoff(
+                    case_id=case_id,
                     revision=revision,
                     next_role=next_role,
                     next_action=next_action,
-                    purpose="Owner裁定に基づき追加改善を提出する",
+                    purpose=purpose,
                     inputs=["Owner裁定", "未解決Finding"],
                     open_items=unresolved,
-                    expected_outputs=["Finding別回答", "変更Evidence"],
+                    expected_outputs=expected_outputs,
                 )
             elif decision == "held":
                 next_role = "owner"
                 next_action = "adjudicate"
                 state = "held"
                 handoff = issue_handoff(
+                    case_id=case_id,
                     revision=revision,
                     next_role=next_role,
                     next_action=next_action,
@@ -586,7 +917,7 @@ class QualityLoop:
                 next_role = None
                 next_action = None
                 state = decision
-                handoff = terminal_handoff(revision=revision, result=decision)
+                handoff = terminal_handoff(case_id=case_id, revision=revision, result=decision)
             result = self._result(
                 case_id=case_id,
                 revision=revision,
@@ -612,17 +943,18 @@ class QualityLoop:
         case = self.store.load(case_id)
         metadata = case["case_metadata"]
         handoff = deepcopy(case["handoff"])
+        from .model import RESOLVED_VERIFICATION_RESULTS
         open_findings = [
             item["finding_id"]
             for item in case["findings"]
-            if item.get("status") != "verified"
+            if item.get("status") not in RESOLVED_VERIFICATION_RESULTS
             and item.get("classification") != "improvement-proposal"
         ]
         evidence_gaps = [
             item["finding_id"]
             for item in case["findings"]
             if item.get("classification") == "evidence-gap"
-            and item.get("status") != "verified"
+            and item.get("status") not in RESOLVED_VERIFICATION_RESULTS
         ]
         result = self._result(
             case_id=case_id,
@@ -651,18 +983,8 @@ class QualityLoop:
                     "invalid-resume-format",
                     "resume-formatはmarkdownだけを指定できます。",
                 )
-            open_text = ", ".join(open_findings) if open_findings else "なし"
-            text = (
-                f"# 案件 {case_id} 再開要約\n\n"
-                f"- 正本revision: {metadata['revision']}\n"
-                f"- 現在状態: {metadata['status']}\n"
-                f"- 最後の完了操作: {case['events'][-1]['operation']}\n"
-                f"- 未解決Finding: {open_text}\n"
-                f"- 次のRole: {handoff['next_role']}\n"
-                f"- 次の操作: {handoff['next_action']}\n"
-                f"- 最新handoff ID: {handoff['handoff_id']}\n\n"
-                "このファイルは表示用であり、案件正本ではありません。\n"
-            )
+            from .markdown_report import generate_resume_markdown
+            text = generate_resume_markdown(case)
             self.store.atomic_write_text(self.store.case_dir(case_id) / "resume.md", text)
             result["resume_path"] = "resume.md"
         return result
@@ -691,84 +1013,252 @@ class QualityLoop:
                 "create-caseはOwnerだけが実行できます。",
                 remediation="roleをownerにし、OwnerのInvocationから実行してください。",
             )
-        if payload["actor_id"] != payload["owner"]:
-            raise QualityLoopError(
-                "owner-identity-mismatch",
-                "create-caseのactor_idとownerは一致しなければなりません。",
-                remediation="案件Owner自身のactor_idで作成してください。",
-            )
         if not CASE_ID_PATTERN.fullmatch(payload["case_id"]):
             raise QualityLoopError(
                 "invalid-case-id",
                 "case_idは英数字で始まる英数字・ドット・ハイフン・下線だけを使用してください。",
                 remediation="安全なcase_idへ変更してください。",
             )
+        if "cycle_limit" in payload:
+            cycle_limit = payload["cycle_limit"]
+            if not isinstance(cycle_limit, int) or cycle_limit < 1:
+                raise QualityLoopError(
+                    "invalid-input",
+                    "cycle_limitは1以上の整数で指定してください。",
+                )
         QualityLoop._validate_baseline(payload["baseline"])
 
     @staticmethod
-    def _validate_rereviews(case: dict, rereviews: object) -> list[dict]:
-        if not isinstance(rereviews, list):
-            raise QualityLoopError("invalid-rereview", "rereviewsは配列で指定してください。")
-        required_ids = {
-            item["finding_id"]
-            for item in case["findings"]
-            if item.get("status") == "requires-rereview"
+    def _validate_plans(case: dict, plans: object) -> list[dict]:
+        if not isinstance(plans, list) or not plans:
+            raise QualityLoopError(
+                "invalid-plan",
+                "plansにはFinding別のResponse Planが必要です。",
+            )
+        allowed_intents = {
+            "fix",
+            "disagree-with-evidence",
+            "cannot-verify",
+            "baseline-change-request",
         }
-        if not required_ids:
-            if rereviews:
-                raise QualityLoopError(
-                    "unexpected-rereview", "再評価が必要なFindingはありません。"
-                )
-            return []
+        known_ids = {item["finding_id"] for item in case["findings"]}
         seen_ids: set[str] = set()
         validated: list[dict] = []
-        for rereview in rereviews:
-            if not isinstance(rereview, dict):
-                raise QualityLoopError("invalid-rereview", "再評価はobjectで指定してください。")
-            required = ("finding_id", "result", "rationale", "evidence_refs")
-            missing = [field for field in required if field not in rereview]
+        for plan in plans:
+            if not isinstance(plan, dict):
+                raise QualityLoopError("invalid-plan", "Planはobjectで指定してください。")
+            required = ("finding_id", "understanding", "disposition_intent", "proposed_actions")
+            missing = [field for field in required if field not in plan]
             if missing:
                 raise QualityLoopError(
-                    "invalid-rereview",
-                    f"再評価必須項目が不足しています: {', '.join(missing)}",
+                    "invalid-plan",
+                    f"Plan必須項目が不足しています: {', '.join(missing)}",
                 )
-            finding_id = rereview["finding_id"]
-            if finding_id not in required_ids:
+            finding_id = plan["finding_id"]
+            if finding_id not in known_ids:
                 raise QualityLoopError(
-                    "invalid-rereview", f"再評価対象でないFindingです: {finding_id}"
+                    "unknown-finding-id",
+                    f"未知のFinding IDです: {finding_id}",
                 )
             if finding_id in seen_ids:
                 raise QualityLoopError(
-                    "duplicate-rereview", f"Finding {finding_id} の再評価が重複しています。"
+                    "duplicate-plan",
+                    f"Finding {finding_id} へのPlanが重複しています。",
                 )
-            if rereview["result"] not in {"verified", "open", "unverified"}:
-                raise QualityLoopError("invalid-rereview", "未対応の再評価結果です。")
-            evidence_refs = rereview["evidence_refs"]
-            if not isinstance(evidence_refs, list) or not all(
-                isinstance(item, str) and item for item in evidence_refs
-            ):
+            if plan["disposition_intent"] not in allowed_intents:
+                raise QualityLoopError("invalid-plan", "未対応のDisposition Intentです。")
+            implementation_status = plan.get("implementation_status", "not-started")
+            if implementation_status != "not-started":
                 raise QualityLoopError(
-                    "invalid-rereview",
-                    "再評価のevidence_refsはEvidence ID配列で指定してください。",
+                    "invalid-plan-status",
+                    "submit-planのimplementation_statusはnot-startedだけを指定できます。",
+                    remediation="実装後の状態はsubmit-responseとEvidenceで提出してください。",
                 )
-            if not evidence_refs and (
-                rereview["result"] != "unverified"
-                or not rereview.get("unverified_reason")
-                or not rereview.get("required_evidence")
-            ):
+            normalized = deepcopy(plan)
+            normalized["implementation_status"] = "not-started"
+            seen_ids.add(finding_id)
+            validated.append(normalized)
+        return validated
+
+    @staticmethod
+    def _validate_plan_reviews(plans: list[dict], plan_reviews: object) -> list[dict]:
+        if not isinstance(plan_reviews, list) or not plan_reviews:
+            raise QualityLoopError(
+                "invalid-plan-review",
+                "plan_reviewsにはPlan別のReview結果が必要です。",
+            )
+        allowed_outcomes = {
+            "plan-accepted",
+            "plan-accepted-with-comments",
+            "plan-revision-required",
+            "finding-withdrawn",
+            "converted-to-suggestion",
+            "not-applicable",
+            "owner-decision-required",
+        }
+        expected_ids = {item["finding_id"] for item in plans}
+        seen_ids: set[str] = set()
+        validated: list[dict] = []
+        for review in plan_reviews:
+            if not isinstance(review, dict):
                 raise QualityLoopError(
-                    "rereview-evidence-required",
-                    "再評価にはEvidence参照が必要です。未検証の場合はunverified_reasonとrequired_evidenceを指定してください。",
+                    "invalid-plan-review", "PlanReviewはobjectで指定してください。"
+                )
+            required = ("finding_id", "outcome", "rationale")
+            missing = [field for field in required if field not in review]
+            if missing:
+                raise QualityLoopError(
+                    "invalid-plan-review",
+                    f"PlanReview必須項目が不足しています: {', '.join(missing)}",
+                )
+            finding_id = review["finding_id"]
+            if finding_id not in expected_ids:
+                raise QualityLoopError(
+                    "unknown-finding-id",
+                    f"今回のPlan提出対象でないFindingです: {finding_id}",
+                )
+            if finding_id in seen_ids:
+                raise QualityLoopError(
+                    "duplicate-plan-review",
+                    f"Finding {finding_id} のPlanReviewが重複しています。",
+                )
+            if review["outcome"] not in allowed_outcomes:
+                raise QualityLoopError(
+                    "invalid-plan-review", "未対応のPlanReview outcomeです。"
                 )
             seen_ids.add(finding_id)
-            validated.append(deepcopy(rereview))
-        if seen_ids != required_ids:
-            missing_ids = sorted(required_ids - seen_ids)
+            validated.append(deepcopy(review))
+        if seen_ids != expected_ids:
+            missing_ids = sorted(expected_ids - seen_ids)
             raise QualityLoopError(
-                "incomplete-rereview",
-                f"再評価されていないFindingがあります: {', '.join(missing_ids)}",
+                "incomplete-plan-review",
+                f"未レビューのPlan提出があります: {', '.join(missing_ids)}",
             )
         return validated
+
+    @staticmethod
+    def _validate_residual_risks(case: dict, residual_risks: object) -> list[dict]:
+        if not isinstance(residual_risks, list):
+            raise QualityLoopError(
+                "invalid-input",
+                "residual_risksは配列で指定してください。",
+            )
+        findings_by_id = {
+            item["finding_id"]: item for item in case["findings"]
+        }
+        expected_ids = QualityLoop._material_unresolved_finding_ids(case)
+        seen_ids: set[str] = set()
+        validated: list[dict] = []
+        required = (
+            "finding_id",
+            "current_status",
+            "severity",
+            "residual_risk_description",
+            "likelihood",
+            "impact",
+            "qa_recommendation",
+            "confidence",
+        )
+        allowed_likelihoods = {"low", "medium", "high", "unknown"}
+        allowed_impacts = {"low", "medium", "high", "critical"}
+        allowed_recs = {"accept", "accept-with-conditions", "require-remediation", "defer"}
+        allowed_confidences = {"high", "medium", "low", "unknown"}
+
+        for item in residual_risks:
+            if not isinstance(item, dict):
+                raise QualityLoopError("invalid-input", "各residual_riskはobjectで指定してください。")
+            missing = [k for k in required if k not in item]
+            if missing:
+                raise QualityLoopError(
+                    "invalid-input",
+                    f"residual_risk必須項目が不足しています: {', '.join(missing)}",
+                )
+            fid = item["finding_id"]
+            if fid not in findings_by_id:
+                raise QualityLoopError(
+                    "unknown-finding-id",
+                    f"未知のFinding IDです: {fid}",
+                )
+            if fid not in expected_ids:
+                raise QualityLoopError(
+                    "non-material-residual-risk",
+                    f"Finding {fid} はmaterial unresolved residual riskの対象ではありません。",
+                    remediation="解決済み、撤回済み、提案扱いのFindingはFinal Risk Assessmentから除外してください。",
+                )
+            if fid in seen_ids:
+                raise QualityLoopError(
+                    "invalid-input",
+                    f"Finding ID {fid} の残余リスク評価が重複しています。",
+                )
+            if item["likelihood"] not in allowed_likelihoods:
+                raise QualityLoopError("invalid-input", f"likelihoodが不正です: {item['likelihood']}")
+            if item["impact"] not in allowed_impacts:
+                raise QualityLoopError("invalid-input", f"impactが不正です: {item['impact']}")
+            if item["qa_recommendation"] not in allowed_recs:
+                raise QualityLoopError("invalid-input", f"qa_recommendationが不正です: {item['qa_recommendation']}")
+            if item["confidence"] not in allowed_confidences:
+                raise QualityLoopError("invalid-input", f"confidenceが不正です: {item['confidence']}")
+            canonical = findings_by_id[fid]
+            canonical_status = canonical.get("status", "open")
+            if item["current_status"] != canonical_status:
+                raise QualityLoopError(
+                    "risk-status-mismatch",
+                    f"Finding {fid} のcurrent_statusがcanonical stateと一致しません: "
+                    f"submitted={item['current_status']}, canonical={canonical_status}",
+                    remediation="case.jsonのFinding statusを確認し、最新状態で再提出してください。",
+                )
+            if item["severity"] != canonical["severity"]:
+                raise QualityLoopError(
+                    "risk-severity-mismatch",
+                    f"Finding {fid} のseverityがcanonical stateと一致しません: "
+                    f"submitted={item['severity']}, canonical={canonical['severity']}",
+                    remediation="case.jsonのFinding severityを確認し、最新状態で再提出してください。",
+                )
+            seen_ids.add(fid)
+            validated.append(deepcopy(item))
+        missing_ids = sorted(expected_ids - seen_ids)
+        if missing_ids:
+            raise QualityLoopError(
+                "residual-risk-coverage-incomplete",
+                "material unresolved Findingの残余リスク評価が不足しています: "
+                + ", ".join(missing_ids),
+                remediation="提示された全Finding IDについて残余リスク評価を追加してください。",
+            )
+        return validated
+
+    @staticmethod
+    def _material_unresolved_finding_ids(case: dict) -> set[str]:
+        return {
+            finding["finding_id"]
+            for finding in case.get("findings", [])
+            if finding.get("status", "open") not in RESOLVED_VERIFICATION_RESULTS
+            and finding.get("classification") != "improvement-proposal"
+        }
+
+    @staticmethod
+    def _required_plan_finding_ids(case: dict) -> set[str]:
+        return {
+            finding["finding_id"]
+            for finding in case.get("findings", [])
+            if finding.get("plan_required", False)
+            and finding.get("status", "open") not in RESOLVED_VERIFICATION_RESULTS
+            and finding.get("classification") != "improvement-proposal"
+        }
+
+    @staticmethod
+    def _approved_plan_finding_ids(case: dict) -> set[str]:
+        return {
+            finding["finding_id"]
+            for finding in case.get("findings", [])
+            if finding.get("status") == "plan-approved"
+        }
+
+    @staticmethod
+    def _pending_required_plan_finding_ids(case: dict) -> set[str]:
+        return (
+            QualityLoop._required_plan_finding_ids(case)
+            - QualityLoop._approved_plan_finding_ids(case)
+        )
 
     @staticmethod
     def _validate_responses(case: dict, responses: object) -> list[dict]:
@@ -849,30 +1339,10 @@ class QualityLoop:
                     "duplicate-verification",
                     f"Finding {finding_id} の検証が重複しています。",
                 )
-            if verification["result"] not in {
-                "verified",
-                "not-verified",
-                "unverified",
-            }:
+            from .model import VERIFICATION_RESULTS
+            if verification["result"] not in VERIFICATION_RESULTS:
                 raise QualityLoopError(
                     "invalid-verification", "未対応のVerification resultです。"
-                )
-            evidence_refs = verification["evidence_refs"]
-            if not isinstance(evidence_refs, list) or not all(
-                isinstance(item, str) and item for item in evidence_refs
-            ):
-                raise QualityLoopError(
-                    "invalid-verification",
-                    "Verificationのevidence_refsは空でないEvidence ID配列で指定してください。",
-                )
-            if not evidence_refs and (
-                verification["result"] != "unverified"
-                or not verification.get("unverified_reason")
-                or not verification.get("required_evidence")
-            ):
-                raise QualityLoopError(
-                    "verification-evidence-required",
-                    "VerificationにはEvidence参照が必要です。未検証の場合はunverified_reasonとrequired_evidenceを指定してください。",
                 )
             seen_ids.add(finding_id)
             validated.append(deepcopy(verification))
@@ -960,6 +1430,8 @@ class QualityLoop:
             raise QualityLoopError("invalid-input", "baselineはobjectで指定してください。")
         baseline_required = (
             "purpose",
+            "intended_use",
+            "risk_context",
             "requirements",
             "acceptance_criteria",
             "targets",
@@ -970,7 +1442,18 @@ class QualityLoop:
             raise QualityLoopError(
                 "invalid-input",
                 f"baseline必須項目が不足しています: {', '.join(baseline_missing)}",
-                remediation="Purpose、要求、受入基準、対象、対象revisionを指定してください。",
+                remediation="Purpose、intended_use、risk_context、要求、受入基準、対象、対象revisionを指定してください。",
+            )
+        # Quality Intent validation (intended_use and risk_context)
+        if not isinstance(baseline.get("intended_use"), dict):
+            raise QualityLoopError("invalid-input", "intended_useはobjectで指定してください。")
+        if not isinstance(baseline.get("risk_context"), dict) or "criticality" not in baseline["risk_context"]:
+            raise QualityLoopError("invalid-input", "risk_contextにはcriticalityが必要です。")
+        crit = baseline["risk_context"].get("criticality")
+        if crit not in {"low", "medium", "high", "regulated"}:
+            raise QualityLoopError(
+                "invalid-input",
+                f"risk_context.criticalityが不正です: {crit}（対応値: low, medium, high, regulated）",
             )
 
     @staticmethod
@@ -1014,12 +1497,14 @@ class QualityLoop:
                 "role-not-allowed",
                 f"{operation}は{expected_role} Roleだけが実行できます。",
             )
-        if operation == "adjudicate" and payload["actor_id"] != case["case_metadata"]["owner"]:
-            raise QualityLoopError(
-                "owner-identity-mismatch",
-                "adjudicateは案件に登録されたOwnerだけが実行できます。",
-                remediation="登録済みOwnerのactor_idで裁定してください。",
-            )
+        if operation == "adjudicate":
+            registered_owner = case.get("case_metadata", {}).get("owner")
+            if registered_owner and payload.get("actor_id") != registered_owner:
+                raise QualityLoopError(
+                    "unauthorized-actor",
+                    f"案件の登録Owner({registered_owner})と裁定実行者({payload.get('actor_id')})が一致しません。",
+                    remediation="登録されたOwnerアカウントから実行してください。",
+                )
         for event in case["events"]:
             if (
                 event["invocation_id"] == payload["invocation_id"]

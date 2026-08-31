@@ -77,5 +77,5 @@
 ## 5. 関連ファイル・参照リンク
 
 - **アーカイブ済みChange**: [2026-08-26-compact-spec-driven-qa-skills](../../openspec/changes/archive/2026-08-26-compact-spec-driven-qa-skills/)
-- **Change分割計画書**: [implementation_plan_007_0826.md](implementation_plan_007_0826.md)
+- **Change分割計画書を含む移行期記録**: [archived_summary_002_0828.md](../Archives/archived_summary_002_0828.md)
 - **アクティブChange**: [improve-spec-driven-qa-contract-v1-2](../../openspec/changes/improve-spec-driven-qa-contract-v1-2/)

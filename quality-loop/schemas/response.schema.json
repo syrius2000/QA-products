@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResponseInput",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "previous_handoff_id",
+    "expected_case_revision",
+    "changed_targets",
+    "responses",
+    "evidence"
+  ],
+  "properties": {
+    "operation_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "role": {"type": "string", "enum": ["implementer"]},
+    "invocation_id": {"type": "string"},
+    "previous_handoff_id": {"type": "string"},
+    "expected_case_revision": {"type": "integer", "minimum": 1},
+    "changed_targets": {"type": "array", "items": {"type": "string"}},
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "disposition", "rationale", "evidence_refs"],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "disposition": {
+            "type": "string",
+            "enum": ["accepted", "fix-submitted", "disagreed-with-evidence", "cannot-verify", "baseline-change-requested"]
+          },
+          "rationale": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "evidence": {"type": "array"}
+  }
+}

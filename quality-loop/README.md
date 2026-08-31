@@ -4,29 +4,37 @@
 
 ## 公開操作
 
-公開する操作は次の6つだけです。
-
-1. `create-case`
-2. `review`
-3. `submit-response`
-4. `verify`
-5. `adjudicate`
-6. `status`
+1. `create-case` (Owner): 案件初期化とQuality Intent設定
+2. `review` (Reviewer): 初回QAレビュー・Proportionality評価
+3. `submit-plan` (Implementer): Response Planの提出 (Plan Before Fix)
+4. `review-plan` (Reviewer): Response Planの評価・合意・自己訂正
+5. `submit-response` (Implementer): 許可範囲内での修正提出・Evidence添付
+6. `verify` (Reviewer): 独立検証・申告外変更の検出
+7. `assess-risk` (Reviewer): 最終リスク評価 (Final Risk Assessment)
+8. `adjudicate` (Owner): 最終裁定 (Go/No-Go/条件付き受入)
+9. `status` (All): 決定論的信号機要約 (`resume.md`)・最新Handoffの取得
 
 詳細な契約は[機能仕様](FUNCTIONAL_SPEC.md)を参照してください。
 
-## 最初の案件を開始する
+## 入力Templateと実例
 
-`create-case`には、Owner、案件ID、Purpose、要求、受入基準、対象成果物、対象revisionが必要です。`actor_id`と`owner`は同じOwner識別子にします。最小入力は[templates/intake.json](templates/intake.json)から作成できます。
+`templates/`には9操作の入力雛形があります。`intake.json`、`review_input.json`、`submit_plan.json`、`review_plan.json`、`response_input.json`、`verify_input.json`、`assess_risk.json`、`adjudicate_input.json`、`status.json`を使用し、`REPLACE_WITH_CURRENT_HANDOFF_ID`、revision、Actor、Evidence参照は必ず`status`の最新結果に置き換えます。
 
-```bash
-cd quality-loop
-cp templates/intake.json create-case.json
-# create-case.jsonのcase_id、owner、baselineを対象案件に合わせて更新する
-python3 -B -m quality_loop.cli --case-root ../qms-cases create-case --input create-case.json
+`examples/`には、標準サイクル、Evidence反証、回帰検出、残余リスク付き受入の4ケースを収録しています。例示の`case.json`は参照用であり、実案件の正本へコピーして直接編集しません。
+
+## 変更観測
+
+有限manifestはOwnerが明示したroot配下の相対パスだけを対象にSHA-256を記録します。Git観測は`base_ref`を明示した読取り専用操作として実行し、ignored、submodule内部、外部サービスは変更なしと推測しません。
+
+```python
+from pathlib import Path
+from quality_loop import build_file_manifest, observe_git_changes
+
+manifest = build_file_manifest(Path("../target"), ["artifact/example.txt"])
+git_observation = observe_git_changes(Path("../target"), "HEAD")
 ```
 
-成功時のJSONにある`next_role`、`next_action`、`handoff`を次工程へ渡します。案件正本`case.json`は直接編集しません。
+manifest対象がroot外、存在しない、または読取り不能な場合は安全側へ停止します。`resume.md`と`final-risk-assessment.md`はcanonicalな`case.json`から生成される派生表示です。
 
 ## 開発時の実行
 
@@ -36,11 +44,11 @@ python3 -B -m unittest discover -s tests -v
 python3 -B -m quality_loop.cli --help
 ```
 
-Python標準ライブラリだけを使用します。旧OpenSpec実装や旧Skillコードはimportしません。
+Python標準ライブラリだけを使用します。外部ライブラリへの依存はありません。
 
 ## AI Skill
 
-- `skills/quality-review/`: 初回レビューと修正後の独立検証
-- `skills/quality-response/`: Finding回答と許可範囲内の修正提出
+- `skills/quality-review/`: 初回レビュー、Plan合意、独立検証、最終リスク評価
+- `skills/quality-response/`: Response Plan提出、修正提出とEvidence添付
 
 どちらも最初に`status`を確認し、CLIが返した次Roleとhandoffを次工程へ渡します。Skillは案件正本`case.json`を直接編集しません。

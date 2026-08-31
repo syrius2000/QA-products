@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/quality-loop/create_case.schema.json",
+  "title": "Quality Loop create-case input",
+  "type": "object",
+  "required": ["operation_id", "actor_id", "role", "invocation_id", "case_id", "owner", "baseline"],
+  "properties": {"role": {"const": "owner"}, "case_id": {"type": "string"}, "owner": {"type": "string"}, "baseline": {"type": "object"}},
+  "additionalProperties": true
+}

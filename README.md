@@ -4,18 +4,11 @@
 
 ## 現在の状態
 
-初期版はOwner受入済みです。ただし、他AIによる実案件評価を継続している評価段階でもあります。評価結果によっては、仕様、Skill、テストを改訂します。評価中の結果を本番品質や万能性の証明として扱わないでください。
+v1.4.0 Coreは、実装者側のローカル検証と独立QAを完了し、独立QAの判定は`ACCEPT / READY FOR OWNER ADJUDICATION`です。Critical、High、Medium、Lowの新規Findingはいずれも0件です。ただし、正式なOwner最終裁定、外部配置、commit、pushは未実施です。
 
-初期版の受入根拠は次のとおりです。
+資料は、実装履歴とQA結果を分けて管理しています。[実装履歴統合アーカイブ](docs/Archives/archived_summary_003_0831.md)はPlan 011〜016と初期資料の経緯を、[最終独立QA受入サマリー](docs/Archives/qa_acceptance_summary_001_0831.md)はv1.4.0のQA判定とOwner引き継ぎを記録します。過去の計画ZIP・tarball・QA用ZIPは[原本アーカイブ](archives/quality-loop/)に保存しています。
 
-- Reviewer、Implementer、独立Reviewer、Ownerの4段階ループを実装
-- Owner権限、handoff、revision、Evidence、変更範囲を機械的に検証
-- Ownerによる受入、保留、却下、再作業裁定を実装
-- 自動テスト33件が成功
-- 低リスク実案件`QMS-README-0001`をrevision 10、`accepted`で完了
-- 独立QAの5件のFindingを是正し、再確認で未解決Finding 0件
-
-詳細は[実装報告](docs/Artifacts/implementation_report_001_0828.md)、[独立QA報告](docs/Artifacts/independent_qa_report_001_0828.md)、[Owner受入裁定](docs/Artifacts/initial_release_adjudication_001_0828.md)を参照してください。
+現行の操作方法と仕様は、履歴Archiveではなく[Quality Loop README](quality-loop/README.md)と[FUNCTIONAL_SPEC](quality-loop/FUNCTIONAL_SPEC.md)を参照してください。
 
 ## Quality Loopの役割
 
@@ -40,6 +33,12 @@ python3 -B -m quality_loop.cli --case-root ../qms-cases create-case --input crea
 成功結果の`next_role`、`next_action`、`handoff`を次のAIへ渡します。各AIは最初に`status`を確認し、現在のhandoffとrevisionに従ってください。
 
 案件正本の`qms-cases/<case-id>/case.json`は直接編集しません。修正は必ず該当するCLI操作を通し、EvidenceとInvocation IDを記録します。
+
+## 中座・変更観測の支援
+
+`status --resume-format markdown`は、正本を変えずに`resume.md`を生成します。現在地、未解決Finding、必要Evidence、観測範囲、次のCLI操作を確認して再開してください。
+
+対象ファイルのSHA-256有限manifestと、明示起動の読取り専用Git観測も利用できます。対象外のファイル、ignored、submodule内部、外部サービスについて「変更なし」とは判定しません。詳細は[Quality Loop README](quality-loop/README.md)を参照してください。
 
 ## 2つのSkillの使い分け
 
@@ -74,4 +73,4 @@ cd quality-loop
 
 ## 変更時の注意
 
-変更前に[実装計画](docs/Artifacts/implementation_plan_011_0827.md)と`AGENTS.md`を確認してください。大きな変更は日本語の実装計画を先に作成し、Owner承認後に実装します。Remoteへのpush、外部Skill環境への配置、旧資産の削除は、別途明示的に承認された場合だけ行います。
+変更前に`AGENTS.md`と、現行の承認済み計画を確認してください。過去の実装計画は[実装履歴統合アーカイブ](docs/Archives/archived_summary_003_0831.md)にあります。大きな変更は日本語の実装計画を先に作成し、Owner承認後に実装します。Remoteへのpush、外部Skill環境への配置、旧資産の削除は、別途明示的に承認された場合だけ行います。

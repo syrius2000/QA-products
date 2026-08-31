@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "case_metadata": {
+    "case_id": "CASE-EXAMPLE-04",
+    "case_revision": 6,
+    "revision": 6,
+    "status": "accepted-with-risk",
+    "owner": "owner-user",
+    "created_at": "2026-08-28T15:00:00Z",
+    "updated_at": "2026-08-28T16:00:00Z",
+    "cycle_count": 1,
+    "cycle_limit": 3
+  },
+  "baseline": {
+    "purpose": "バッチ同期パイプラインの性能検証",
+    "intended_use": {
+      "users": "運用チーム・データエンジニア",
+      "environment": "本番クラスタ連携環境",
+      "operational_context": "夜間データ同期ジョブ"
+    },
+    "risk_context": {
+      "criticality": "medium",
+      "safety_impact": "なし",
+      "data_integrity_impact": "低",
+      "security_context": "内部ネットワーク通信"
+    },
+    "requirements": [
+      {
+        "requirement_id": "REQ-SYNC-01",
+        "text": "100万件のレコードを1分以内に処理すること"
+      }
+    ],
+    "acceptance_criteria": [
+      "実機クラスタでの100万件同期完了ログ"
+    ],
+    "exclusions": [],
+    "targets": [
+      "src/sync.py"
+    ],
+    "target_revision": "rev-1"
+  },
+  "implementation_authorization": {
+    "allowed": false,
+    "finding_ids": [],
+    "allowed_targets": []
+  },
+  "change_observation": {
+    "method": "none",
+    "scope": [],
+    "observed_changed_targets": [],
+    "limitations": ["開発環境のため実機クラスタ計測不可"]
+  },
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "classification": "evidence-gap",
+      "severity": "low",
+      "requirement_ref": "REQ-SYNC-01",
+      "observed_fact": "開発環境では10万件までしかテストできず100万件の実測Evidenceがない",
+      "impact": "本番環境でのスケーラビリティ未確認",
+      "expected_state": "本番クラスタでの100万件テストEvidence",
+      "verification_method": "実機クラスタ負荷試験",
+      "evidence_refs": ["EV-DEV-TEST"],
+      "status": "unverified"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-DEV-TEST",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "dev-bench",
+      "result": "10万件を5.2秒で処理（線形外挿で100万件52秒見込み）",
+      "summary": "開発機でのベンチマーク記録"
+    }
+  ],
+  "plans": [],
+  "plan_reviews": [],
+  "responses": [
+    {
+      "finding_id": "F-001",
+      "disposition": "cannot-verify",
+      "rationale": "開発機リソース上限のため実機100万件テスト不可",
+      "evidence_refs": ["EV-DEV-TEST"]
+    }
+  ],
+  "verifications": [
+    {
+      "finding_id": "F-001",
+      "result": "unverified",
+      "rationale": "開発機での外挿値は確認したが実測未達のためunverified",
+      "evidence_refs": ["EV-DEV-TEST"]
+    }
+  ],
+  "final_risk_assessments": [
+    {
+      "overall_recommendation": "accept-with-conditions",
+      "rationale": "開発機の外挿結果（52秒）から要件達成の確度は高いが、本番環境での実機確認を条件付きで受入推奨",
+      "residual_risks": [
+        {
+          "finding_id": "F-001",
+          "current_status": "unverified",
+          "severity": "low",
+          "implemented_controls": ["バッチタイムアウト監視 (70秒) 設定"],
+          "residual_risk_description": "実機ネットワーク遅延による1分超過の可能性",
+          "assumptions_supporting_acceptance": ["ステージング環境での初回リリース時テスト実施"],
+          "likelihood": "low",
+          "impact": "low",
+          "alternatives": ["クラスタ増強", "並行スレッド数調整"],
+          "proportionality_assessment": "開発環境でのこれ以上の負荷試験は費用対効果が低く、リリース判定が合理的",
+          "qa_recommendation": "accept-with-conditions",
+          "confidence": "high",
+          "reassessment_triggers": ["初回夜間バッチ実行ログで55秒超過時"]
+        }
+      ]
+    }
+  ],
+  "adjudications": [
+    {
+      "decision": "accepted-with-risk",
+      "rationale": "ステージングでの初回確認およびタイムアウト監視設定を前提に残余リスクを受容して承認",
+      "conditions": ["ステージング環境での初回実行確認"],
+      "residual_risks": ["実機ネットワーク遅延リスク"]
+    }
+  ],
+  "events": [
+    {
+      "operation_id": "op-create-04",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-01",
+      "operation": "create-case",
+      "revision": 1,
+      "timestamp": "2026-08-28T15:00:00Z"
+    },
+    {
+      "operation_id": "op-rev-04",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-01",
+      "operation": "review",
+      "revision": 2,
+      "timestamp": "2026-08-28T15:10:00Z"
+    },
+    {
+      "operation_id": "op-sub-04",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-01",
+      "operation": "submit-response",
+      "revision": 3,
+      "timestamp": "2026-08-28T15:20:00Z"
+    },
+    {
+      "operation_id": "op-ver-04",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-02",
+      "operation": "verify",
+      "revision": 4,
+      "timestamp": "2026-08-28T15:30:00Z"
+    },
+    {
+      "operation_id": "op-risk-04",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-03",
+      "operation": "assess-risk",
+      "revision": 5,
+      "timestamp": "2026-08-28T15:45:00Z"
+    },
+    {
+      "operation_id": "op-adj-04",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-02",
+      "operation": "adjudicate",
+      "revision": 6,
+      "timestamp": "2026-08-28T16:00:00Z"
+    }
+  ],
+  "handoff": {
+    "handoff_id": "hnd-term-004",
+    "issued_revision": 6,
+    "next_role": null,
+    "next_action": null,
+    "status": "terminal",
+    "terminal_result": "accepted-with-risk"
+  }
+}

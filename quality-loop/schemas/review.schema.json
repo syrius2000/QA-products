@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReviewInput",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "previous_handoff_id",
+    "expected_case_revision",
+    "findings",
+    "evidence"
+  ],
+  "properties": {
+    "operation_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "role": {"type": "string", "enum": ["reviewer"]},
+    "invocation_id": {"type": "string"},
+    "previous_handoff_id": {"type": "string"},
+    "expected_case_revision": {"type": "integer", "minimum": 1},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding_id",
+          "classification",
+          "severity",
+          "requirement_ref",
+          "observed_fact",
+          "impact",
+          "expected_state",
+          "verification_method",
+          "evidence_refs",
+          "status"
+        ],
+        "properties": {
+          "finding_id": {"type": "string"},
+          "classification": {
+            "type": "string",
+            "enum": [
+              "requirement-violation",
+              "purpose-risk",
+              "evidence-gap",
+              "regression",
+              "unverified-claim",
+              "improvement-proposal"
+            ]
+          },
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+          "requirement_ref": {"type": "string"},
+          "observed_fact": {"type": "string"},
+          "impact": {"type": "string"},
+          "expected_state": {"type": "string"},
+          "verification_method": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "status": {"type": "string", "enum": ["open", "verified", "unverified"]},
+          "plan_required": {"type": "boolean"}
+        }
+      }
+    },
+    "evidence": {"type": "array"}
+  }
+}

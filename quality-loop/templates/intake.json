@@ -7,6 +7,17 @@
   "owner": "owner-001",
   "baseline": {
     "purpose": "対象成果物が合意済み要求を満たすことを確認する",
+    "intended_use": {
+      "users": "開発チーム・QA担当者",
+      "environment": "ローカル検証環境",
+      "operational_context": "機能リファクタリング後の品質確認"
+    },
+    "risk_context": {
+      "criticality": "medium",
+      "safety_impact": "なし",
+      "data_integrity_impact": "低",
+      "security_context": "内部利用ツール"
+    },
     "requirements": [
       {"requirement_id": "REQ-001", "text": "期待される結果を再現できること"}
     ],

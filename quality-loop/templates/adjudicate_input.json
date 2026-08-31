@@ -1,0 +1,14 @@
+{
+  "operation_id": "op-adjudicate-001",
+  "actor_id": "owner-yamaguchi",
+  "role": "owner",
+  "invocation_id": "inv-owner-002",
+  "previous_handoff_id": "hnd-verify-001",
+  "expected_case_revision": 4,
+  "decision": "accepted",
+  "rationale": "全Findingが独立検証でverifiedとなり、要求を満たしたため受入を承認する",
+  "conditions": [],
+  "residual_risks": [],
+  "dry_run": false,
+  "confirm": true
+}

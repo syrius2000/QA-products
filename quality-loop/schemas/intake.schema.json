@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntakeInput",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "case_id",
+    "owner",
+    "baseline",
+    "implementation_authorization",
+    "change_observation"
+  ],
+  "properties": {
+    "operation_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "role": {"type": "string", "enum": ["owner"]},
+    "invocation_id": {"type": "string"},
+    "case_id": {"type": "string"},
+    "owner": {"type": "string"},
+    "cycle_limit": {"type": "integer", "minimum": 1, "default": 3},
+    "baseline": {
+      "type": "object",
+      "required": [
+        "purpose",
+        "intended_use",
+        "risk_context",
+        "requirements",
+        "acceptance_criteria",
+        "targets",
+        "target_revision"
+      ],
+      "properties": {
+        "purpose": {"type": "string"},
+        "intended_use": {
+          "type": "object",
+          "properties": {
+            "users": {"type": "string"},
+            "environment": {"type": "string"},
+            "operational_context": {"type": "string"}
+          }
+        },
+        "risk_context": {
+          "type": "object",
+          "required": ["criticality"],
+          "properties": {
+            "criticality": {"type": "string", "enum": ["low", "medium", "high", "regulated"]},
+            "safety_impact": {"type": "string"},
+            "data_integrity_impact": {"type": "string"},
+            "security_context": {"type": "string"}
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["requirement_id", "text"],
+            "properties": {
+              "requirement_id": {"type": "string"},
+              "text": {"type": "string"}
+            }
+          }
+        },
+        "acceptance_criteria": {"type": "array", "items": {"type": "string"}},
+        "constraints": {"type": "array", "items": {"type": "string"}},
+        "applicable_obligations": {"type": "array", "items": {"type": "string"}},
+        "unacceptable_failures": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}},
+        "targets": {"type": "array", "items": {"type": "string"}},
+        "target_revision": {"type": "string"}
+      }
+    },
+    "implementation_authorization": {
+      "type": "object",
+      "required": ["allowed", "finding_ids", "allowed_targets"],
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "finding_ids": {"type": "array", "items": {"type": "string"}},
+        "allowed_targets": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "change_observation": {
+      "type": "object",
+      "required": ["method", "scope"],
+      "properties": {
+        "method": {"type": "string", "enum": ["finite-manifest", "git-working-tree"]},
+        "scope": {"type": "array", "items": {"type": "string"}},
+        "baseline_evidence_id": {"type": ["string", "null"]},
+        "exclusions": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

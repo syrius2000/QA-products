@@ -3,6 +3,74 @@ from __future__ import annotations
 from .errors import QualityLoopError
 
 
+def validate_create_authorization(payload: dict) -> None:
+    role = payload.get("role")
+    if role != "owner":
+        raise QualityLoopError(
+            "role-not-allowed",
+            "create-caseはOwnerだけが実行できます。",
+            remediation="roleをownerにし、OwnerのInvocationから実行してください。",
+        )
+
+
+def validate_operation_role(
+    operation: str,
+    requested_role: str,
+    expected_role: str,
+) -> None:
+    if requested_role != expected_role:
+        raise QualityLoopError(
+            "wrong-role",
+            f"操作 {operation} に必要なRoleは {expected_role} です（要求Role: {requested_role}）。",
+            remediation=f"Roleを {expected_role} に変更して実行してください。",
+        )
+
+
+def validate_status_transition_authorization(
+    role: str,
+    operation: str,
+    target_case_status: str,
+) -> None:
+    if role == "implementer":
+        if target_case_status in {"accepted", "closed", "accepted-with-risk", "rejected"}:
+            raise QualityLoopError(
+                "self-close-not-allowed",
+                "Implementerは案件の受入・クローズ・終端状態変更を行うことはできません。",
+                remediation="回答および修正Evidenceを提出し、Reviewerの独立検証へ回してください。",
+            )
+    elif role == "reviewer":
+        if target_case_status in {"accepted", "accepted-with-risk", "rejected", "rework-requested"}:
+            raise QualityLoopError(
+                "role-not-allowed",
+                "Reviewerは案件の最終裁定を行うことはできません。",
+                remediation="技術検証（verified / not-verified）を登録し、Owner裁定へ回してください。",
+            )
+
+
+def validate_target_modification_authorization(
+    role: str,
+    changed_targets: list[str],
+    allowed_targets: list[str],
+) -> None:
+    if not changed_targets:
+        return
+    if role == "reviewer":
+        raise QualityLoopError(
+            "artifact-modification-not-allowed",
+            "Reviewerは対象成果物を修正することはできません。",
+            remediation="Findingを作成し、Implementerへ修正を依頼してください。",
+        )
+    if role == "implementer":
+        allowed_set = set(allowed_targets or [])
+        unauthorized = sorted(set(changed_targets) - allowed_set)
+        if unauthorized:
+            raise QualityLoopError(
+                "unauthorized-target-modification",
+                f"許可外のファイル変更を検出しました: {', '.join(unauthorized)}",
+                remediation="許可範囲（allowed_targets）内のファイルのみを変更してください。",
+            )
+
+
 def validate_authorization(authorization: object) -> dict:
     if not isinstance(authorization, dict):
         raise QualityLoopError(

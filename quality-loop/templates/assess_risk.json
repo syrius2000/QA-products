@@ -1,0 +1,27 @@
+{
+  "operation_id": "op-assess-risk-001",
+  "actor_id": "reviewer-ai",
+  "role": "reviewer",
+  "invocation_id": "inv-reviewer-risk-001",
+  "previous_handoff_id": "REPLACE_WITH_CURRENT_HANDOFF_ID",
+  "expected_case_revision": 6,
+  "overall_recommendation": "accept-with-conditions",
+  "rationale": "残余リスク、検証範囲、条件付き受入を推奨する根拠を記述",
+  "residual_risks": [
+    {
+      "finding_id": "F-001",
+      "current_status": "unverified",
+      "severity": "medium",
+      "implemented_controls": [],
+      "residual_risk_description": "未検証事項と想定影響を記述",
+      "assumptions_supporting_acceptance": [],
+      "likelihood": "unknown",
+      "impact": "medium",
+      "alternatives": ["追加検証または追加修正の選択肢を記述"],
+      "proportionality_assessment": "追加対応の便益と負担の比例性を記述",
+      "qa_recommendation": "accept-with-conditions",
+      "confidence": "low",
+      "reassessment_triggers": ["再確認が必要になる条件を記述"]
+    }
+  ]
+}

@@ -18,6 +18,17 @@ def complete_intake() -> dict:
         "owner": "owner-001",
         "baseline": {
             "purpose": "要求に対する品質を確認する",
+            "intended_use": {
+                "users": "開発者・レビュアー",
+                "environment": "ローカル検証環境",
+                "operational_context": "機能追加に伴う品質検証",
+            },
+            "risk_context": {
+                "criticality": "medium",
+                "safety_impact": "なし",
+                "data_integrity_impact": "低",
+                "security_context": "内部テスト",
+            },
             "requirements": [
                 {"requirement_id": "REQ-001", "text": "結果を再現できる"}
             ],
@@ -69,15 +80,13 @@ class ReviewTest(unittest.TestCase):
             finding = {
                 "finding_id": "F-001",
                 "classification": "requirement-violation",
-                "severity": "medium",
+                "severity": "high",
                 "requirement_ref": "REQ-001",
                 "observed_fact": "再現手順が記録されていない",
                 "impact": "第三者が結果を再現できない",
                 "expected_state": "再現手順が成果物に記録されている",
                 "verification_method": "記載された手順を別環境で実行する",
                 "evidence_refs": [],
-                "unverified_reason": "観測記録が未登録である",
-                "required_evidence": "独立実行の記録",
                 "status": "open",
             }
 
@@ -97,9 +106,49 @@ class ReviewTest(unittest.TestCase):
 
             self.assertEqual(2, result["case_revision"])
             self.assertEqual("implementer", result["next_role"])
-            self.assertEqual("submit-response", result["next_action"])
+            self.assertEqual("submit-plan", result["next_action"])
             case = loop.store.load("QMS-0001")
             self.assertEqual("F-001", case["findings"][0]["finding_id"])
+            self.assertEqual("implementer-plan", case["case_metadata"]["status"])
+
+    def test_reviewer_records_low_finding_and_hands_off_to_direct_response(self) -> None:
+        """Low指摘（plan_required=False）の場合は直接submit-responseへ遷移可能"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            loop = QualityLoop(Path(temp_dir))
+            created = loop.create_case(complete_intake())
+
+            finding = {
+                "finding_id": "F-002",
+                "classification": "requirement-violation",
+                "severity": "low",
+                "plan_required": False,
+                "requirement_ref": "REQ-001",
+                "observed_fact": "軽微なtypo",
+                "impact": "誤字",
+                "expected_state": "正しい表記",
+                "verification_method": "目視",
+                "evidence_refs": [],
+                "status": "open",
+            }
+
+            result = loop.review(
+                "QMS-0001",
+                {
+                    "operation_id": "op-review-002",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-001",
+                    "previous_handoff_id": created["handoff"]["handoff_id"],
+                    "expected_case_revision": 1,
+                    "findings": [finding],
+                    "evidence": [],
+                },
+            )
+
+            self.assertEqual(2, result["case_revision"])
+            self.assertEqual("implementer", result["next_role"])
+            self.assertEqual("submit-response", result["next_action"])
+            case = loop.store.load("QMS-0001")
             self.assertEqual("implementer-action", case["case_metadata"]["status"])
 
 
@@ -127,21 +176,58 @@ class SubmitResponseTest(unittest.TestCase):
                         {
                             "finding_id": "F-001",
                             "classification": "requirement-violation",
-                            "severity": "medium",
+                            "severity": "high",
                             "requirement_ref": "REQ-001",
                             "observed_fact": "再現手順がない",
                             "impact": "再現できない",
                             "expected_state": "手順がある",
                             "verification_method": "手順を実行する",
                             "evidence_refs": [],
-                            "unverified_reason": "観測記録が未登録である",
-                            "required_evidence": "独立実行の記録",
                             "status": "open",
                         }
                     ],
                     "evidence": [],
                 },
             )
+            # Plan Before Fix: submit-plan and review-plan
+            planned = loop.submit_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-plan-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "plans": [
+                        {
+                            "finding_id": "F-001",
+                            "understanding": "再現手順がない",
+                            "disposition_intent": "fix",
+                            "proposed_actions": ["手順を追記する"],
+                        }
+                    ],
+                },
+            )
+            plan_reviewed = loop.review_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-rev-plan-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-002",
+                    "previous_handoff_id": planned["handoff"]["handoff_id"],
+                    "expected_case_revision": 3,
+                    "plan_reviews": [
+                        {
+                            "finding_id": "F-001",
+                            "outcome": "plan-accepted",
+                            "rationale": "手順追記の方針を承認",
+                        }
+                    ],
+                },
+            )
+
             evidence_path = Path(temp_dir) / "QMS-0001" / "evidence" / "fix.txt"
             evidence_path.write_text("修正後テスト: passed\n", encoding="utf-8")
             digest = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
@@ -152,9 +238,9 @@ class SubmitResponseTest(unittest.TestCase):
                     "operation_id": "op-submit-001",
                     "actor_id": "implementer-001",
                     "role": "implementer",
-                    "invocation_id": "inv-implementer-001",
-                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
-                    "expected_case_revision": 2,
+                    "invocation_id": "inv-implementer-002",
+                    "previous_handoff_id": plan_reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 4,
                     "changed_targets": ["artifact.txt"],
                     "responses": [
                         {
@@ -178,7 +264,7 @@ class SubmitResponseTest(unittest.TestCase):
                 },
             )
 
-            self.assertEqual(3, result["case_revision"])
+            self.assertEqual(5, result["case_revision"])
             self.assertEqual("reviewer", result["next_role"])
             self.assertEqual("verify", result["next_action"])
             case = loop.store.load("QMS-0001")
@@ -210,21 +296,58 @@ class VerifyTest(unittest.TestCase):
                         {
                             "finding_id": "F-001",
                             "classification": "requirement-violation",
-                            "severity": "medium",
+                            "severity": "high",
                             "requirement_ref": "REQ-001",
                             "observed_fact": "再現手順がない",
                             "impact": "再現できない",
                             "expected_state": "手順がある",
                             "verification_method": "手順を実行する",
                             "evidence_refs": [],
-                            "unverified_reason": "観測記録が未登録である",
-                            "required_evidence": "独立実行の記録",
                             "status": "open",
                         }
                     ],
                     "evidence": [],
                 },
             )
+            # Plan Before Fix: submit-plan and review-plan
+            planned = loop.submit_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-plan-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "plans": [
+                        {
+                            "finding_id": "F-001",
+                            "understanding": "再現手順がない",
+                            "disposition_intent": "fix",
+                            "proposed_actions": ["手順を追記する"],
+                        }
+                    ],
+                },
+            )
+            plan_reviewed = loop.review_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-rev-plan-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-002",
+                    "previous_handoff_id": planned["handoff"]["handoff_id"],
+                    "expected_case_revision": 3,
+                    "plan_reviews": [
+                        {
+                            "finding_id": "F-001",
+                            "outcome": "plan-accepted",
+                            "rationale": "手順追記の方針を承認",
+                        }
+                    ],
+                },
+            )
+
             evidence_path = Path(temp_dir) / "QMS-0001" / "evidence" / "fix.txt"
             evidence_path.write_text("修正後テスト: passed\n", encoding="utf-8")
             submitted = loop.submit_response(
@@ -233,9 +356,9 @@ class VerifyTest(unittest.TestCase):
                     "operation_id": "op-submit-001",
                     "actor_id": "implementer-001",
                     "role": "implementer",
-                    "invocation_id": "inv-implementer-001",
-                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
-                    "expected_case_revision": 2,
+                    "invocation_id": "inv-implementer-003",
+                    "previous_handoff_id": plan_reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 4,
                     "changed_targets": ["artifact.txt"],
                     "responses": [
                         {
@@ -265,9 +388,9 @@ class VerifyTest(unittest.TestCase):
                     "operation_id": "op-verify-001",
                     "actor_id": "reviewer-002",
                     "role": "reviewer",
-                    "invocation_id": "inv-reviewer-002",
+                    "invocation_id": "inv-reviewer-003",
                     "previous_handoff_id": submitted["handoff"]["handoff_id"],
-                    "expected_case_revision": 3,
+                    "expected_case_revision": 5,
                     "verifications": [
                         {
                             "finding_id": "F-001",
@@ -314,12 +437,101 @@ class VerifyTest(unittest.TestCase):
                 },
             )
 
-            self.assertEqual(4, result["case_revision"])
+            self.assertEqual(6, result["case_revision"])
             self.assertEqual("owner", result["next_role"])
             self.assertEqual("adjudicate", result["next_action"])
             case = loop.store.load("QMS-0001")
             self.assertEqual("verified", case["findings"][0]["status"])
             self.assertEqual(1, case["case_metadata"]["cycle_count"])
+
+    def test_qa_can_self_correct_with_finding_withdrawn(self) -> None:
+        """Implementerの反論Evidenceにより、Reviewerが指摘をfinding-withdrawnとして自己訂正し、Owner裁定へ進む"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            loop = QualityLoop(Path(temp_dir))
+            created = loop.create_case(complete_intake())
+            reviewed = loop.review(
+                "QMS-0001",
+                {
+                    "operation_id": "op-review-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-001",
+                    "previous_handoff_id": created["handoff"]["handoff_id"],
+                    "expected_case_revision": 1,
+                    "findings": [
+                        {
+                            "finding_id": "F-001",
+                            "classification": "requirement-violation",
+                            "severity": "high",
+                            "requirement_ref": "REQ-001",
+                            "observed_fact": "仕様未達に見える",
+                            "impact": "動作不能",
+                            "expected_state": "仕様達成",
+                            "verification_method": "ログ確認",
+                            "evidence_refs": [],
+                            "status": "open",
+                            "plan_required": True,
+                        }
+                    ],
+                    "evidence": [],
+                },
+            )
+            # Implementer submits evidence rebuttal via submit_plan (disagree-with-evidence)
+            planned = loop.submit_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-plan-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "plans": [
+                        {
+                            "finding_id": "F-001",
+                            "understanding": "仕様未達との指摘だが、別ログで正常性が証明されている",
+                            "disposition_intent": "disagree-with-evidence",
+                            "proposed_actions": ["反証ログを提示し、修正は行わない"],
+                            "evidence_refs": ["EV-REBUTTAL-001"],
+                        }
+                    ],
+                    "evidence": [
+                        {
+                            "evidence_id": "EV-REBUTTAL-001",
+                            "level": "observed",
+                            "target_revision": "r1",
+                            "method": "ログ確認",
+                            "result": "正常動作を確認",
+                            "summary": "仕様を満たしているログ",
+                        }
+                    ],
+                },
+            )
+            # Reviewer self-corrects during review_plan and withdraws the finding
+            plan_review_result = loop.review_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-rev-plan-001",
+                    "actor_id": "reviewer-002",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-002",
+                    "previous_handoff_id": planned["handoff"]["handoff_id"],
+                    "expected_case_revision": 3,
+                    "plan_reviews": [
+                        {
+                            "finding_id": "F-001",
+                            "outcome": "finding-withdrawn",
+                            "rationale": "反証ログを確認し、指摘の前提が不成立であったため撤回",
+                            "evidence_refs": ["EV-REBUTTAL-001"],
+                        }
+                    ],
+                    "evidence": [],
+                },
+            )
+            self.assertEqual("owner", plan_review_result["next_role"])
+            self.assertEqual("adjudicate", plan_review_result["next_action"])
+            case = loop.store.load("QMS-0001")
+            self.assertEqual("finding-withdrawn", case["findings"][0]["status"])
 
 
 class AdjudicateTest(unittest.TestCase):
@@ -353,8 +565,6 @@ class AdjudicateTest(unittest.TestCase):
                             "expected_state": "再現条件が説明されている",
                             "verification_method": "説明を独立確認する",
                             "evidence_refs": [],
-                            "unverified_reason": "観測記録が未登録である",
-                            "required_evidence": "独立実行の記録",
                             "status": "open",
                         }
                     ],
@@ -396,21 +606,12 @@ class AdjudicateTest(unittest.TestCase):
                             "finding_id": "F-001",
                             "result": "verified",
                             "rationale": "説明が要求を満たすことを確認した",
-                            "evidence_refs": ["EV-VERIFY-001"],
+                            "evidence_refs": [],
                         }
                     ],
                     "new_findings": [],
                     "change_observation": None,
-                    "evidence": [
-                        {
-                            "evidence_id": "EV-VERIFY-001",
-                            "level": "observed",
-                            "target_revision": "r1",
-                            "method": "独立確認",
-                            "result": "passed",
-                            "summary": "説明が要求を満たすことを確認した",
-                        }
-                    ],
+                    "evidence": [],
                 },
             )
 
@@ -457,7 +658,7 @@ class StatusTest(unittest.TestCase):
             self.assertEqual("create-case", result["last_completed_operation"])
             resume_path = Path(temp_dir) / "QMS-0001" / "resume.md"
             self.assertTrue(resume_path.is_file())
-            self.assertIn("次の操作: review", resume_path.read_text(encoding="utf-8"))
+            self.assertIn("**次の操作**: review", resume_path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

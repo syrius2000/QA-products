@@ -24,8 +24,6 @@ def finding(
         "expected_state": "第三者が要求達成を確認できる",
         "verification_method": "独立確認する",
         "evidence_refs": [],
-        "unverified_reason": "テスト用の観測Evidenceを登録していない",
-        "required_evidence": "対象成果物の独立観測記録",
         "status": status,
     }
 
@@ -173,155 +171,12 @@ class BaselineControlAcceptanceTest(unittest.TestCase):
             self.assertEqual("r2", case["baseline"]["target_revision"])
             self.assertEqual("requires-rereview", case["findings"][0]["status"])
 
-            rereviewed = loop.review(
-                "QMS-0001",
-                {
-                    "operation_id": "op-rereview-001",
-                    "actor_id": "reviewer-002",
-                    "role": "reviewer",
-                    "invocation_id": "inv-reviewer-rereview-001",
-                    "previous_handoff_id": result["handoff"]["handoff_id"],
-                    "expected_case_revision": 4,
-                    "findings": [],
-                    "rereviews": [
-                        {
-                            "finding_id": "F-001",
-                            "result": "verified",
-                            "rationale": "変更後baselineに対する不適合は確認されない",
-                            "evidence_refs": ["EV-REREVIEW-001"],
-                        }
-                    ],
-                    "evidence": [
-                        {
-                            "evidence_id": "EV-REREVIEW-001",
-                            "level": "observed",
-                            "target_revision": "r2",
-                            "method": "変更後baselineの独立確認",
-                            "result": "passed",
-                            "summary": "要求と対象成果物を再照合した",
-                        }
-                    ],
-                },
-            )
-            self.assertEqual("owner", rereviewed["next_role"])
-            finding_after_rereview = loop.store.load("QMS-0001")["findings"][0]
-            self.assertEqual("verified", finding_after_rereview["status"])
-            self.assertEqual(1, len(finding_after_rereview["rereviews"]))
-
 
 class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
-    def test_risk_acceptance_requires_conditions_and_review_trigger(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            loop = QualityLoop(Path(temp_dir))
-            created = loop.create_case(complete_intake())
-            reviewed = loop.review(
-                "QMS-0001",
-                {
-                    "operation_id": "op-review-001",
-                    "actor_id": "reviewer-001",
-                    "role": "reviewer",
-                    "invocation_id": "inv-reviewer-001",
-                    "previous_handoff_id": created["handoff"]["handoff_id"],
-                    "expected_case_revision": 1,
-                    "findings": [],
-                    "evidence": [],
-                },
-            )
-            base = {
-                "operation_id": "op-risk-001",
-                "actor_id": "owner-001",
-                "role": "owner",
-                "invocation_id": "inv-owner-risk-001",
-                "previous_handoff_id": reviewed["handoff"]["handoff_id"],
-                "expected_case_revision": 2,
-                "decision": "accepted-with-risk",
-                "rationale": "残余リスクを受容する",
-                "residual_risks": ["外部依存先の確認待ち"],
-                "confirm": True,
-            }
-            with self.assertRaises(QualityLoopError) as conditions_error:
-                loop.adjudicate("QMS-0001", base)
-            self.assertEqual("risk-conditions-required", conditions_error.exception.error_code)
-            with self.assertRaises(QualityLoopError) as trigger_error:
-                loop.adjudicate(
-                    "QMS-0001", {**base, "conditions": ["外部確認を実施する"]}
-                )
-            self.assertEqual("risk-review-trigger-required", trigger_error.exception.error_code)
-    def test_unverified_without_implementation_authorization_routes_to_owner(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            loop = QualityLoop(Path(temp_dir))
-            created = loop.create_case(complete_intake())
-            reviewed = loop.review(
-                "QMS-0001",
-                {
-                    "operation_id": "op-review-001",
-                    "actor_id": "reviewer-001",
-                    "role": "reviewer",
-                    "invocation_id": "inv-reviewer-001",
-                    "previous_handoff_id": created["handoff"]["handoff_id"],
-                    "expected_case_revision": 1,
-                    "findings": [finding(classification="evidence-gap")],
-                    "evidence": [],
-                },
-            )
-            submitted = loop.submit_response(
-                "QMS-0001",
-                {
-                    "operation_id": "op-submit-001",
-                    "actor_id": "implementer-001",
-                    "role": "implementer",
-                    "invocation_id": "inv-implementer-001",
-                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
-                    "expected_case_revision": 2,
-                    "changed_targets": [],
-                    "responses": [
-                        {
-                            "finding_id": "F-001",
-                            "disposition": "cannot-verify",
-                            "rationale": "Ownerの実装許可がない",
-                            "evidence_refs": [],
-                        }
-                    ],
-                    "evidence": [],
-                },
-            )
-            result = loop.verify(
-                "QMS-0001",
-                {
-                    "operation_id": "op-verify-001",
-                    "actor_id": "reviewer-002",
-                    "role": "reviewer",
-                    "invocation_id": "inv-reviewer-verify-001",
-                    "previous_handoff_id": submitted["handoff"]["handoff_id"],
-                    "expected_case_revision": 3,
-                    "verifications": [
-                        {
-                            "finding_id": "F-001",
-                            "result": "unverified",
-                            "rationale": "許可されていないため変更の有効性を確認できない",
-                            "evidence_refs": [],
-                            "unverified_reason": "Ownerの実装許可がない",
-                            "required_evidence": "許可後の修正・検証記録",
-                        }
-                    ],
-                    "new_findings": [],
-                    "change_observation": None,
-                    "evidence": [],
-                },
-            )
-            self.assertEqual("owner", result["next_role"])
-            self.assertEqual("adjudicate", result["next_action"])
-
     def test_unverified_stays_distinct_and_third_cycle_routes_to_owner(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             loop = QualityLoop(Path(temp_dir))
-            intake = complete_intake()
-            intake["implementation_authorization"] = {
-                "allowed": True,
-                "finding_ids": ["F-001"],
-                "allowed_targets": [],
-            }
-            created = loop.create_case(intake)
+            created = loop.create_case(complete_intake())
             handoff = loop.review(
                 "QMS-0001",
                 {
@@ -374,8 +229,6 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
                                 "result": "unverified",
                                 "rationale": "外部環境がなく成否を確認できない",
                                 "evidence_refs": [],
-                                "unverified_reason": "必要な外部環境がない",
-                                "required_evidence": "外部環境での独立実行記録",
                             }
                         ],
                         "new_findings": [],
@@ -387,12 +240,41 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
                 if cycle < 3:
                     self.assertEqual("implementer", handoff["next_role"])
                 else:
-                    self.assertEqual("owner", handoff["next_role"])
+                    self.assertEqual("reviewer", handoff["next_role"])
+                    self.assertEqual("assess-risk", handoff["next_action"])
 
             case = loop.store.load("QMS-0001")
             self.assertEqual("unverified", case["findings"][0]["status"])
             self.assertEqual(3, case["case_metadata"]["cycle_count"])
-            self.assertEqual("owner-adjudication", case["case_metadata"]["status"])
+            self.assertEqual("reviewer-final-assessment", case["case_metadata"]["status"])
+
+            assessed = loop.assess_risk(
+                "QMS-0001",
+                {
+                    "operation_id": "op-assess-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-assess-001",
+                    "previous_handoff_id": handoff["handoff"]["handoff_id"],
+                    "expected_case_revision": revision,
+                    "overall_recommendation": "accept-with-conditions",
+                    "rationale": "外部環境不足による未確認であり、ステージングでの追加テストを推奨",
+                    "residual_risks": [
+                        {
+                            "finding_id": "F-001",
+                            "current_status": "unverified",
+                            "severity": "low",
+                            "residual_risk_description": "外部環境未検証リスク",
+                            "likelihood": "low",
+                            "impact": "medium",
+                            "qa_recommendation": "accept-with-conditions",
+                            "confidence": "high",
+                        }
+                    ],
+                },
+            )
+            revision += 1
+            self.assertEqual("owner-adjudication", loop.status("QMS-0001")["current_state"])
 
             accepted = loop.adjudicate(
                 "QMS-0001",
@@ -401,14 +283,12 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
                     "actor_id": "owner-001",
                     "role": "owner",
                     "invocation_id": "inv-owner-002",
-                    "previous_handoff_id": handoff["handoff"]["handoff_id"],
+                    "previous_handoff_id": assessed["handoff"]["handoff_id"],
                     "expected_case_revision": revision,
                     "decision": "accepted-with-risk",
-                    "rationale": "外部環境での確認を期限付き残余リスクとして受容する",
-                    "conditions": ["2026-09-30までに外部環境で再確認する"],
-                    "residual_risks": ["外部環境の動作は未検証"],
-                    "review_trigger": "2026-09-30または外部環境が利用可能になった時点",
-                    "dry_run": False,
+                    "rationale": "外部環境の不備によるunverifiedを受容する",
+                    "conditions": ["別工程で外部環境の検証を行うこと"],
+                    "residual_risks": ["外部環境未検証リスク"],
                     "confirm": True,
                 },
             )
@@ -421,13 +301,7 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
     def test_owner_must_explicitly_authorize_cycles_after_limit(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             loop = QualityLoop(Path(temp_dir))
-            intake = complete_intake()
-            intake["implementation_authorization"] = {
-                "allowed": True,
-                "finding_ids": ["F-001"],
-                "allowed_targets": [],
-            }
-            created = loop.create_case(intake)
+            created = loop.create_case(complete_intake())
             handoff = loop.review(
                 "QMS-0001",
                 {
@@ -480,8 +354,6 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
                                 "result": "unverified",
                                 "rationale": "外部環境がない",
                                 "evidence_refs": [],
-                                "unverified_reason": "必要な外部環境がない",
-                                "required_evidence": "外部環境での独立実行記録",
                             }
                         ],
                         "new_findings": [],
@@ -491,11 +363,40 @@ class EvidenceGapAndCycleLimitAcceptanceTest(unittest.TestCase):
                 )
                 revision += 1
 
+            # After 3 cycles with unverified findings, state transitions to reviewer-final-assessment
+            self.assertEqual("reviewer-final-assessment", loop.status("QMS-0001")["current_state"])
+            ar = loop.assess_risk(
+                "QMS-0001",
+                {
+                    "operation_id": "op-assess-002",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-assess-002",
+                    "previous_handoff_id": handoff["handoff"]["handoff_id"],
+                    "expected_case_revision": revision,
+                    "overall_recommendation": "require-remediation",
+                    "rationale": "外部環境での追加作業が必要",
+                    "residual_risks": [
+                        {
+                            "finding_id": "F-001",
+                            "current_status": "unverified",
+                            "severity": "low",
+                            "residual_risk_description": "外部環境未検証リスク",
+                            "likelihood": "high",
+                            "impact": "medium",
+                            "qa_recommendation": "require-remediation",
+                            "confidence": "high",
+                        }
+                    ],
+                },
+            )
+            revision += 1
+
             base = {
                 "actor_id": "owner-001",
                 "role": "owner",
                 "invocation_id": "inv-owner-002",
-                "previous_handoff_id": handoff["handoff"]["handoff_id"],
+                "previous_handoff_id": ar["handoff"]["handoff_id"],
                 "expected_case_revision": revision,
                 "decision": "rework-requested",
                 "rationale": "外部環境で追加確認する",
@@ -528,13 +429,7 @@ class RebuttalAndRegressionAcceptanceTest(unittest.TestCase):
     def test_evidence_rebuttal_is_verified_and_regression_gets_new_finding(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             loop = QualityLoop(Path(temp_dir))
-            intake = complete_intake()
-            intake["implementation_authorization"] = {
-                "allowed": True,
-                "finding_ids": ["F-001", "F-002"],
-                "allowed_targets": [],
-            }
-            created = loop.create_case(intake)
+            created = loop.create_case(complete_intake())
             reviewed = loop.review(
                 "QMS-0001",
                 {
@@ -607,6 +502,277 @@ class RebuttalAndRegressionAcceptanceTest(unittest.TestCase):
             states = {item["finding_id"]: item["status"] for item in case["findings"]}
             self.assertEqual("verified", states["F-001"])
             self.assertEqual("open", states["F-002"])
+
+    def test_early_final_risk_assessment_at_cycle_1_without_forcing_3_cycles(self) -> None:
+        """Phase 3: 限界便益が小さい場合、3サイクル反復を待たずにCycle 1で早期Final Risk Assessmentへ移行可能"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            loop = QualityLoop(Path(temp_dir))
+            created = loop.create_case(complete_intake())
+            reviewed = loop.review(
+                "QMS-0001",
+                {
+                    "operation_id": "op-review-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-001",
+                    "previous_handoff_id": created["handoff"]["handoff_id"],
+                    "expected_case_revision": 1,
+                    "findings": [finding("F-001", classification="evidence-gap")],
+                    "evidence": [],
+                },
+            )
+            submitted = loop.submit_response(
+                "QMS-0001",
+                {
+                    "operation_id": "op-submit-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "changed_targets": [],
+                    "responses": [
+                        {
+                            "finding_id": "F-001",
+                            "disposition": "cannot-verify",
+                            "rationale": "外部環境の制約により検証不能",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "evidence": [],
+                },
+            )
+
+            # Cycle 1 verification with early_risk_assessment=True
+            verified = loop.verify(
+                "QMS-0001",
+                {
+                    "operation_id": "op-verify-001",
+                    "actor_id": "reviewer-002",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-002",
+                    "previous_handoff_id": submitted["handoff"]["handoff_id"],
+                    "expected_case_revision": 3,
+                    "verifications": [
+                        {
+                            "finding_id": "F-001",
+                            "result": "unverified",
+                            "rationale": "環境制約を確認したため、これ以上の修正ループは不要と判断",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "new_findings": [],
+                    "change_observation": None,
+                    "evidence": [],
+                    "early_risk_assessment": True,
+                    "early_risk_rationale": "外部環境制約によりこれ以上の修正ループは費用対効果が低く、Owner裁定が妥当",
+                },
+            )
+
+            # Transitions directly to reviewer-final-assessment at cycle 1
+            self.assertEqual("reviewer", verified["next_role"])
+            self.assertEqual("assess-risk", verified["next_action"])
+            self.assertEqual("reviewer-final-assessment", loop.status("QMS-0001")["current_state"])
+
+    def test_early_final_risk_assessment_rejects_empty_rationale(self) -> None:
+        """Phase 6: early_risk_assessment=True で early_risk_rationale が空の場合は拒否される"""
+        from quality_loop.errors import QualityLoopError
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            loop = QualityLoop(Path(temp_dir))
+            created = loop.create_case(complete_intake())
+            reviewed = loop.review(
+                "QMS-0001",
+                {
+                    "operation_id": "op-review-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-001",
+                    "previous_handoff_id": created["handoff"]["handoff_id"],
+                    "expected_case_revision": 1,
+                    "findings": [finding("F-001", classification="evidence-gap")],
+                    "evidence": [],
+                },
+            )
+            submitted = loop.submit_response(
+                "QMS-0001",
+                {
+                    "operation_id": "op-submit-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "changed_targets": [],
+                    "responses": [
+                        {
+                            "finding_id": "F-001",
+                            "disposition": "cannot-verify",
+                            "rationale": "外部環境の制約により検証不能",
+                            "evidence_refs": [],
+                        }
+                    ],
+                    "evidence": [],
+                },
+            )
+
+            with self.assertRaises(QualityLoopError) as ctx:
+                loop.verify(
+                    "QMS-0001",
+                    {
+                        "operation_id": "op-verify-001",
+                        "actor_id": "reviewer-002",
+                        "role": "reviewer",
+                        "invocation_id": "inv-reviewer-002",
+                        "previous_handoff_id": submitted["handoff"]["handoff_id"],
+                        "expected_case_revision": 3,
+                        "verifications": [
+                            {
+                                "finding_id": "F-001",
+                                "result": "unverified",
+                                "rationale": "環境制約を確認",
+                                "evidence_refs": [],
+                            }
+                        ],
+                        "new_findings": [],
+                        "change_observation": None,
+                        "evidence": [],
+                        "early_risk_assessment": True,
+                        "early_risk_rationale": "",
+                    },
+                )
+            self.assertEqual("invalid-input", ctx.exception.error_code)
+
+    def test_early_final_risk_assessment_rejects_unresolved_critical_finding(self) -> None:
+        """Phase 6: 未解決のCritical指摘が存在する場合、early_risk_assessmentは拒否される"""
+        from quality_loop.errors import QualityLoopError
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            loop = QualityLoop(Path(temp_dir))
+            intake = complete_intake()
+            intake["implementation_authorization"] = {
+                "allowed": True,
+                "finding_ids": ["F-001"],
+                "allowed_targets": ["artifact.txt"],
+            }
+            created = loop.create_case(intake)
+            crit_finding = finding("F-001", classification="requirement-violation")
+            crit_finding["severity"] = "critical"
+            reviewed = loop.review(
+                "QMS-0001",
+                {
+                    "operation_id": "op-review-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-001",
+                    "previous_handoff_id": created["handoff"]["handoff_id"],
+                    "expected_case_revision": 1,
+                    "findings": [crit_finding],
+                    "evidence": [],
+                },
+            )
+            # Plan Gate for critical finding
+            planned = loop.submit_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-plan-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-001",
+                    "previous_handoff_id": reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 2,
+                    "plans": [
+                        {
+                            "finding_id": "F-001",
+                            "understanding": "Critical欠陥を修正する",
+                            "disposition_intent": "fix",
+                            "proposed_actions": ["修正"],
+                        }
+                    ],
+                },
+            )
+            plan_reviewed = loop.review_plan(
+                "QMS-0001",
+                {
+                    "operation_id": "op-rp-001",
+                    "actor_id": "reviewer-001",
+                    "role": "reviewer",
+                    "invocation_id": "inv-reviewer-002",
+                    "previous_handoff_id": planned["handoff"]["handoff_id"],
+                    "expected_case_revision": 3,
+                    "plan_reviews": [
+                        {
+                            "finding_id": "F-001",
+                            "outcome": "plan-accepted",
+                            "rationale": "了解",
+                        }
+                    ],
+                },
+            )
+            submitted = loop.submit_response(
+                "QMS-0001",
+                {
+                    "operation_id": "op-submit-001",
+                    "actor_id": "implementer-001",
+                    "role": "implementer",
+                    "invocation_id": "inv-implementer-002",
+                    "previous_handoff_id": plan_reviewed["handoff"]["handoff_id"],
+                    "expected_case_revision": 4,
+                    "changed_targets": ["artifact.txt"],
+                    "responses": [
+                        {
+                            "finding_id": "F-001",
+                            "disposition": "fix-submitted",
+                            "rationale": "修正試行",
+                            "evidence_refs": ["EV-01"],
+                        }
+                    ],
+                    "evidence": [
+                        {
+                            "evidence_id": "EV-01",
+                            "level": "observed",
+                            "target_revision": "r2",
+                            "method": "test",
+                            "result": "fail",
+                            "summary": "テスト失敗",
+                        }
+                    ],
+                },
+            )
+
+            with self.assertRaises(QualityLoopError) as ctx:
+                loop.verify(
+                    "QMS-0001",
+                    {
+                        "operation_id": "op-verify-001",
+                        "actor_id": "reviewer-003",
+                        "role": "reviewer",
+                        "invocation_id": "inv-reviewer-003",
+                        "previous_handoff_id": submitted["handoff"]["handoff_id"],
+                        "expected_case_revision": 5,
+                        "verifications": [
+                            {
+                                "finding_id": "F-001",
+                                "result": "not-remediated",
+                                "rationale": "Critical指摘が未修正のまま",
+                                "evidence_refs": ["EV-01"],
+                            }
+                        ],
+                        "new_findings": [],
+                        "change_observation": {
+                            "method": "finite-manifest",
+                            "scope": ["artifact.txt"],
+                            "before_evidence_id": "EV-01",
+                            "after_evidence_id": "EV-01",
+                            "observed_changed_targets": ["artifact.txt"],
+                            "limitations": [],
+                        },
+                        "evidence": [],
+                        "early_risk_assessment": True,
+                        "early_risk_rationale": "早く終わらせたい",
+                    },
+                )
+            self.assertEqual("critical-finding-unresolved", ctx.exception.error_code)
 
 
 if __name__ == "__main__":

@@ -23,9 +23,9 @@ class CaseStore:
         return self.case_dir(case_id) / "case.json"
 
     def create(self, case_id: str, case: dict) -> None:
+        self.case_root.mkdir(parents=True, exist_ok=True)
         case_dir = self.case_dir(case_id)
         try:
-            self.case_root.mkdir(parents=True, exist_ok=True)
             case_dir.mkdir(parents=False, exist_ok=False)
         except FileExistsError as exc:
             raise QualityLoopError(
@@ -64,6 +64,30 @@ class CaseStore:
                 remediation="case.jsonの存在、権限、JSON整合性を確認してください。",
             ) from exc
 
+    def list_cases(self) -> list[str]:
+        if not self.case_root.is_dir():
+            return []
+        cases = []
+        for child in sorted(self.case_root.iterdir()):
+            if child.is_dir() and (child / "case.json").is_file():
+                cases.append(child.name)
+        return cases
+
+    def list_active_cases(self) -> list[str]:
+        active = []
+        for case_id in self.list_cases():
+            try:
+                data = self.load(case_id)
+                status = data.get("case_metadata", {}).get("status")
+                if status not in {"accepted", "accepted-with-risk", "rejected", "held"}:
+                    active.append(case_id)
+            except Exception:
+                continue
+        return active
+
+    def init_case(self, case_id: str, case: dict) -> None:
+        self.create(case_id, case)
+
     def mutate(
         self,
         case_id: str,
@@ -95,13 +119,16 @@ class CaseStore:
                     remediation="case.jsonは前revisionのままです。case.json.bakも確認してください。",
                 ) from exc
             persisted = self.load(case_id)
-            if persisted["case_metadata"]["revision"] != result["case_revision"]:
-                raise QualityLoopError(
-                    "post-write-verification-failed",
-                    "更新後のrevisionを確認できません。",
-                    exit_code=4,
-                    remediation="case.jsonとcase.json.bakを確認してください。",
-                )
+            target_rev = result.get("case_revision", result.get("rev"))
+            if target_rev is not None:
+                persisted_rev = persisted.get("case_metadata", {}).get("case_revision", persisted.get("case_metadata", {}).get("revision"))
+                if persisted_rev != target_rev:
+                    raise QualityLoopError(
+                        "post-write-verification-failed",
+                        "更新後のrevisionを確認できません。",
+                        exit_code=4,
+                        remediation="case.jsonとcase.json.bakを確認してください。",
+                    )
             return result
 
     @contextmanager
@@ -115,12 +142,24 @@ class CaseStore:
                 remediation="case_idとcase-rootを確認してください。",
             )
         lock_path = case_dir / ".case.lock"
-        with lock_path.open("a+") as lock_handle:
+        try:
+            lock_handle = lock_path.open("a+")
+        except OSError as exc:
+            raise QualityLoopError(
+                "case-backup-failed",
+                "案件ディレクトリへの書込み権限がありません。",
+                exit_code=4,
+            ) from exc
+
+        with lock_handle:
             fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
             try:
                 yield
             finally:
                 fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+                # ロックファイルは削除しない。排他待ちの別プロセスが同じ
+                # inodeを保持している間にパスをunlinkすると、後続プロセスが
+                # 別inodeを作成して排他制御を分裂させるためである。
 
     @staticmethod
     def _atomic_write_json(path: Path, payload: dict) -> None:

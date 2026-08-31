@@ -2,8 +2,11 @@
 
 ## 現在の優先開発
 
-- 正本計画: `docs/Artifacts/implementation_plan_011_0827.md`
+- 現在の状態: v1.4.0 Coreは実装者側検証と独立QAを完了し、Owner最終裁定待ち。詳細は[最終独立QA受入サマリー](docs/Archives/qa_acceptance_summary_001_0831.md)を参照する。
 - 新規実装先: `quality-loop/`
+- 次段階: Ownerがv1.4.0のQA結果と残余リスクを裁定する。外部配置、commit、pushは別途明示承認が必要である。
+- 開発履歴: Plan 011〜016と初期QA資料は[実装履歴統合アーカイブ](docs/Archives/archived_summary_003_0831.md)へ集約した。
+- 旧OpenSpec移行期の詳細は [統合アーカイブ要約](docs/Archives/archived_summary_002_0828.md) を参照する。下記の旧ロードマップは経緯確認専用である。
 - 既存の「基本ルール」は引き続き適用する。
 - 既存の「全体ロードマップ」以降は経緯保存のための凍結・参照専用であり、未完了チェックを現行タスクとして実行しない。
 
@@ -138,4 +141,4 @@ openspec instructions apply --change "<change-name>" --json
 - 外部配置・旧版削除・commit・pushの実施有無
 - 次に進めるChangeと依存関係
 
-詳細計画: [implementation_plan_007_0826.md](docs/Artifacts/implementation_plan_007_0826.md)
+移行期の詳細: [archived_summary_002_0828.md](docs/Archives/archived_summary_002_0828.md)

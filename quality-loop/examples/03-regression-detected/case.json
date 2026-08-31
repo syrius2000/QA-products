@@ -1,0 +1,229 @@
+{
+  "schema_version": "1.0",
+  "case_metadata": {
+    "case_id": "CASE-EXAMPLE-03",
+    "case_revision": 7,
+    "revision": 7,
+    "status": "accepted",
+    "owner": "owner-user",
+    "created_at": "2026-08-28T13:00:00Z",
+    "updated_at": "2026-08-28T14:30:00Z",
+    "cycle_count": 2,
+    "cycle_limit": 3
+  },
+  "baseline": {
+    "purpose": "キャッシュモジュールの排他制御修正",
+    "intended_use": {
+      "users": "バックエンド開発者",
+      "environment": "高並行Webサーバー",
+      "operational_context": "セッションキャッシュ"
+    },
+    "risk_context": {
+      "criticality": "high",
+      "safety_impact": "なし",
+      "data_integrity_impact": "高",
+      "security_context": "マルチスレッド環境"
+    },
+    "requirements": [
+      {
+        "requirement_id": "REQ-CACHE-01",
+        "text": "スレッドセーフにキャッシュ更新が行われること"
+      },
+      {
+        "requirement_id": "REQ-CACHE-02",
+        "text": "キャッシュミス時のレイテンシが10ms以内であること"
+      }
+    ],
+    "acceptance_criteria": [
+      "並行アクセステスト合格",
+      "レイテンシベンチマーク合格"
+    ],
+    "exclusions": [],
+    "targets": [
+      "src/cache.py"
+    ],
+    "target_revision": "rev-1"
+  },
+  "implementation_authorization": {
+    "allowed": true,
+    "finding_ids": [
+      "F-001",
+      "F-REG-001"
+    ],
+    "allowed_targets": [
+      "src/cache.py"
+    ]
+  },
+  "change_observation": {
+    "method": "finite-manifest",
+    "scope": ["src/cache.py"],
+    "before_evidence_id": "EV-RACE-01",
+    "after_evidence_id": "EV-FIX-FINAL",
+    "observed_changed_targets": ["src/cache.py"],
+    "limitations": []
+  },
+  "findings": [
+    {
+      "finding_id": "F-001",
+      "classification": "requirement-violation",
+      "severity": "high",
+      "requirement_ref": "REQ-CACHE-01",
+      "observed_fact": "並行書込みでレースコンディション発生",
+      "impact": "データ破壊",
+      "expected_state": "Lockによる排他制御",
+      "verification_method": "並行アクセスストレステスト",
+      "evidence_refs": ["EV-RACE-01"],
+      "status": "verified"
+    },
+    {
+      "finding_id": "F-REG-001",
+      "classification": "regression",
+      "severity": "high",
+      "requirement_ref": "REQ-CACHE-02",
+      "observed_fact": "グローバルロック導入によりレイテンシが50msに悪化",
+      "impact": "REQ-CACHE-02性能基準違反",
+      "expected_state": "細粒度ロックまたはRWLockへの変更",
+      "verification_method": "ベンチマークテスト",
+      "evidence_refs": ["EV-REG-01"],
+      "status": "verified"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "EV-RACE-01",
+      "level": "observed",
+      "target_revision": "rev-1",
+      "method": "concurrency-test",
+      "result": "レースコンディション検知",
+      "summary": "初回レビュー時の観測記録"
+    },
+    {
+      "evidence_id": "EV-REG-01",
+      "level": "observed",
+      "target_revision": "rev-2",
+      "method": "benchmark-test",
+      "result": "レイテンシ50ms超過検知",
+      "summary": "修正後検証時の回帰検知記録"
+    },
+    {
+      "evidence_id": "EV-FIX-FINAL",
+      "level": "observed",
+      "target_revision": "rev-3",
+      "method": "all-tests",
+      "result": "並行性・レイテンシ双方合格",
+      "summary": "再修正後の完全検証記録"
+    }
+  ],
+  "plans": [],
+  "plan_reviews": [],
+  "responses": [
+    {
+      "finding_id": "F-001",
+      "disposition": "fix-submitted",
+      "rationale": "RWLockを用いた細粒度ロックの実装",
+      "evidence_refs": ["EV-FIX-FINAL"]
+    },
+    {
+      "finding_id": "F-REG-001",
+      "disposition": "fix-submitted",
+      "rationale": "ロック競合の解消によりレイテンシ8ms達成",
+      "evidence_refs": ["EV-FIX-FINAL"]
+    }
+  ],
+  "verifications": [
+    {
+      "finding_id": "F-001",
+      "result": "verified",
+      "rationale": "並行テスト合格を確認",
+      "evidence_refs": ["EV-FIX-FINAL"]
+    },
+    {
+      "finding_id": "F-REG-001",
+      "result": "verified",
+      "rationale": "ベンチマークでレイテンシ改善を確認",
+      "evidence_refs": ["EV-FIX-FINAL"]
+    }
+  ],
+  "final_risk_assessments": [],
+  "adjudications": [
+    {
+      "decision": "accepted",
+      "rationale": "回帰の解消および要求充足を確認し受入",
+      "conditions": [],
+      "residual_risks": []
+    }
+  ],
+  "events": [
+    {
+      "operation_id": "op-create-03",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-01",
+      "operation": "create-case",
+      "revision": 1,
+      "timestamp": "2026-08-28T13:00:00Z"
+    },
+    {
+      "operation_id": "op-rev-03",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-01",
+      "operation": "review",
+      "revision": 2,
+      "timestamp": "2026-08-28T13:10:00Z"
+    },
+    {
+      "operation_id": "op-sub-03-1",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-01",
+      "operation": "submit-response",
+      "revision": 3,
+      "timestamp": "2026-08-28T13:20:00Z"
+    },
+    {
+      "operation_id": "op-ver-03-1",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-02",
+      "operation": "verify",
+      "revision": 4,
+      "timestamp": "2026-08-28T13:30:00Z"
+    },
+    {
+      "operation_id": "op-sub-03-2",
+      "actor_id": "imp-01",
+      "role": "implementer",
+      "invocation_id": "inv-imp-02",
+      "operation": "submit-response",
+      "revision": 5,
+      "timestamp": "2026-08-28T14:00:00Z"
+    },
+    {
+      "operation_id": "op-ver-03-2",
+      "actor_id": "reviewer-01",
+      "role": "reviewer",
+      "invocation_id": "inv-rev-03",
+      "operation": "verify",
+      "revision": 6,
+      "timestamp": "2026-08-28T14:15:00Z"
+    },
+    {
+      "operation_id": "op-adj-03",
+      "actor_id": "owner-user",
+      "role": "owner",
+      "invocation_id": "inv-owner-02",
+      "operation": "adjudicate",
+      "revision": 7,
+      "timestamp": "2026-08-28T14:30:00Z"
+    }
+  ],
+  "handoff": {
+    "handoff_id": "hnd-term-003",
+    "issued_revision": 7,
+    "next_role": null,
+    "next_action": null,
+    "status": "terminal",
+    "terminal_result": "accepted"
+  }
+}

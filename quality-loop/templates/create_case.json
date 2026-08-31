@@ -1,0 +1,1 @@
+{"operation_id":"op-create-001","actor_id":"owner-001","role":"owner","invocation_id":"owner-invocation-001","case_id":"QMS-0001","owner":"owner-001","baseline":{"purpose":"目的","requirements":[{"requirement_id":"REQ-001","text":"要求"}],"acceptance_criteria":["受入基準"],"targets":["artifact/example.txt"],"target_revision":"revision-1"}}

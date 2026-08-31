@@ -18,4 +18,4 @@
 
 ## 2. 次のフェーズ
 
-OpenSpec変更 `compact-spec-driven-qa-skills` の設計・タスク仕様が確定したため、計画（[implementation_plan_005_0825.md](../../Artifacts/implementation_plan_005_0825.md)）に基づき **Phase 0（ベースライン固定・互換性台帳作成・`measure_size.py` 実装）** へ進むことが可能です。
+OpenSpec変更 `compact-spec-driven-qa-skills` の設計・タスク仕様が確定した。後続の移行期計画は [統合アーカイブ要約](../../../Archives/archived_summary_002_0828.md) に集約され、現在は人間中心Quality Loopへ移行済みである。

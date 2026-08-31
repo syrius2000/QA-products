@@ -66,8 +66,4 @@
 
 ## 3. 現行フェーズへの接続
 
-Plan 001〜004の完了と知見の蓄積を受け、現在進行中のアクティブな計画書は以下となる：
-
-- **アクティブ計画書**: [implementation_plan_005_0825.md](../Artifacts/implementation_plan_005_0825.md)
-  - **テーマ**: `spec-driven-qa` 2 Skillコンパクト化実装計画
-  - **概要**: 肥大化した2スキルの機能を維持したまま、実測ベースで約1/3以下へのスリム化・共通コア化を進める。
+Plan 001〜004の後に続いたOpenSpec移行期（Plan 005〜010）は、[統合アーカイブ要約 (002)](archived_summary_002_0828.md) に集約した。人間中心Quality Loopの実装履歴は[統合アーカイブ要約 (003)](archived_summary_003_0831.md)を、最終QAは[QA受入サマリー](qa_acceptance_summary_001_0831.md)を参照する。

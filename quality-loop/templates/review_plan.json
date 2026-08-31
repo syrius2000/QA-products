@@ -1,0 +1,18 @@
+{
+  "operation_id": "op-review-plan-001",
+  "actor_id": "reviewer-ai",
+  "role": "reviewer",
+  "invocation_id": "inv-reviewer-plan-001",
+  "previous_handoff_id": "REPLACE_WITH_CURRENT_HANDOFF_ID",
+  "expected_case_revision": 3,
+  "plan_reviews": [
+    {
+      "finding_id": "F-001",
+      "outcome": "plan-accepted",
+      "rationale": "提案された修正方針がFindingと受入基準に適合する根拠を記述",
+      "comments": [],
+      "evidence_refs": []
+    }
+  ],
+  "evidence": []
+}

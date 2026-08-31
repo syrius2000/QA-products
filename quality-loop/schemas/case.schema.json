@@ -11,8 +11,11 @@
     "change_observation",
     "findings",
     "evidence",
+    "plans",
+    "plan_reviews",
     "responses",
     "verifications",
+    "final_risk_assessments",
     "adjudications",
     "events",
     "handoff"
@@ -25,14 +28,51 @@
     },
     "baseline": {
       "type": "object",
-      "required": ["purpose", "requirements", "acceptance_criteria", "targets", "target_revision"]
+      "required": [
+        "purpose",
+        "intended_use",
+        "risk_context",
+        "requirements",
+        "acceptance_criteria",
+        "targets",
+        "target_revision"
+      ],
+      "properties": {
+        "purpose": {"type": "string"},
+        "intended_use": {
+          "type": "object",
+          "properties": {
+            "users": {"type": "string"},
+            "environment": {"type": "string"},
+            "operational_context": {"type": "string"}
+          }
+        },
+        "risk_context": {
+          "type": "object",
+          "required": ["criticality"],
+          "properties": {
+            "criticality": {"type": "string", "enum": ["low", "medium", "high", "regulated"]},
+            "safety_impact": {"type": "string"},
+            "data_integrity_impact": {"type": "string"},
+            "security_context": {"type": "string"}
+          }
+        },
+        "requirements": {"type": "array"},
+        "acceptance_criteria": {"type": "array"},
+        "exclusions": {"type": "array"},
+        "targets": {"type": "array"},
+        "target_revision": {"type": "string"}
+      }
     },
     "implementation_authorization": {"type": "object"},
     "change_observation": {"type": "object"},
     "findings": {"type": "array"},
     "evidence": {"type": "array"},
+    "plans": {"type": "array"},
+    "plan_reviews": {"type": "array"},
     "responses": {"type": "array"},
     "verifications": {"type": "array"},
+    "final_risk_assessments": {"type": "array"},
     "adjudications": {"type": "array"},
     "events": {"type": "array"},
     "handoff": {"type": "object"}

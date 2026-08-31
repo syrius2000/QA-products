@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdjudicateInput",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "actor_id",
+    "role",
+    "invocation_id",
+    "previous_handoff_id",
+    "expected_case_revision",
+    "decision",
+    "rationale",
+    "conditions",
+    "residual_risks",
+    "confirm"
+  ],
+  "properties": {
+    "operation_id": {"type": "string"},
+    "actor_id": {"type": "string"},
+    "role": {"type": "string", "enum": ["owner"]},
+    "invocation_id": {"type": "string"},
+    "previous_handoff_id": {"type": "string"},
+    "expected_case_revision": {"type": "integer", "minimum": 1},
+    "decision": {
+      "type": "string",
+      "enum": ["accepted", "accepted-with-risk", "rejected", "held", "rework-requested"]
+    },
+    "rationale": {"type": "string"},
+    "conditions": {"type": "array", "items": {"type": "string"}},
+    "residual_risks": {"type": "array", "items": {"type": "string"}},
+    "dry_run": {"type": "boolean", "default": false},
+    "confirm": {"type": "boolean"}
+  }
+}
