@@ -51,8 +51,8 @@ ReviewerとAuthorの両方に同名のトップレベル共有モジュールは
 
 以下は2026-08-25 21:19 JST時点で、今回の実装開始前から存在した差分である。これらは今回のTask 1.1では変更しない。
 
-- 追跡済み変更: `Gemini-Flash.md`、`README.md`、`docs/Artifacts/`配下、既存archive、`openspec/changes/cron-csv-to-influx-sync/`、Grafana dashboard
-- 未追跡変更: `.agents/`、`Codex.md`、`backup/home_pi_full/`、追加Artifact、対象Change、`references/Grafana-config.md`
+- 追跡済み変更: `docs/Archives/spec-driven-qa/design/Gemini-Flash.md`、`README.md`、`docs/Artifacts/`配下、既存archive、`openspec/changes/cron-csv-to-influx-sync/`、Grafana dashboard
+- 未追跡変更: `.agents/`、`docs/Archives/spec-driven-qa/design/Codex.md`、`backup/home_pi_full/`、追加Artifact、対象Change、`references/Grafana-config.md`
 - 対象Change自身の既存ファイル: `proposal.md`、`specs/`、`design.md`、`tasks.md`、`.openspec.yaml`
 
 ## 除外規則

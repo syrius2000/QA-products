@@ -12,7 +12,7 @@ author: Codex (GPT-5)
 
 ## 判定対象と固定情報
 
-- 評価プロトコル: [test-prompt-2.md](../../../../../test-prompt-2.md)
+- 評価プロトコル: [test-prompt-2.md](../../../../../docs/Archives/spec-driven-qa/qa/test-prompt-2.md)
 - プロトコルSHA-256: `fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742`
 - Legacy: [legacy-qa-skills_20260825.zip](../../../../../archives/skills/legacy-qa-skills_20260825.zip)
 - Legacy ZIP SHA-256: `77acdcd525eeb6a873a6daab6aa9a04709d7e87015cc4c9d2e7bdaedaec5f817`

@@ -4,7 +4,7 @@
 
 現在のReviewer Skill、Author Response Skill、QMS v1.1.0は、それぞれ有用な機能を持つ一方、QA正本とAuthor提出物の責務境界、handoffの鮮度、状態遷移、権限、Evidenceの扱いが一つの検証可能な契約に統合されていない。これにより、偽Finding、古いhandoff、Authorによる正本変更、自己クローズ、Skill間の実行不整合が発生し得る。
 
-`Codex.md`で合意した設計判断をContract v1.2として仕様化し、ステージング版の2 SkillをE2E評価できる状態にする。既存のグローバルSkillの置換や実装コードの変更は、このChangeの検証後に別途承認する。
+`docs/Archives/spec-driven-qa/design/Codex.md`で合意した設計判断をContract v1.2として仕様化し、ステージング版の2 SkillをE2E評価できる状態にする。既存のグローバルSkillの置換や実装コードの変更は、このChangeの検証後に別途承認する。
 
 ## 変更内容
 

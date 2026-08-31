@@ -18,7 +18,7 @@
 | Python バージョン | Python 3.14.7 (`/Users/myamaguchi/.local/venvs/ide/bin/python`) | observed |
 | 作業ディレクトリ | `/Users/myamaguchi/Programing/QA-products` | observed |
 | コンテキスト分離 (`context_isolation`) | `false` (同一セッション実行のため参考値) | observed |
-| 評価プロトコル | [test-prompt-2.md](../../../../../../test-prompt-2.md) | observed |
+| 評価プロトコル | [test-prompt-2.md](../../../../../../docs/Archives/spec-driven-qa/qa/test-prompt-2.md) | observed |
 | プロトコル SHA-256 | `fe22630950dd8bc04c01464b48164e45991ff0afededd9816555faa4fdd13742` | observed |
 | 採点種別 | 自己監査 (`self_scored: true`) | observed |
 

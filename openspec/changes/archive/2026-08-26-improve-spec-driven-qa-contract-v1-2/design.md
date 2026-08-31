@@ -2,7 +2,7 @@
 
 ## 文脈
 
-Proposalで定義した新規Capabilityを、現行Reviewer SkillとAuthor Response Skillのステージング版へ適用する。現行版には、Author Validatorの文脈不足、handoff鮮度検証不足、`common.py`衝突、Schema・Template不一致、配布cache混入がある。設計判断の根拠はリポジトリ直下の`Codex.md`に記録されている。
+Proposalで定義した新規Capabilityを、現行Reviewer SkillとAuthor Response Skillのステージング版へ適用する。現行版には、Author Validatorの文脈不足、handoff鮮度検証不足、`common.py`衝突、Schema・Template不一致、配布cache混入がある。設計判断の根拠は`docs/Archives/spec-driven-qa/design/Codex.md`に記録されている。
 
 ## 目標 / 非目標
 
@@ -80,4 +80,4 @@ handoff、Author提出物、CLI JSONに`contract_version`を付与する。未�
 
 ## 未解決事項
 
-Contractの要求と採用方式はCodex.mdで確定しているため、実装を変更する未解決事項はない。実装時には既存ケースの具体的な互換fixture数と、評価実行時間の測定値を確定する。
+Contractの要求と採用方式は`docs/Archives/spec-driven-qa/design/Codex.md`で確定しているため、実装を変更する未解決事項はない。実装時には既存ケースの具体的な互換fixture数と、評価実行時間の測定値を確定する。
