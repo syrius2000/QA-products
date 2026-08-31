@@ -1,7 +1,7 @@
 # リポジトリルート文書整理・公開Git履歴クリーンアップ計画
 
 created: 2026-08-31 19:55 (JST)
-update: 2026-08-31 19:55 (JST)
+update: 2026-08-31 20:20 (JST)
 author: Codex (GPT-5)
 
 ## 1. 目的
@@ -113,3 +113,24 @@ Codexアプリ管理と考えられる`refs/codex/turn-diffs/...`は変更しな
 - OpenSpecは将来、必要な環境で`openspec init`により再生成する方針とする。
 
 この追加は、外部Skill配置の削除ではなく、本リポジトリ内の補助Skill資産とその履歴の削除である。OpenSpec本体の履歴、Quality Loopの実装・QA履歴、その他のArchiveは保持する。追加範囲を含むPlan 018の実行および`origin/master`へのforce pushについて、ユーザーの明示承認を得ている。
+
+## 10. 実施・検証完了記録
+
+2026-08-31に承認済み範囲を実施した。
+
+- ルート文書をArchiveへ分類し、`README.md`と`AGENTS.md`を現行入口・AI作業規則として整理した。
+- `docs/Archives/README.md`とArchive方針ADRを作成した。
+- Gemini設計資料を`Gemini-Flash.md`へrenameし、公開文書の旧表記と参照を訂正した。
+- `memo-ghostty.md`、`NEXT_ACTION_PLAN.md`、`NEXT_SESSION_MEMO.md`、`.agents/`を現行ツリーから削除した。
+- `.gitignore`をルート限定の`/.agents/`へ訂正した。
+- `master`と`origin/master`の公開履歴から、破棄対象3 Markdownと`.agents/`を除去し、Gemini設計資料のrenameを反映した。
+- rewrite前の復元用bundleを作成・検証し、検証完了後に一時退避を削除した。
+
+最終確認:
+
+- `master`と`origin/master`は`e73123d`で一致。
+- ルート直下の文書は`README.md`と`AGENTS.md`のみである（`.gitignore`を除く）。
+- 公開参照に破棄対象パスおよび旧Gemini表記は存在しない。
+- `Gemini-Flash.md`、Archive README、方針ADR、Quality Loop資料は保持されている。
+- Archive内の相対リンク検査と`git diff --check`は成功した。
+- Codex内部参照、Quality Loop実装、QA正本、外部配置は変更していない。
