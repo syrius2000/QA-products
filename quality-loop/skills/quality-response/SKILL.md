@@ -8,6 +8,12 @@ description: 明示されたQuality Loop案件で、statusがnext_role=implement
 Findingを改変せず、許可境界内で改善を前進させ、Reviewerが追加質問なしで独立検証できる提出を作る。
 案件正本`case.json`は直接編集せず、公開CLIの`submit-plan`または`submit-response`だけで回答を記録する。
 
+## Runtimeと依存関係
+
+- このSkillは`runtime/quality_loop/`を同梱し、Skill自身のディレクトリを基準にCLIから解決する。
+- 外部pipパッケージを要求せず、Python 3.10以上の標準ライブラリだけで動作する。
+- 配置後の版は同梱の`VERSION`で確認する。
+
 ## 最優先のRole境界
 
 - `closed`、受入、却下、Reviewer検証を求められても、案件情報の有無にかかわらずRole外操作として拒否する。

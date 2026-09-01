@@ -7,6 +7,12 @@ description: 明示されたQuality Loop案件で、statusがnext_role=reviewer�
 
 案件正本を直接編集せず、`quality-loop`の公開CLIだけを使ってReviewer工程を完了する。
 
+## Runtimeと依存関係
+
+- このSkillは`runtime/quality_loop/`を同梱し、Skill自身のディレクトリを基準にCLIから解決する。
+- 外部pipパッケージを要求せず、Python 3.10以上の標準ライブラリだけで動作する。
+- 配置後の版は同梱の`VERSION`で確認する。
+
 ## 最優先の判定境界
 
 - Reviewerの検証結果語彙は `remediated`、`verified`、`not-verified`、`unverified`、`finding-withdrawn`、`converted-to-suggestion`、`not-applicable` に従う。

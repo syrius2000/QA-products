@@ -2,6 +2,12 @@
 
 人間Owner、Reviewer、Implementerが、FindingとEvidenceを使って改善を前進させる最小QMS協働ループです。
 
+## 配置可能なSkill
+
+`skills/quality-review/`と`skills/quality-response/`は、それぞれ単独で`.agents/skills/`へコピーできます。各ディレクトリには`SKILL.md`、CLIラッパー、`runtime/quality_loop/`、必要なreferencesを含め、開発元リポジトリ外でも動作する構造を保ちます。各Skillの版は同梱の`VERSION`で確認してください。
+
+RuntimeはPython 3.10以上の標準ライブラリだけで動作し、外部pipパッケージを要求しません。対応方針はPython 3.10および現行Python環境で検証します。
+
 ## 公開操作
 
 1. `create-case` (Owner): 案件初期化とQuality Intent設定

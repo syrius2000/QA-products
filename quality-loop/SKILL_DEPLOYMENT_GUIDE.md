@@ -1,6 +1,6 @@
 # Quality Loop Skill手動配置ガイド
 
-`quality-review`と`quality-response`を、グローバルまたは指定したリポジトリだけで利用するための手動コピー手順です。インストーラー、npm、PyPI、pipxは使用しません。
+`quality-review`と`quality-response`を、グローバルまたは指定したリポジトリだけで利用するための手動コピー手順です。インストーラー、npm、PyPI、pipxは使用しません。実務者向けの利用成果物は別リポジトリのProductivity-Skillに置き、QA-products側の同期ツールから管理対象を更新します。
 
 ## 1. このガイドで行うこと
 
@@ -117,13 +117,40 @@ diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' "$SOURCE_RUNTIME" "$COPI
 
 出力がない場合だけ、配布対象のPythonソースが同一です。`__pycache__/`、`*.pyc`、`.pytest_cache/`は比較対象から除外していますが、コピー先にこれらの生成物が含まれている場合は、配布可能と判定せずに停止してください。
 
-## 7. 開発正本を更新した後
+## 7. Productivity-Skillへ確定版を同期する
+
+Productivity-Skill側の次の2ディレクトリだけを同期対象とします。
+
+```text
+Productivity-Skill/.agents/skills/quality-review/
+Productivity-Skill/.agents/skills/quality-response/
+```
+
+QA-productsのルートから、まずdry-runを実行します。
+
+```bash
+python3 -B scripts/sync_productivity_skills.py --dry-run
+```
+
+差分、追加、変更、削除、SHA-256を確認します。宛先のGitワークツリーがdirtyの場合、通常同期は拒否されます。Productivity-Skill側の変更を確認し、管理対象2Skillの上書きを明示的に許可する場合だけ`--force`を指定します。
+
+実同期では、QA-products側の記録先と確定tagを明示します。
+
+```bash
+python3 -B scripts/sync_productivity_skills.py \
+  --record docs/Artifacts/quality_loop_sync_NNN_MMDD.md \
+  --tag v1.4.0
+```
+
+このスクリプトはProductivity-Skill側へコピーしません。同期対象外のSkill、README、テスト、利用者の未管理ファイルは変更しません。
+
+## 8. 開発正本を更新した後
 
 開発正本`quality-loop/quality_loop/`を変更した場合は、先にリポジトリ内の2つの同梱runtimeを正本と一致させ、相対パスとSHA-256を比較します。その後、既存のグローバル・ローカル配置先には自動反映しません。
 
 配置先が同一なら更新不要です。差異がある場合は、差分の内容と対象パスを示して別途承認を得るまで上書きしません。
 
-## 8. 問題時の停止とRollback
+## 9. 問題時の停止とRollback
 
 次のいずれかを検出した場合は、追加コピーや上書きを行わず停止してください。
 
@@ -135,7 +162,7 @@ diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' "$SOURCE_RUNTIME" "$COPI
 
 今回新規に作成したコピーだけを取り消す必要がある場合も、対象パスと作成時の記録を確認し、削除実行の明示承認を得てから行ってください。既存Skillを上書きしない設計のため、差異を検出した既存SkillにRollback操作は行いません。
 
-## 9. 次にSkillを使う
+## 10. 次にSkillを使う
 
 - Reviewer工程は`quality-review`を使い、最初に`status`で`next_role=reviewer`を確認します。
 - Implementer工程は`quality-response`を使い、最初に`status`で`next_role=implementer`と対象`next_action`を確認します。
