@@ -1,0 +1,37 @@
+schema_version: qa-traceability-1
+case_id: QA-0010
+entries:
+  - id: T-01
+    purpose: QA-productsを開発正本・検証・開発史保存場所として再構成し利用成果物はProductivity-Skillに分離する
+    requirement: docs/Artifacts/implementation_plan_020_0901.md:7-27
+    implementation: docs/Artifacts/implementation_plan_020_0901.md
+    evidence: docs/Artifacts/implementation_plan_020_0901.md
+    status: proposed
+
+  - id: T-02
+    purpose: ReviewerおよびImplementer Skillを単独コピー可能な自己完結構造にする
+    requirement: docs/Artifacts/implementation_plan_020_0901.md:45-52
+    implementation: docs/Artifacts/implementation_plan_020_0901.md
+    evidence: docs/Artifacts/implementation_plan_020_0901.md
+    status: proposed
+
+  - id: T-03
+    purpose: 安全な同期・同一性検査ツールを提供し、Productivity-Skillの管理対象2Skillのみを更新する
+    requirement: docs/Artifacts/implementation_plan_020_0901.md:53-64
+    implementation: docs/Artifacts/implementation_plan_020_0901.md
+    evidence: docs/Artifacts/implementation_plan_020_0901.md
+    status: proposed
+
+  - id: T-04
+    purpose: アーカイブを整理しMarkdown開発史・判断の導線とGit履歴を保持する
+    requirement: docs/Artifacts/implementation_plan_020_0901.md:65-72
+    implementation: docs/Artifacts/implementation_plan_020_0901.md
+    evidence: docs/Artifacts/implementation_plan_020_0901.md
+    status: proposed
+
+  - id: T-05
+    purpose: 変更・復旧境界を固定し、未承認push・無関係な外部同期・実案件改変を防止する
+    requirement: docs/Artifacts/implementation_plan_020_0901.md:83-101
+    implementation: docs/Artifacts/implementation_plan_020_0901.md
+    evidence: docs/Artifacts/implementation_plan_020_0901.md
+    status: proposed

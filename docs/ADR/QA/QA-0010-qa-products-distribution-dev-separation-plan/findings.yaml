@@ -1,0 +1,96 @@
+schema_version: qa-findings-1
+case_id: QA-0010
+status: closed
+findings:
+  - id: QA-0010-F01
+    title: Skillパッケージのランタイムvendor同梱方針およびゼロ外部依存の規定欠落
+    category: maintainability-risk
+    severity: low
+    status: fixed-and-verified
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: 各Skillディレクトリ単独コピーで自立動作可能
+    evidence:
+      - docs/Artifacts/implementation_plan_020_0901.md:48-52
+    limitation: quality_loopモジュールのvendor同梱構造およびPython標準ライブラリのみ（Zero External Dependencies）で動作する要件
+    requested_action: 計画書3.3に、各Skillディレクトリ配下にquality_loopコアモジュールを自己完結配置すること、およびPython 3.10+標準ライブラリのみで動作する旨を明記する
+    semantic_fingerprint: plan020-skill-vendor-bundling-spec
+    author_response:
+      disposition: rejected-with-evidence
+      response_cycle: cycle-01-author-response.md
+      note: 基準リビジョンの計画書3.3（48-52行目）にランタイム同梱・標準ライブラリのみ動作・生成物除外が明記されていることを確認
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: docs/Artifacts/implementation_plan_020_0901.md:48-52, cycles/cycle-01-verification.md
+
+  - id: QA-0010-F02
+    title: 同期ツールにおける破壊的上書き防止（dry-run、宛先Gitクリーン検査）の仕様欠落
+    category: safety-risk
+    severity: medium
+    status: fixed-and-verified
+    purpose_classification: purpose-critical
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: Productivity-Skillの管理対象2Skillを安全に同期・上書きする
+    evidence:
+      - docs/Artifacts/implementation_plan_020_0901.md:62-64
+    limitation: コピー先に利用者の未コミット変更が存在する場合の上書き事故防止策（dirty check）および事前差分確認（--dry-run）
+    requested_action: 計画書3.4に、事前差分確認用--dry-runオプションの提供、およびProductivity-Skill側のGit未コミット変更検知時に中断する安全検査を追加する
+    semantic_fingerprint: plan020-sync-tool-safety-guards
+    author_response:
+      disposition: rejected-with-evidence
+      response_cycle: cycle-01-author-response.md
+      note: 基準リビジョンの計画書3.4（62-64行目）に--dry-run・dirty時拒否・--force・識別検証が明記されていることを確認
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: docs/Artifacts/implementation_plan_020_0901.md:62-64, cycles/cycle-01-verification.md
+
+  - id: QA-0010-F03
+    title: アーカイブ階層再編に伴うMarkdown相対リンク整合性自動検証の計画欠落
+    category: coverage-gap
+    severity: low
+    status: fixed-and-verified
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: 過去資料のGit履歴、移動理由、関連コミット・タグを失わず整理する
+    evidence:
+      - docs/Artifacts/implementation_plan_020_0901.md:73
+      - docs/Artifacts/implementation_plan_020_0901.md:86-87
+    limitation: docs/Archives/配下の階層移動に伴う相対リンク切れの網羅的自動検査手順
+    requested_action: 第4章検証計画に、Markdown内の相対パスリンク切れを網羅的に検査・検証する自動ステップを明記する
+    semantic_fingerprint: plan020-archive-relative-link-integrity
+    author_response:
+      disposition: rejected-with-evidence
+      response_cycle: cycle-01-author-response.md
+      note: 基準リビジョンの計画書3.5および4章（73, 86-87行目）にアーカイブ用途分離・相対リンク専用検査・リンク切れ時移動停止が明記されていることを確認
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: docs/Artifacts/implementation_plan_020_0901.md:73,86-87, cycles/cycle-01-verification.md
+
+  - id: QA-0010-F04
+    title: 開発元リポジトリ外（完全隔離環境）でのSkill単独動作検証ステップの欠落
+    category: unverified-assumption
+    severity: low
+    status: fixed-and-verified
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: 2つのSkillが開発元リポジトリ外でも自立して動作する
+    evidence:
+      - docs/Artifacts/implementation_plan_020_0901.md:88
+    limitation: 開発環境内での検証のみでは、親ディレクトリや環境変数への暗黙の依存を見落とす可能性がある
+    requested_action: 第4章検証計画に、/tmp等の隔離ディレクトリへ各Skill単体をコピーし、環境変数非依存でCLI実行（--help、合成ケース検証）が成功するクリーンルーム検証を追加する
+    semantic_fingerprint: plan020-cleanroom-isolation-verification
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: 計画書第4章（88行目）に、一時隔離ディレクトリでの単体コピー・環境変数非依存・--helpおよび合成ケース検証手順を追記
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: docs/Artifacts/implementation_plan_020_0901.md:88, cycles/cycle-01-verification.md
