@@ -1,0 +1,48 @@
+schema_version: qa-findings-1
+case_id: QA-0009
+status: closed
+findings:
+  - id: QA-0009-F01
+    title: コピー後最小検査コマンドにおける正本側 `__pycache__` による偽陽性差分検知
+    category: operational-hygiene
+    severity: low
+    status: fixed-and-verified
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: コピー後最小検査により同梱runtimeと開発正本が完全一致することを決定論的に確認できる
+    evidence:
+      - quality-loop/SKILL_DEPLOYMENT_GUIDE.md:110-118
+    limitation: 開発正本にテスト実行等で__pycache__が生成されているとdiff -qrで差分誤検知が発生する
+    requested_action: diffコマンドに-x '__pycache__'フラグを追加する
+    semantic_fingerprint: deployment-guide-diff-pycache-exclusion
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: SKILL_DEPLOYMENT_GUIDE.mdのdiffコマンドに-x '__pycache__'を追加し、偽陽性差分検知を解消した
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: quality-loop/SKILL_DEPLOYMENT_GUIDE.md:115, cycles/cycle-01-verification.md
+  - id: QA-0009-F02
+    title: quality-response/SKILL.mdの手順ステップ番号の重複
+    category: maintainability-risk
+    severity: low
+    status: fixed-and-verified
+    purpose_classification: operational-hygiene
+    technical_disposition: fixed-and-verified
+    owner_disposition: null
+    claim: Implementer Skillの記載手順が正しく連番化されている
+    evidence:
+      - quality-loop/skills/quality-response/SKILL.md:26-33
+    limitation: 手順ステップ8が2回連続で付番されている
+    requested_action: 最後のステップ番号を9に修正する
+    semantic_fingerprint: quality-response-skill-step-numbering
+    author_response:
+      disposition: fix-submitted
+      response_cycle: cycle-01-author-response.md
+      note: quality-loop/skills/quality-response/SKILL.mdの末尾ステップ番号を9に修正した
+    reviewer_verification:
+      disposition: fixed-and-verified
+      cycle: cycle-01-verification.md
+      evidence: quality-loop/skills/quality-response/SKILL.md:33, cycles/cycle-01-verification.md

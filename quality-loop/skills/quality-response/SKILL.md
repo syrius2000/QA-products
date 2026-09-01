@@ -1,6 +1,6 @@
 ---
 name: quality-response
-description: 明示されたQuality Loop案件のFindingにImplementerとして回答し、Response Planの提出やOwner許可範囲内の修正提出とEvidence記録を行う。next_role=implementerかつnext_action=submit-planまたはsubmit-responseの案件に使用する。closed変更は情報の有無にかかわらずRole外として拒否する。レビュー、独立検証、Owner裁定、自己クローズには使用しない。
+description: 明示されたQuality Loop案件で、statusがnext_role=implementerかつnext_action=submit-planまたはsubmit-responseを示す場合だけ使用する。一般的な回答作成、一般的なQA、OpenSpec案件一般、レビュー、独立検証、Owner裁定、自己クローズには使用しない。closed変更は情報の有無にかかわらずRole外として拒否する。
 ---
 
 # Quality Response
@@ -23,14 +23,14 @@ Findingを改変せず、許可境界内で改善を前進させ、Reviewerが�
 5. handoffに列挙された既知Findingを読み、Finding IDごとに適切なDisposition Intent / Dispositionを選ぶ。
 6. Evidenceは対象revision、方法、結果、相対パスまたは要約を記録する。ファイルEvidenceは案件内`evidence/`へ保存しSHA-256を付ける。未確認を成功に補完しない。
 7. 入力JSONを準備し、`previous_handoff_id`と`expected_case_revision`にstatusの現在値を使う。Invocation IDはこの操作専用の新しい値にする。
-8. Bundleルートを作業ディレクトリとして実行する。
+8. このSkillディレクトリ内の`bin/quality-response-cli`を、呼出し元の作業ディレクトリを変更せずに実行する。
 
 ```text
-python3 -B -m quality_loop.cli --case-root <case-root> submit-plan --case-id <case-id> --input <json>
-python3 -B -m quality_loop.cli --case-root <case-root> submit-response --case-id <case-id> --input <json>
+<quality-response-skill-dir>/bin/quality-response-cli --case-root <case-root> submit-plan --case-id <case-id> --input <json>
+<quality-response-skill-dir>/bin/quality-response-cli --case-root <case-root> submit-response --case-id <case-id> --input <json>
 ```
 
-8. 成功JSONのReviewer向け`next_role`、`next_action`、`handoff`をそのまま提示する。拒否時は対象を追加変更せず、`error_code`と`remediation`に従う。
+9. 成功JSONのReviewer向け`next_role`、`next_action`、`handoff`をそのまま提示する。拒否時は対象を追加変更せず、`error_code`と`remediation`に従う。
 
 実案件、Finding本文、case-root、現在handoffが提供されていない評価・相談では、反証内容、CLI成功、handoffを捏造しない。必要入力と予定するDispositionだけを示す。
 
@@ -51,4 +51,4 @@ python3 -B -m quality_loop.cli --case-root <case-root> submit-response --case-id
 - 人やReviewerの意図を非難しない。事実、要求、Evidence、改善行動を書く。
 - 旧Skillの`Author Response`、二重digest、OpenSpec、Legacy互換の語彙や契約を持ち込まない。
 
-品質語彙、反論Evidence、基準変更の境界に迷う場合だけ`../../references/qms-foundations.md`を読む。通常のstatus、Role確認、JSON操作では読まない。
+品質語彙、反論Evidence、基準変更の境界に迷う場合だけ`references/qms-foundations.md`を読む。通常のstatus、Role確認、JSON操作では読まない。

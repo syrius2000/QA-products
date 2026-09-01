@@ -1,0 +1,27 @@
+schema_version: qa-traceability-1
+case_id: QA-0009
+entries:
+  - id: T-01
+    purpose: ReviewerおよびImplementer SkillをPython共通基盤同梱の自己完結単位として提供する
+    requirement: openspec/changes/deploy-quality-loop-skills/specs/quality-loop-skill-deployment/spec.md
+    implementation: quality-loop/skills/quality-review/, quality-loop/skills/quality-response/
+    evidence: docs/Artifacts/skill_deployment_evidence_001_0901.md
+    status: observed
+  - id: T-02
+    purpose: 開発正本と各Skill同梱runtimeのPythonソース完全一致を維持する
+    requirement: openspec/changes/deploy-quality-loop-skills/tasks.md:9-10
+    implementation: quality-loop/quality_loop/, quality-loop/skills/quality-review/runtime/quality_loop/, quality-loop/skills/quality-response/runtime/quality_loop/
+    evidence: docs/Artifacts/skill_deployment_evidence_001_0901.md
+    status: observed
+  - id: T-03
+    purpose: 誤発火を防止し、Role境界と非発火条件を厳格化する
+    requirement: openspec/changes/deploy-quality-loop-skills/specs/quality-loop-skill-deployment/spec.md
+    implementation: quality-loop/skills/quality-review/SKILL.md, quality-loop/skills/quality-response/SKILL.md
+    evidence: quality-loop/skills/quality-review/evals/evals.json, quality-loop/skills/quality-response/evals/evals.json
+    status: observed
+  - id: T-04
+    purpose: 手動配置ガイドとREADMEの利用優先導線を整備し、Fail-Closed保護を提供する
+    requirement: openspec/changes/deploy-quality-loop-skills/specs/quality-loop-skill-deployment/spec.md
+    implementation: quality-loop/SKILL_DEPLOYMENT_GUIDE.md, README.md
+    evidence: docs/ADR/QA/QA-0009-deploy-quality-loop-skills/cycles/cycle-01-author-response.md
+    status: observed

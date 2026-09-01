@@ -1,6 +1,6 @@
 ---
 name: quality-review
-description: Ownerが定めたbaselineに対する初回QAレビュー、Response Plan評価、独立検証、または最終リスク評価(Final Risk Assessment)を行う。明示されたQuality Loop案件でFinding作成、Evidence評価、review、review-plan、verify、assess-riskを求められたときに使用する。申告外変更はundeclared-change-detectedとして拒否する。実装、回答代筆、Owner裁定、自己クローズには使用しない。
+description: 明示されたQuality Loop案件で、statusがnext_role=reviewerを示し、review、review-plan、verify、assess-riskを行う場合だけ使用する。一般的なコードレビュー、一般的なQA、OpenSpec案件一般、回答代筆、実装、Owner裁定、自己クローズには使用しない。申告外変更はundeclared-change-detectedとして拒否する。
 ---
 
 # Quality Review
@@ -27,13 +27,13 @@ description: Ownerが定めたbaselineに対する初回QAレビュー、Respons
 5. **比例性（Proportionality Gate）の確認**: 指摘がIntended UseやRisk Contextに見合っているかを評価し、過剰な完全性を押し付けず、軽微な仕様外改善は`improvement-proposal`へ分離する。
 6. 対象と利用可能なEvidenceを自分で確認する。確認できない事項は`unverified`または`evidence-gap`とする。
 7. 入力JSONを準備し、`previous_handoff_id`と`expected_case_revision`にstatusの現在値を使う。Invocation IDはこの操作専用の新しい値にする。
-8. Bundleルートを作業ディレクトリとして、対応するコマンドを実行する。
+8. このSkillディレクトリ内の`bin/quality-review-cli`を、呼出し元の作業ディレクトリを変更せずに実行する。
 
 ```text
-python3 -B -m quality_loop.cli --case-root <case-root> review --case-id <case-id> --input <json/file>
-python3 -B -m quality_loop.cli --case-root <case-root> review-plan --case-id <case-id> --input <json/file>
-python3 -B -m quality_loop.cli --case-root <case-root> verify --case-id <case-id> --input <json/file>
-python3 -B -m quality_loop.cli --case-root <case-root> assess-risk --case-id <case-id> --input <json/file>
+<quality-review-skill-dir>/bin/quality-review-cli --case-root <case-root> review --case-id <case-id> --input <json/file>
+<quality-review-skill-dir>/bin/quality-review-cli --case-root <case-root> review-plan --case-id <case-id> --input <json/file>
+<quality-review-skill-dir>/bin/quality-review-cli --case-root <case-root> verify --case-id <case-id> --input <json/file>
+<quality-review-skill-dir>/bin/quality-review-cli --case-root <case-root> assess-risk --case-id <case-id> --input <json/file>
 ```
 
 9. 成功JSONの`next_role`、`next_action`、`handoff`をそのまま次工程へ示す。失敗時は`error_code`と`remediation`を示し、正本を迂回編集しない。
@@ -66,4 +66,4 @@ python3 -B -m quality_loop.cli --case-root <case-root> assess-risk --case-id <ca
 - Evidenceを推測して作らない。
 - 旧Skillの`Author Response`、二重digest、OpenSpec、Legacy互換の語彙や契約を持ち込まない。
 
-品質語彙や比例性の判断に迷う場合だけ`../../references/qms-foundations.md`を読む。通常のstatus、Role確認、JSON操作では読まない。
+品質語彙や比例性の判断に迷う場合だけ`references/qms-foundations.md`を読む。通常のstatus、Role確認、JSON操作では読まない。
