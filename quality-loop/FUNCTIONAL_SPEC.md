@@ -28,6 +28,28 @@ Python APIの `QualityLoop` と CLI の 9操作だけを公開seamとする。�
 | `adjudicate` | Owner | 必須 | 最終裁定（Go/No-Go/条件付き受入/再作業指示） |
 | `status` | 読取り | 不要 | 決定論的信号機要約（`resume.md`）と最新Handoff取得 |
 
+## 2.1 単発QA Bootstrap（`review-standalone`）
+
+`review-standalone`は、正式case情報がまだない単発の実装結果QAを開始するための補助入口である。公開seamの正式9操作に代わる第10の状態遷移操作ではなく、既存の`create-case`を安全に呼び出すbootstrapとして扱う。
+
+### 入力
+
+- `--target`または`--artifact`で通常ファイルを1個以上明示する。両方は同じ対象配列へ追加される。
+- `--owner`は必須とし、`--case-id`、`--baseline-input`、`--criticality`は任意とする。
+- ディレクトリ、シンボリックリンク、特殊ファイル、未存在ファイル、読取り不能ファイルは拒否する。再帰的な対象展開は行わない。
+- manifestは最大32ファイル、1ファイル10 MiB、合計50 MiBまでとする。上限超過時はcaseを作成せず、安定したエラーコードと`state_changed: false`を返す。
+- 対象SHA-256は1 MiB単位のストリーミング読み込みで計算し、対象全体をメモリへ一括保持しない。
+
+### 成功結果と境界
+
+- 正常系は`create-case`と同じrevision 1のcanonical `case.json`を作成し、`next_role=reviewer`、`next_action=review`、Reviewer向けhandoffを返す。
+- baseline未指定時は単発QA用の最小baselineを生成し、原要求・原受入基準が未提示であることを`exclusions`へ記録する。
+- 同一case-idの再送は同一対象・baselineの場合だけ既存結果を返す。対象・baselineが異なる場合は拒否し、既存caseを上書きしない。
+- `review-standalone`はFinding、Evidenceの品質判定、実装許可、Owner裁定、caseの受入・クローズを生成しない。Reviewerは返却handoffを使って通常の`review`を実行する。
+- 対象Artifact、対象ファイル、既存formal caseを変更しない。case作成に失敗した場合はcase正本を成功扱いにしない。
+
+入力の詳細は[`schemas/standalone-review-input.schema.json`](schemas/standalone-review-input.schema.json)を参照する。Skill配布物には同じ内容を`skills/quality-review/references/`へ同梱する。
+
 ## 3. 固定安全条件
 
 - `case.json` が唯一の正本（canonical state）。`resume.md` や `final-risk-assessment.md` は派生ビュー。

@@ -22,6 +22,22 @@ RuntimeはPython 3.10以上の標準ライブラリだけで動作し、外部pi
 
 詳細な契約は[機能仕様](FUNCTIONAL_SPEC.md)を参照してください。
 
+## 単発QAの開始
+
+正式case情報がまだない単発の実装結果QAでは、`quality-review` Skillの補助入口から対象を直接指定できます。
+
+```bash
+skills/quality-review/bin/quality-review-cli \
+  --case-root /path/to/qms-cases \
+  review-standalone \
+  --artifact /path/to/Implementation_result.md \
+  --owner owner-id
+```
+
+成功すると、既存のQuality Loopと同じrevision 1のcase、Reviewer向けhandoff、`next_action=review`を返します。返されたhandoffとrevisionを使って通常の`review`を実行してください。対象成果物は変更されず、Finding、受入、実装許可、Owner裁定はこのbootstrapでは生成されません。
+
+`--target`はArtifact以外の通常ファイルを指定する別名です。ディレクトリの再帰展開は行わず、対象manifestは最大32ファイル、1ファイル10 MiB、合計50 MiBまでです。入力契約は[`schemas/standalone-review-input.schema.json`](schemas/standalone-review-input.schema.json)を参照してください。
+
 ## 入力Templateと実例
 
 `templates/`には9操作の入力雛形があります。`intake.json`、`review_input.json`、`submit_plan.json`、`review_plan.json`、`response_input.json`、`verify_input.json`、`assess_risk.json`、`adjudicate_input.json`、`status.json`を使用し、`REPLACE_WITH_CURRENT_HANDOFF_ID`、revision、Actor、Evidence参照は必ず`status`の最新結果に置き換えます。

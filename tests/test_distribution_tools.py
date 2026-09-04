@@ -79,6 +79,16 @@ class DistributionToolsTest(unittest.TestCase):
                 skill = target / ".agents" / "skills" / skill_name
                 self.assertTrue((skill / "SKILL.md").is_file())
                 self.assertTrue((skill / "VERSION").is_file())
+            self.assertTrue(
+                (
+                    target
+                    / ".agents"
+                    / "skills"
+                    / "quality-review"
+                    / "references"
+                    / "standalone-review-input.schema.json"
+                ).is_file()
+            )
             self.assertIn("tree SHA-256", record.read_text(encoding="utf-8"))
 
 

@@ -18,6 +18,8 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("`verified`、`not-verified`、`unverified`", text)
         self.assertIn("Owner裁定を代行しない", text)
         self.assertIn("案件正本を直接編集せず", text)
+        self.assertIn("review-standalone", text)
+        self.assertIn("standalone-review-input.schema.json", text)
 
     def test_quality_response_rejects_self_close_and_limits_role(self) -> None:
         text = (SKILL_ROOT / "quality-response" / "SKILL.md").read_text(

@@ -97,6 +97,7 @@ class SchemasTest(unittest.TestCase):
             "verify.schema.json",
             "assess-risk.schema.json",
             "adjudicate.schema.json",
+            "standalone-review-input.schema.json",
         ]
 
         for name in expected_schemas:
@@ -106,6 +107,26 @@ class SchemasTest(unittest.TestCase):
             self.assertIn("$schema", data)
             self.assertEqual("object", data.get("type"))
             self.assertTrue(len(data.get("required", [])) > 0)
+
+    def test_standalone_schema_is_canonical_and_packaged_reference_matches(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = json.loads(
+            (root / "schemas" / "standalone-review-input.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        packaged = json.loads(
+            (
+                root
+                / "skills"
+                / "quality-review"
+                / "references"
+                / "standalone-review-input.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(source, packaged)
+        self.assertEqual({"owner", "targets"}, set(source["required"]))
+        self.assertTrue(source["properties"]["targets"]["uniqueItems"])
 
     def test_finding_classifications_match_model_and_schema(self) -> None:
         from quality_loop.model import FINDING_CLASSIFICATIONS
