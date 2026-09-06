@@ -8,6 +8,7 @@ QA-productsとQuality Loopの実装・検証・同期の時系列記録です。
 
 ## 主な記録
 
+- [完了済みArtifact整理統合アーカイブ](../archived_summary_004_0906.md): 2026-08-24〜2026-09-06に残っていた完了済み個別記録の統合
 - [実装履歴統合アーカイブ](../archived_summary_003_0831.md): Plan 011〜016、初期実装、QA、Owner引き継ぎ
 - [最終独立QA受入サマリー](../qa_acceptance_summary_001_0831.md): v1.4.0の独立QA判定と残余事項
 - [旧移行期統合アーカイブ](../archived_summary_002_0828.md): OpenSpec移行期とChange分割の記録
