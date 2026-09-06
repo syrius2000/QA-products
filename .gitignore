@@ -9,6 +9,8 @@ __pycache__/
 **/.mypy_cache/
 .ruff_cache/
 **/.ruff_cache/
+# ローカル開発用Agent Skill（OpenSpecを含む）
+# 必要時にSkill配布元からinit・再配置するため、Gitでは追跡しない
 /.agents/
 
 # macOSのメタデータ
