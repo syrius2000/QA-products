@@ -31,6 +31,6 @@
 ## 6. QAと完了境界
 
 - [x] 6.1 Author側の全テストとReviewer側の回帰テストをキャッシュなしで実行し、全件合格のログを保存する
-- [ ] 6.2 別Agentによる独立QAでAuthorの自己クローズ、未知Finding、stale digest、Evidence境界を検証し、結果を`docs/ADR/QA/`へ保存する
+- [x] 6.2 別Agentによる独立QAでAuthorの自己クローズ、未知Finding、stale digest、Evidence境界を検証し、結果を`docs/ADR/QA/`へ保存する（QA-0011、独立入力10/10ケースおよびAuthor 27件・Reviewer 40件の回帰テストを確認。formal case/handoff、外部配置後動作はunverified/evidence-gap）
 - [x] 6.3 不明なLLM実測値、外部Skill配備後の動作、Git revisionなどは`unverified`／`evidence-gap`として記録し、根拠なく完了扱いにしない
 - [x] 6.4 外部Skill配置、旧版削除、commit、pushを行わずにstage完了を確認し、本番配備は別Changeへ引き継ぐ

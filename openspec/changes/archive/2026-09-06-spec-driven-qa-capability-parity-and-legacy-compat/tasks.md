@@ -36,8 +36,8 @@ author: Codex (GPT-5)
 
 ## 5. 既存安全契約の回帰検証
 
-- [ ] 5.1 各版に存在する契約について、自己クローズ、Reviewer正本書込み、未知Finding、空または欠落Evidence、Workspace外パスの拒否をCandidate／compactで実行し、正本無変更と非ゼロ終了を確認する。版に契約がない項目は`not-applicable`または`evidence-gap`として記録し、合格扱いにしない
-  - `stage/evidence/candidate-contract-probe.json`でCandidateが空Evidenceを受理する観測違反（expected reject / actual accept）を固定し、`contract-applicability.json`ではLegacyの後発契約不在を`not-applicable`として分離した。Candidate修正または人間裁定が残るため未完了とする。
+- [x] 5.1 各版に存在する契約について、自己クローズ、Reviewer正本書込み、未知Finding、空または欠落Evidence、Workspace外パスの拒否をCandidate／compactで実行し、正本無変更と非ゼロ終了を確認する。版に契約がない項目は`not-applicable`または`evidence-gap`として記録し、合格扱いにしない
+  - CandidateのEvidence validatorを修正し、空または欠落した`required_evidence`／`evidence`を拒否するようにした。Candidate／compactの安全回帰、契約適用可能性、空Evidence拒否プローブを再実行し、`observed`として記録した。Legacyの後発契約不在は`not-applicable`として分離した。
 - [x] 5.2 各版に存在するdigest契約について、staleなsemantic/content digest、旧同値digest、未知digest versionを投入し、提出拒否・再生成要求・正本無更新を確認する。版に契約がない項目は非互換または`evidence-gap`として分離する
   - Candidateの実在semantic digestに対するstale拒否を`candidate-digest-probe.json`でObserved確認し、content digest／digest versionは`not-applicable`として分離した。compactの分離digest・未知version・旧同値digest、Legacyの契約不在も分離記録した。Lunaがfixed-and-verifiedを確認した。
 - [x] 5.3 QA-0006のAuthor提出境界とQA-0007のdigest分離プローブを回帰fixtureへ取り込み、既存Evidenceと同じ境界結果になることを確認する
@@ -45,8 +45,8 @@ author: Codex (GPT-5)
 
 ## 6. Evidenceと複数Agent集計
 
-- [ ] 6.1 各Agent／RunにPrompt、出力、条件、開始終了時刻、実行件数、Bundle digest、結果、未実行項目を保存し、manifestとresultsの整合性を検証する
-  - `stage/agent_aggregator.py` は5 Agent／Runを識別子単位で分離し、manifest/resultsの識別子整合性を検証した。ただしAgentごとにmanifest形式とPrompt・出力の保存粒度が異なり、必須項目の全件充足は未検証のため未完了とする。
+- [x] 6.1 各Agent／RunにPrompt、出力、条件、開始終了時刻、実行件数、Bundle digest、結果、未実行項目を保存し、manifestとresultsの整合性を検証する
+  - 5 Agent／Runを識別子単位で分離し、Source Manifestの再基準化後に全ファイルの存在・サイズ・SHA-256を検証した。`agent_aggregator.py`でmanifestとresultsの識別子整合性、必須8項目の正規化、欠測値の`unverified`保持を確認し、集計結果は`observed-with-unverified`とした。Token・Latency等の未取得値は補完していない。
 - [x] 6.2 複数AIの結果を別Runとして集計し、Agent・モデル・設定・Prompt suiteを混同しない集計レポートを生成するテストを通す
   - 5 Agent／Runを`stage/evidence/agent-aggregate.json`へ別エントリとして集計し、識別子不一致・重複・入れ子results形式をテストした。
 - [x] 6.3 Token、Latency、外部LLM正答率が取得不能な場合に`unverified`または`evidence-gap`を維持し、推定値をObservedへ変換しないことを確認する

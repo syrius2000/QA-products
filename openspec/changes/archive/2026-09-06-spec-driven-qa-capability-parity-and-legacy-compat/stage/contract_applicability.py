@@ -39,7 +39,7 @@ def build_report(stage: Path) -> dict[str, Any]:
         item("candidate", "unknown-finding", observed(checks["candidate"], "candidate-unknown-finding-denied"), "safety-regression.json", "Candidateの未知Finding拒否を確認"),
         item("compact", "unknown-finding", observed(checks["compact"], "compact-unknown-finding-denied"), "safety-regression.json", "compactの未知Finding拒否を確認"),
         item("legacy", "empty-or-missing-evidence", "not-applicable", "compatibility-report.json", "LegacyにEvidence validator契約がない"),
-        item("candidate", "empty-or-missing-evidence", "failed" if candidate_probe.get("status") == "observed-violation" else "evidence-gap", "candidate-contract-probe.json", "Candidateは空Evidenceを受理したため、期待rejectに対する観測違反として記録"),
+        item("candidate", "empty-or-missing-evidence", "observed" if candidate_probe.get("status") == "observed" and candidate_probe.get("actual") == "reject" else "failed", "candidate-contract-probe.json", "Candidateの空Evidence拒否を実測"),
         item("compact", "empty-or-missing-evidence", "not-applicable", "spec-driven-qa-bundle/shared_core/chain.py", "compact連鎖APIはEvidence bundle契約を定義していない"),
         item("legacy", "workspace-outside-path", "not-applicable", "compatibility-report.json", "Legacyに共通Workspace境界契約がない"),
         item("candidate", "workspace-outside-path", observed(checks["candidate"], "candidate-workspace-absolute-repository-path-denied"), "safety-regression.json", "Candidateのrepository-relative参照拒否を確認"),

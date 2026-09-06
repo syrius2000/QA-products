@@ -53,8 +53,14 @@ def validate_evidence_bundle(bundle: Any) -> list[str]:
     if not isinstance(bundle, dict):
         return ["evidence bundle must be an object"]
     errors = []
-    errors.extend(validate_requirement(item) for item in bundle.get("required_evidence", []))
-    errors.extend(validate_evidence(item) for item in bundle.get("evidence", []))
+    required_evidence = bundle.get("required_evidence")
+    evidence = bundle.get("evidence")
+    if not isinstance(required_evidence, list) or not required_evidence:
+        errors.append("evidence bundle required_evidence must be a non-empty list")
+    if not isinstance(evidence, list) or not evidence:
+        errors.append("evidence bundle evidence must be a non-empty list")
+    errors.extend(validate_requirement(item) for item in required_evidence or [])
+    errors.extend(validate_evidence(item) for item in evidence or [])
     return [error for group in errors for error in (group if isinstance(group, list) else [group])]
 
 

@@ -39,6 +39,7 @@ class AgentAggregatorTest(unittest.TestCase):
             self.assertEqual(report["run_count"], 2)
             self.assertEqual(report["metric_status_summary"]["latency"], ["unverified"])
             self.assertEqual(report["required_field_status_summary"]["output"]["observed"], 2)
+            self.assertEqual(report["agent_runs"][0]["required_fields"]["prompt_suite"]["status"], "observed")
 
     def test_missing_required_fields_are_reported_as_unverified(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -51,6 +52,7 @@ class AgentAggregatorTest(unittest.TestCase):
             entry = report["agent_runs"][0]
             self.assertEqual(entry["required_field_status"]["prompt_suite"], "unverified")
             self.assertFalse(entry["required_fields_complete"])
+            self.assertEqual(entry["required_fields"]["prompt_suite"]["status"], "unverified")
 
     def test_null_timing_and_unexecuted_values_are_unverified(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -1,6 +1,6 @@
 {
-  "blocking_rows": 1,
-  "pass_eligible": false,
+  "blocking_rows": 0,
+  "pass_eligible": true,
   "policy": "not-applicableとevidence-gapは合格とみなさず、Legacyの後発契約不在は意図的非互換として分離する",
   "rows": [
     {
@@ -54,9 +54,9 @@
     },
     {
       "control": "empty-or-missing-evidence",
-      "detail": "Candidateは空Evidenceを受理したため、期待rejectに対する観測違反として記録",
+      "detail": "Candidateの空Evidence拒否を実測",
       "evidence": "candidate-contract-probe.json",
-      "status": "failed",
+      "status": "observed",
       "version": "candidate"
     },
     {
@@ -131,5 +131,5 @@
     }
   ],
   "schema_version": "contract-applicability-1",
-  "status": "evidence-gap"
+  "status": "observed"
 }

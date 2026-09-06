@@ -54,3 +54,10 @@ def test_rejected_secret_status_is_not_accepted():
     document = bundle()
     document["evidence"][0]["secret_status"] = "rejected"
     assert any("must not be submitted" in error for error in validate_evidence_bundle(document))
+
+
+def test_empty_or_missing_evidence_bundle_is_rejected():
+    assert validate_evidence_bundle({})
+    document = bundle()
+    document.pop("evidence")
+    assert any("evidence bundle evidence" in error for error in validate_evidence_bundle(document))

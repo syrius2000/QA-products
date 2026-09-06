@@ -14,9 +14,9 @@
           "sha256": "76251ebe53d769dacc9218ed28148727615bf827143304e5074f03d95326f400"
         },
         {
-          "bytes": 8067,
+          "bytes": 8099,
           "path": "report.md",
-          "sha256": "adce625b1448e2c9f6090000c3fa98e5f6c3056b05d47121352a7d4b871789bb"
+          "sha256": "743cbcf652059903d146dae0053bf48e0b63cea198a4e73cdd10b736595ac0ad"
         },
         {
           "bytes": 20425,
@@ -142,6 +142,13 @@
     }
   ],
   "retention_policy": "元Agent／Run Evidenceはアーカイブ側で不変保持し、現Changeには識別子とSHA-256だけを固定する",
+  "rebaseline_history": [
+    {
+      "path": "antigravity-20260826-0903/antigravity-20260826-0903-001/report.md",
+      "previous_sha256": "adce625b1448e2c9f6090000c3fa98e5f6c3056b05d47121352a7d4b871789bb",
+      "reason": "過去の文書整理で評価プロトコルの相対リンクだけを更新したため、現行保存内容を再基準化"
+    }
+  ],
   "schema_version": "agent-source-manifest-1",
   "source_root": "openspec/changes/archive/2026-08-26-improve-spec-driven-qa-contract-v1-2/improve-contract-evidence/agents",
   "status": "observed"

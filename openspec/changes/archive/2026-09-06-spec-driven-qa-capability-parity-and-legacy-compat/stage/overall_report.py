@@ -79,8 +79,8 @@ def build_report(evidence_root: Path, run_id: str, adjudication_path: Path | Non
         },
         {
             "id": "R-CANDIDATE-CONTRACT-GAPS",
-            "status": "failed",
-            "detail": "Candidateの空Evidence受理という観測違反が残る。semantic digestのstale拒否はObserved、content digest／versionはCandidate契約外として分離済み",
+            "status": "observed",
+            "detail": "Candidateの空Evidence拒否を修正後に実測した。semantic digestのstale拒否はObserved、content digest／versionはCandidate契約外として分離済み",
             "evidence": "candidate-contract-probe.json, contract-applicability.json",
         },
         {

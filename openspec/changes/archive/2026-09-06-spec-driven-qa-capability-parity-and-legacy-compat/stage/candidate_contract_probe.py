@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Candidateの空Evidence契約を読み取り専用で実測するCLI。"""
+"""Candidateの空Evidence拒否契約を実測するCLI。"""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def build_report(stage: Path) -> dict[str, Any]:
         "actual": "accept" if accepted else "reject",
         "accepted": accepted,
         "errors": result.get("errors", []),
-        "policy": "Candidateの現行実装を改造せず、観測された契約挙動をEvidence化する",
+        "policy": "空または欠落したEvidenceを受理せず、拒否結果をEvidence化する",
     }
 
 

@@ -1,0 +1,13 @@
+{
+  "accepted": false,
+  "actual": "reject",
+  "control": "empty-or-missing-evidence",
+  "errors": [
+    "evidence bundle required_evidence must be a non-empty list",
+    "evidence bundle evidence must be a non-empty list"
+  ],
+  "expected": "reject",
+  "policy": "空または欠落したEvidenceを受理せず、拒否結果をEvidence化する",
+  "schema_version": "candidate-contract-probe-1",
+  "status": "observed"
+}

@@ -56,8 +56,7 @@ def field_status(manifest: dict[str, Any], results_path: Path) -> dict[str, str]
     ) or (
         known(manifest.get("start_time")) and known(manifest.get("end_time"))
     )
-    cases = all(known(manifest.get(key)) for key in ("cases_total", "executed_cases", "unexecuted_cases"))
-    cases = cases or all(known(manifest.get(key)) for key in ("executed_cases", "not_run_cases"))
+    cases = any(known(manifest.get(key)) for key in ("cases_total", "executed_cases"))
     digest = any(
         isinstance(value, dict)
         and any("digest" in str(key).lower() and known(item) for key, item in value.items())
@@ -80,6 +79,31 @@ def field_status(manifest: dict[str, Any], results_path: Path) -> dict[str, str]
         "results": "observed" if results_path.is_file() else "unverified",
         "unexecuted_items": "observed" if any(known(manifest.get(key)) for key in ("unexecuted_cases", "not_run_cases")) else "unverified",
     }
+
+
+def required_fields(manifest: dict[str, Any], results_path: Path) -> dict[str, dict[str, Any]]:
+    """異なるmanifest形式を正規化し、欠測を推定値で埋めずに記録する。"""
+    status = field_status(manifest, results_path)
+    values = {
+        "prompt_suite": manifest.get("prompt_suite_digest", manifest.get("prompt_suite_sha256")),
+        "output": str(results_path) if results_path.is_file() else None,
+        "conditions": manifest.get("model_settings", manifest.get("environment", manifest.get("context_isolation"))),
+        "timing": {
+            "started_at": manifest.get("started_at", manifest.get("start_time")),
+            "ended_at": manifest.get("ended_at", manifest.get("end_time")),
+        },
+        "execution_count": {
+            "cases_total": manifest.get("cases_total"),
+            "executed_cases": manifest.get("executed_cases"),
+            "unexecuted_cases": manifest.get("unexecuted_cases", manifest.get("not_run_cases")),
+        },
+        "bundle_digest": manifest.get("bundles") or {
+            key: value for key, value in manifest.items() if key.endswith("_bundle_digest")
+        },
+        "results": str(results_path) if results_path.is_file() else None,
+        "unexecuted_items": manifest.get("unexecuted_cases", manifest.get("not_run_cases")),
+    }
+    return {name: {"status": status[name], "value": values[name]} for name in status}
 
 
 def discover_runs(root: Path) -> list[tuple[Path, Path, Path]]:
@@ -141,6 +165,7 @@ def summarize_run(agent_dir: Path, run_dir: Path, results_path: Path) -> dict[st
         "pytest": manifest.get("pytest", {"status": "unverified"}),
         "metrics": metrics,
         "required_field_status": completeness,
+        "required_fields": required_fields(manifest, results_path),
         "required_fields_complete": all(value == "observed" for value in completeness.values()),
         "source_evidence": str(run_dir.relative_to(root_for_source(run_dir))),
     }
@@ -224,7 +249,18 @@ def main(argv: list[str] | None = None) -> int:
                 source_manifest.relative_to(repository).as_posix() if repository else str(source_manifest)
             )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+        failure = {
+            "schema_version": "agent-evidence-aggregate-1",
+            "status": "evidence-gap",
+            "agent_count": 0,
+            "run_count": 0,
+            "agent_runs": [],
+            "errors": [str(exc)],
+            "policy": "Source Manifest検証に失敗した集計結果は利用せず、evidence-gapとして停止する",
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(failure, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps({"ok": False, "status": "evidence-gap", "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")

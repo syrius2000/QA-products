@@ -71,17 +71,20 @@ def candidate_checks(bundle_root: Path) -> list[dict[str, Any]]:
     from spec_driven_qa_reviewer.scripts.digest import semantic_digest
     from spec_driven_qa_reviewer.scripts.evidence import validate_evidence_bundle
     from spec_driven_qa_reviewer.scripts.link_validator import validate_reference
-    from spec_driven_qa_reviewer.scripts.submission_validator import accept_author_submission
+    from spec_driven_qa_reviewer.scripts.submission_validator import accept_author_submission, submission_hash
 
     change = {"severity": "low", "local": True, "reversible": True, "destructive": False, "external_operation": False, "preapproved": True, "documentation_only": True, "scoped": True}
     case = {"contract_version": "1.2", "case_id": "QA-9106", "case_status": "author-action-required", "next_action": "author-response", "case_revision": 2, "findings": [{"id": "QA-9106-F01", "severity": "medium", "finding_status": "awaiting-author"}], "terminal_result": None}
     valid = {"submission_id": "submission-safety", "base_revision": 2, "expected_semantic_digest": semantic_digest(case), "target_findings": ["QA-9106-F01"], "author_response": "synthetic"}
     stale = {**valid, "base_revision": 1}
+    empty_evidence = {**valid, "evidence": {}}
+    empty_evidence["submission_hash"] = submission_hash(empty_evidence)
     checks = [
         check("candidate-fast-path-boundary", lambda: eligible_fast_path(change) and not eligible_fast_path({**change, "external_operation": True})),
         check("candidate-author-reviewer-field-denied", lambda: bool(validate_no_reviewer_mutation({"case_status": "closed"}))),
         check("candidate-stale-revision-denied", lambda: not accept_author_submission(case, stale)["accepted"]),
         check("candidate-unknown-finding-denied", lambda: not accept_author_submission(case, {**valid, "target_findings": ["QA-9106-F99"]})["accepted"]),
+        check("candidate-empty-or-missing-evidence-denied", lambda: not accept_author_submission(case, empty_evidence)["accepted"]),
         check("candidate-secret-evidence-denied", lambda: bool(validate_evidence_bundle({"evidence": [{"id": "EV-1", "reference": "token=synthetic", "reference_type": "repository-relative", "verifier": "author", "acquired_at": "2026-08-27", "result": "verified", "secret_status": "none"}]}))),
         check("candidate-workspace-absolute-repository-path-denied", lambda: bool(validate_reference("/tmp/outside", "repository-relative"))),
     ]
