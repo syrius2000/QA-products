@@ -2,6 +2,8 @@
 
 このリポジトリは、Quality Loopの開発正本、検証、設計判断、開発経緯を保存する場所です。実務者が利用する成果物は、別リポジトリの[Productivity-Skill](https://github.com/syrius2000/Productivity-Skill)へ確定版として取り込みます。
 
+別PCで開発を再開する場合は、clone後にまず[開発引継ぎメモ](memo.md)を確認してください。現在の作業branch、開始手順、残課題、検証状況を記録しています。
+
 ```mermaid
 flowchart LR
     A[QA-products<br/>開発・検証・履歴保存] -->|確定版を同期| B[Productivity-Skill<br/>利用成果物のみ]
