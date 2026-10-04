@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 from .store import QAError, digest, relative
@@ -165,6 +166,85 @@ def tree_snapshot(root: Path, commit: str, paths) -> dict:
             raise QAError(f"対象commitの通常ファイルではありません: {name}")
         result[name] = {"mode": mode, "hash": digest(git_bytes(root, "cat-file", "blob", blob))}
     return result
+
+
+_SECRET_ASSIGNMENT = re.compile(r"(?i)\b(?:[a-z0-9_]*(?:token|secret|password|passwd)|api[_-]?key)\s*[:=]\s*['\"]?([^\s'\"]{4,})")
+_PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
+_PERSONAL_PATH = re.compile(r"(?:/Users/|/home/)([^/\s]+)(?:/|$)")
+_SAFE_FIXTURE_VALUES = {"example", "dummy", "placeholder", "redacted", "test-token", "qa-user", "your-token"}
+
+
+def publication_findings(root: Path, paths: set[str]) -> list[str]:
+    """Scan only bytes that are about to be published; synthetic test identities are explicit exceptions."""
+    findings = []
+    for name in sorted(paths):
+        current = snapshot(root, [name])[name]
+        if current is None:
+            continue
+        path = root / name
+        if path.is_symlink():
+            content = os.readlink(path).encode()
+        else:
+            content = path.read_bytes()
+        text = content.decode("utf-8", errors="ignore")
+        if _PRIVATE_KEY.search(text):
+            findings.append(f"{name}:private-key")
+        for match in _SECRET_ASSIGNMENT.finditer(text):
+            value = match.group(1).strip(" ,;)")
+            if value.lower() not in _SAFE_FIXTURE_VALUES and not (value.startswith("<") and value.endswith(">")):
+                findings.append(f"{name}:secret-like-assignment")
+                break
+        for match in _PERSONAL_PATH.finditer(text):
+            if match.group(1).lower() not in {"example", "test", "qa-user", "username"}:
+                findings.append(f"{name}:personal-local-path")
+                break
+    return findings
+
+
+def execute_checks(root: Path, checks: list[dict]) -> list[dict]:
+    """Run the structured argv contracts without a shell and return compact, hash-backed evidence."""
+    results = []
+    for check in checks:
+        cwd_name = check.get("cwd", ".")
+        candidate = root / cwd_name
+        cursor = candidate
+        while cursor != root:
+            if cursor.is_symlink():
+                raise QAError(f"check cwdがsymlinkです: {check['id']}")
+            cursor = cursor.parent
+        cwd = candidate.resolve()
+        if cwd != root.resolve() and root.resolve() not in cwd.parents:
+            raise QAError(f"check cwdがリポジトリ外です: {check['id']}")
+        if not cwd.is_dir():
+            raise QAError(f"check cwdが利用できません: {check['id']}")
+        env = os.environ.copy()
+        env.update(check.get("env", {}))
+        env["PYTHONDONTWRITEBYTECODE"] = env.get("PYTHONDONTWRITEBYTECODE", "1")
+        started = time.monotonic()
+        try:
+            proc = subprocess.run(check["argv"], cwd=cwd, env=env, capture_output=True, timeout=check["timeout_seconds"], shell=False)
+            stdout, stderr, code = proc.stdout, proc.stderr, proc.returncode
+            runtime = f"Python {os.sys.version.split()[0]}" if check["type"] == "python-version" else f"{check['argv'][0]} (exit {code})"
+            passed = code in check.get("expected_exit_codes", [0])
+            if check["type"] == "python-version":
+                match = re.search(rb"Python\s+(\d+)\.(\d+)", stdout + b"\n" + stderr)
+                passed = passed and bool(match and tuple(map(int, match.groups())) >= tuple(map(int, check["python_minimum"].split("."))))
+                runtime = (stdout + stderr).decode(errors="replace").strip()[:200] or runtime
+            status = "PASS" if passed else "FAIL"
+            reason = None
+        except subprocess.TimeoutExpired as exc:
+            stdout, stderr, code = exc.stdout or b"", exc.stderr or b"", None
+            runtime, status, reason = check["argv"][0], "ERROR", f"timeout after {check['timeout_seconds']} seconds"
+        except OSError as exc:
+            stdout, stderr, code = b"", str(exc).encode(), None
+            runtime, status, reason = check["argv"][0], "ERROR", f"command unavailable: {type(exc).__name__}"
+        results.append({
+            "id": check["id"], "status": status, "exit_code": code,
+            "stdout_sha256": digest(stdout), "stderr_sha256": digest(stderr),
+            "duration_ms": int((time.monotonic() - started) * 1000), "runtime": runtime,
+            "reason": reason,
+        })
+    return results
 
 
 def classify(root: Path, initial: str, base: str, target: str, products: dict, operations: dict, excluded: dict) -> dict:

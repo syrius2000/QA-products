@@ -19,8 +19,8 @@ def parser():
     a.add_argument('--purpose',required=True);a.add_argument('--criterion',action='append',required=True)
     a.add_argument('--target',action='append',required=True);a.add_argument('--implementer',required=True);a.add_argument('--author',required=True)
     a.add_argument('--audience',choices=['local','cloud'],default='cloud');a.add_argument('--assumptions',default='未指定')
-    a.add_argument('--baseline');a.add_argument('--reviewed');a.add_argument('--repository');a.add_argument('--exclude',action='append',default=[],metavar='PATH=理由');a.add_argument('--required-test',action='append',default=[]);a.add_argument('--check-json',action='append',default=[],help='構造化check JSON（argv配列、cwd、timeout等）')
-    for name,help_text in [('status','読取りだけの状況確認'),('finalize','表示対象をローカルで確定'),('publish','明示指示のtopic公開'),('handoff','手渡し記録'),('acquire','Markdownだけを取得'),('confirm-content','内容確認を記録'),('correction','原文を保持して訂正依頼'),('publish-correction','訂正依頼だけ公開'),('plan','修正計画を保存'),('approve','人の計画承認を記録'),('submit','修正提出（独立検証前）'),('requa','元要求・前回指摘を保ち再QA'),('assess-residual','未検証事項のユーザー判断を記録'),('decide','終了判断（Git操作なし）')]:
+    a.add_argument('--baseline');a.add_argument('--reviewed');a.add_argument('--repository');a.add_argument('--exclude',action='append',default=[],metavar='PATH=理由');a.add_argument('--required-test',action='append',default=[]);a.add_argument('--check-json',action='append',default=[],help='構造化check JSON（argv配列、cwd、timeout等）');a.add_argument('--check-contract-approval',help='既存check契約を変更・追加する実際の人の明示承認')
+    for name,help_text in [('status','読取りだけの状況確認'),('verify','固定argvで必須checkを実行しEvidenceを記録'),('finalize','表示対象をローカルで確定'),('publish','明示指示のtopic公開'),('handoff','手渡し記録'),('acquire','Markdownだけを取得'),('confirm-content','内容確認を記録'),('correction','原文を保持して訂正依頼'),('publish-correction','訂正依頼だけ公開'),('plan','修正計画を保存'),('approve','人の計画承認を記録'),('submit','修正提出（独立検証前）'),('requa','元要求・前回指摘を保ち再QA'),('assess-residual','未検証事項のユーザー判断を記録'),('decide','終了判断（Git操作なし）')]:
         a=sub.add_parser(name,help=help_text);a.add_argument('--request');a.add_argument('--revision',type=int)
         if name=='finalize':a.add_argument('--commit');a.add_argument('--message');a.add_argument('--approved-path',action='append',default=[])
         if name in ['publish','publish-correction','approve']:a.add_argument('--message',required=True);a.add_argument('--approved-path',action='append',required=True)
@@ -31,7 +31,7 @@ def parser():
         if name=='correction':a.add_argument('--reason',required=True)
         if name=='plan':a.add_argument('--input',type=Path,required=True)
         if name=='submit':a.add_argument('--target',action='append',required=True);a.add_argument('--evidence',required=True);a.add_argument('--unverified',action='append',default=[]);a.add_argument('--method',required=True,help='承認計画に記載された実施方式。計画と異なる場合は再承認が必要')
-        if name=='requa':a.add_argument('--audience',choices=['local','cloud']);a.add_argument('--reviewed');a.add_argument('--exclude',action='append',default=[]);a.add_argument('--check-json',action='append',default=[])
+        if name=='requa':a.add_argument('--audience',choices=['local','cloud']);a.add_argument('--reviewed');a.add_argument('--exclude',action='append',default=[]);a.add_argument('--check-json',action='append',default=[]);a.add_argument('--check-contract-approval',help='既存check契約を変更・追加する実際の人の明示承認')
         if name=='assess-residual':a.add_argument('--message',required=True);a.add_argument('--reason',required=True)
         if name=='decide':a.add_argument('--message',required=True);a.add_argument('--residual',required=True)
     a=sub.add_parser('legacy',help='旧4成果物と原依頼を読取り照合');a.add_argument('--directory',type=Path,required=True);a.add_argument('--invite',type=Path,required=True)
@@ -60,9 +60,10 @@ def execute(a):
         checks=checks_from(a.check_json)
         if a.required_test:
             raise QAError('--required-testは廃止予定です。--check-jsonでargv配列を指定してください')
-        return w.prepare(a.purpose,a.criterion,a.target,a.implementer,a.author,a.audience,a.assumptions,a.baseline,a.reviewed,a.repository,exclusions(a.exclude),checks=checks)
+        return w.prepare(a.purpose,a.criterion,a.target,a.implementer,a.author,a.audience,a.assumptions,a.baseline,a.reviewed,a.repository,exclusions(a.exclude),checks=checks,check_contract_approval=a.check_contract_approval)
     if op=='status':return w.status(a.request)
     revision=a.revision if a.revision is not None else w.store.select(a.request)['revision'];k={'revision':revision}
+    if op=='verify':return w.verify(a.request,**k)
     if op=='finalize':return w.finalize(a.request,a.commit,a.message,a.approved_path,**k)
     if op=='publish':return w.publish(a.request,a.message,a.approved_path,**k)
     if op=='publish-correction':return w.publish_correction(a.request,a.message,a.approved_path,**k)
@@ -73,7 +74,7 @@ def execute(a):
     if op=='plan':return w.plan(a.request,json.loads(a.input.read_text()),**k)
     if op=='approve':return w.approve(a.request,a.message,a.plan_hash,a.approved_path,**k)
     if op=='submit':return w.submit(a.request,a.target,a.evidence,a.unverified,a.method,**k)
-    if op=='requa':return w.requa(a.request,a.audience,reviewed=a.reviewed,excluded=exclusions(a.exclude),checks=checks_from(a.check_json) if a.check_json else None,**k)
+    if op=='requa':return w.requa(a.request,a.audience,reviewed=a.reviewed,excluded=exclusions(a.exclude),checks=checks_from(a.check_json) if a.check_json else None,check_contract_approval=a.check_contract_approval,**k)
     if op=='assess-residual':return w.assess_residual(a.request,a.message,a.reason,**k)
     if op=='decide':return w.decide(a.request,a.message,a.residual,**k)
     raise QAError('未定義の操作です')

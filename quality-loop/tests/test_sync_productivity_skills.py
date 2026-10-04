@@ -13,6 +13,13 @@ SOURCE = ROOT / "quality-loop" / "skills"
 
 
 class SkillSyncDryRunTests(unittest.TestCase):
+    def test_quality_qa_runtime_tracks_the_authoritative_modules(self):
+        source = ROOT / "quality-loop" / "qa_workflow"
+        runtime = SOURCE / "quality-qa" / "runtime" / "qa_workflow"
+        for name in ["cli.py", "gitops.py", "review.py", "store.py", "workflow.py"]:
+            with self.subTest(name=name):
+                self.assertEqual((source / name).read_bytes(), (runtime / name).read_bytes())
+
     def prepare_destination(self, destination: Path) -> Path:
         subprocess.run(["git", "-C", str(destination), "init", "-b", "main"], check=True, capture_output=True)
         subprocess.run(["git", "-C", str(destination), "remote", "add", "origin", "https://github.com/syrius2000/Productivity-Skill.git"], check=True, capture_output=True)

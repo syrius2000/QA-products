@@ -1,7 +1,7 @@
 # 統合QAの実装タスク
 
 created: 2026-10-04 09:39 (JST)
-update: 2026-10-04 21:17 (JST)
+update: 2026-10-05 05:44 (JST)
 author: Codex (GPT-6)
 
 本書は計画033承認後の実装タスクを追跡する。チェック済みは実装とEvidenceが揃った項目だけとし、書類作成・strict検証を機能実装や独立QAの完了に数えない。
@@ -40,7 +40,7 @@ author: Codex (GPT-6)
 
 - [x] 5.1 branch／PR／本文取得でGitHub取得元の完全SHA固定、fork head repo参照、通常Markdownだけの取得をfixture確認。認証失敗をQAErrorとして返し、成功扱いしない。
 - [x] 5.2 指定Markdownだけの取得、原文hash保持、PR head SHA固定、同名別内容・symlink・予約外path拒否、訂正版の別保存先と前版保持をfixtureで確認。取得処理に製品コードmerge経路がないことを確認。
-- [x] 5.3 Markdown parserで全受入基準、check ID/状態/argv/cwd/env/timeout/runtime/exit code/duration/stdout・stderr excerptと完全出力hash、実施側taskとFinding参照を照合する。必須FAIL→総合FAIL、必須NOT_RUN/ERROR→INCONCLUSIVE、契約不一致→確認待ちを回帰fixtureで確認。
+- [x] 5.3 Markdown parserで全受入基準、check ID/状態/argv/cwd/env/timeout/runtime/exit code/duration/stdout・stderr excerptと完全出力hash、実施側taskとFinding参照を照合する。QA-003対応でGate優先順位をHOLD（provenance不一致）→FAIL（確認済みFAIL）→INCONCLUSIVE（FAILなしで必須check未完了）→PASSに修正し、Gate matrix fixtureで確認。
 - [x] 5.4 指摘と修正タスク・結論・前回確認の整合を検査する。重大未解決とPASS、対応タスク欠落、前回指摘省略、テンプレート文を根拠と誤認する状態を拒否する回帰fixtureを追加。
 - [x] 5.5 [結果確認手順](../../../quality-loop/skills/quality-qa/references/results.md)へ取得と内容確認の違い、訂正依頼・取得失敗・本文手渡しを記載。訂正ID予約、別path・前版保全、訂正待ち停止、重複取込防止をfixtureで確認。
 
@@ -69,5 +69,16 @@ author: Codex (GPT-6)
 
 - [x] 9.1 Preflight、初回依頼、結果確認、計画・承認・提出、修正commit、再QA、前回指摘再確認、終了判断までをlocal fixtureで実行。dirty preflightの非変更、default branch・範囲外remote先行・unrelated staged path拒否／保持、必須PASS/FAIL/ERROR、環境不足、任意未実行をfixtureで確認。
 - [x] 9.2 既存Quality Loop regression suite込みで163 passed・39 subtests、Python 3.14.7／pytest 9.0.2、`pytest tests -q`、cwd `quality-loop/`、exit 0、duration 15944ms、stdout SHA-256 `fb03358cc0592ec499dcae783b6012b8097fa796673386d8e6c927c10d2a2788`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を記録。Python 3.10環境は見つからずunverified。旧Core/2 runtime diffなし、新QA runtime一致、strict OpenSpec valid。
-- [ ] 9.3 別の独立担当によるQAを実施し、指摘・対応・未検証・残余事項を記録する。実クラウドQAを行う場合は明示指示の公開範囲を確認し、fixture検証と実環境QAのEvidenceを区別する。
+- [x] 9.3 別の独立担当によるQA-003 Cycle 1を受領した。判定FAIL、QA-F01〜QA-F05修正対象、QA-F06追試対象として[原レビュー](../../../docs/Artifacts/qa_review_003_1004.md)へ記録。修正後の独立QAは本項の完了とは混同せず後続cycleで実施する。
 - [ ] 9.4 実装報告へ要件対応、タスク数、実行検証、独立QA状態、未確認事項、外部配置・削除・commit・push・master統合の実施有無と次操作を記載する。終了判断と統合の指示がなければ実行せず、既存差分を保持した最終差分で今回の境界を確認する。
+
+## 10. QA-003指摘対応（Plan 035）
+
+- [x] 10.1 公開前に製品snapshotと依頼文を走査し、秘密鍵・secretらしい代入・個人ローカルパスを検出したらGit preflight/commit/pushより前に停止する。必須argv checkをshellなしで実行し、Evidenceを製品snapshot hashとcheck contract hashに結び付ける。bare remoteで未実施拒否、成功、snapshot変更拒否、機密fixture拒否時のHEAD/index/remote不変を確認。
+- [x] 10.2 [公開手順](../../../quality-loop/skills/quality-qa/references/publish.md)へverify先行、停止条件、Evidence、合成fixture例外を追記し、runtimeと照合。
+- [x] 10.3 再QA時に既存check ID・required・argv・cwd・env・timeout・expected exit code・Python最低版を完全保持し、変更は別引数 `--check-contract-approval` へ実際の人の承認を明記しなければ作れない。削除・required解除・新check追加の無承認拒否と、承認済みの追加時に既存契約を保つことをfixtureで確認。
+- [x] 10.4 Reviewer parser、Reviewer契約、OpenSpecのGate優先順位を統一し、FAILとERROR/NOT_RUN、PASSとERROR、FAILと別check NOT_RUN、provenance不一致と未完了checkの組合せを検証。同一原文の再検査fixtureは旧validator問題履歴・本文を保持した。QA-003原文SHA-256 `bdc999f1cd5c3e5127ebf97d8658b83e26b8011df15df5913ead6d82460a0f52`もread-onlyで再評価し、現行parserのissuesは0件、gateはFAIL。運用状態JSONは承認path外の既存差分のため書き換えていない。
+- [x] 10.5 静的Markdown templateにparser必須節、参照資材hash行、実施側タスク節、check記録形式を揃え、静的templateのparser受入テストを追加。
+- [x] 10.6 Plan 033と履歴の退避済み・復元可能表現をQA対象SHAのGit treeと照合し訂正。024〜028の所在不明、029/030/032のflat存在、031の記録hash不一致を区別し、復元未検証とした。
+- [x] 10.7 Provenance plansの壊れたArtifacts README相対linkを対象tree内の実在参照へ直し、関連文書linkを検査。
+- [x] 10.8 QA-003 Reviewed SHA `d9bad5c125791306e38bca8830b4082f7f38fc6b`を`git archive`で隔離し、Python 3.14.7／pytest 9.0.2、`pytest tests -q`、cwd `quality-loop/`、env `PYTHONDONTWRITEBYTECODE=1; PYTHONPATH=.`、timeout 300s、exit 0、duration 16302ms、163 passed／39 subtests、stdout SHA-256 `fd863f5c0b362da564cbbb488babbc798cdb7938de223492c7abfd18a9d7b9de`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を確認。修正候補は未commit作業ツリーのためcommit SHAではなく、HEAD `418dcb995344b611f9831e7f683d8cdbdf9cbc70`＋対象コード/runtime/test 12ファイルのsnapshot SHA-256 `930358545c56fd91377b33449d1173c979aaa44c1b39e473b01c0182885d62b6`で識別した。同環境・同argv・cwd・env・timeoutでexit 0、duration 17947ms、173 passed／44 subtests、stdout SHA-256 `d61a4001b088de997d7f61368f44150f9b526a9017b9748c574ecef413e95a2d`、stderr SHA-256（空）は同上。修正候補の固定commitでの再実行と別ReviewerによるCycle 2は次段階で行う。

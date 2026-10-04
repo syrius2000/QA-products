@@ -54,6 +54,25 @@ class AcceptanceCriteriaContractTests(unittest.TestCase):
         self.assertEqual([], issues)
         self.assertEqual(state["criteria"], [item["text"] for item in parsed["criteria"]])
 
+    def test_distributed_static_template_satisfies_the_same_parser_contract(self):
+        state = review_state()
+        state["checks"] = [{"id": "CHECK-PYTEST", "type": "command", "required": True, "argv": ["pytest", "tests"], "cwd": ".", "env": {}, "timeout_seconds": 120, "expected_exit_codes": [0]}]
+        path = Path(__file__).resolve().parents[1] / "skills/quality-qa/templates/qa_review.md"
+        text = path.read_text()
+        substitutions = {
+            "QA-NNN": state["id"], "OWNER/REPOSITORY": state["repository"], "TOPIC_BRANCH": state["branch"],
+            "INITIAL_FULL_SHA": state["initial_baseline"], "BASELINE_FULL_SHA": state["baseline"],
+            "REVIEWED_FULL_SHA": state["reviewed"], "REQUIREMENTS_SHA256": state["requirements_hash"],
+            "docs/Artifacts/qa_review_NNN_MMDD.md": state["review_path"],
+            "REVIEWER_NAME": "Reviewer B",
+        }
+        for placeholder, value in substitutions.items():
+            text = text.replace(placeholder, value)
+        for material in state["reviewer_materials"]:
+            text = text.replace(f"{material['path']}: SHA256:EXPECTED_HASH", f"{material['path']}: SHA256:{material['sha256']}")
+        _, issues = review.check(text, state, {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]})
+        self.assertEqual([], issues)
+
     def test_omitted_changed_duplicated_extra_and_reordered_criteria_are_rejected(self):
         state = review_state()
         cases = {
@@ -110,6 +129,23 @@ class AcceptanceCriteriaContractTests(unittest.TestCase):
             {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]},
         )
         self.assertEqual([], issues)
+        state["checks"][0]["required"] = False
+        text = review.template(state, author="Codex (GPT-6)").replace(
+            "- 担当: 別のレビュー担当名", "- 担当: Reviewer B"
+        ).replace("- 結論: INCONCLUSIVE", "- 結論: PASS").replace(
+            "- 必須確認: 未完了", "- 必須確認: 完了"
+        ).replace(
+            "- AC-001: 欠落行を検出する | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果を記載",
+            "- AC-001: 欠落行を検出する | 判定: PASS | 根拠: src/a.py:1 確認済み",
+        ).replace(
+            "- AC-002: 依頼との全文一致を検証する | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果を記載",
+            "- AC-002: 依頼との全文一致を検証する | 判定: PASS | 根拠: src/a.py:2 確認済み",
+        )
+        _, issues = review.check(
+            text, state,
+            {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]},
+        )
+        self.assertEqual([], issues)
 
     def test_required_check_failure_cannot_be_reported_as_pass(self):
         state = review_state()
@@ -150,7 +186,7 @@ class AcceptanceCriteriaContractTests(unittest.TestCase):
         )
         self.assertEqual([], issues)
         state["checks"][0]["required"] = False
-        text = review.template(state, author="Codex (GPT-6)").replace(
+        optional = review.template(state, author="Codex (GPT-6)").replace(
             "- 担当: 別のレビュー担当名", "- 担当: Reviewer B"
         ).replace("- 結論: INCONCLUSIVE", "- 結論: PASS").replace(
             "- 必須確認: 未完了", "- 必須確認: 完了"
@@ -161,11 +197,44 @@ class AcceptanceCriteriaContractTests(unittest.TestCase):
             "- AC-002: 依頼との全文一致を検証する | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果を記載",
             "- AC-002: 依頼との全文一致を検証する | 判定: PASS | 根拠: src/a.py:2 確認済み",
         )
-        _, issues = review.check(
-            text, state,
-            {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]},
-        )
+        _, issues = review.check(optional, state, {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]})
         self.assertEqual([], issues)
+
+    def test_gate_precedence_keeps_known_failure_when_another_required_check_is_incomplete(self):
+        state = review_state()
+        state["checks"] = [
+            {"id": "CHECK-FAIL", "type": "command", "required": True, "argv": ["test"], "cwd": ".", "env": {}, "timeout_seconds": 10, "expected_exit_codes": [0]},
+            {"id": "CHECK-LATER", "type": "command", "required": True, "argv": ["test2"], "cwd": ".", "env": {}, "timeout_seconds": 10, "expected_exit_codes": [0]},
+        ]
+        text = review.template(state, author="Codex (GPT-6)").replace("- 担当: 別のレビュー担当名", "- 担当: Reviewer B").replace("- 結論: INCONCLUSIVE", "- 結論: FAIL")
+        lines = []
+        for line in text.splitlines():
+            if line.startswith("- CHECK-FAIL: "):
+                payload = json.loads(line.split(": ", 1)[1]); payload.update(status="FAIL", runtime="pytest 9", exit_code=1, duration_ms=10, stdout_sha256="e"*64, stderr_sha256="f"*64, stdout_excerpt="failed", stderr_excerpt="", output_truncated=False); line = "- CHECK-FAIL: " + json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+            lines.append(line)
+        parsed, issues = review.check("\n".join(lines), state, {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]})
+        self.assertEqual([], issues)
+        self.assertEqual("FAIL", parsed["gate"])
+
+    def test_criterion_failure_and_required_check_error_is_fail_not_inconclusive(self):
+        state = review_state()
+        state["checks"] = [{"id": "CHECK-ERR", "type": "command", "required": True, "argv": ["pytest"], "cwd": ".", "env": {}, "timeout_seconds": 10, "expected_exit_codes": [0]}]
+        text = review.template(state, author="Codex (GPT-6)").replace("- 担当: 別のレビュー担当名", "- 担当: Reviewer B").replace("- 結論: INCONCLUSIVE", "- 結論: FAIL")
+        text = text.replace("- AC-001: 欠落行を検出する | 判定: UNVERIFIED", "- AC-001: 欠落行を検出する | 判定: FAIL")
+        marker = next(line for line in text.splitlines() if line.startswith("- CHECK-ERR: "))
+        payload = json.loads(marker.split(": ", 1)[1]); payload.update(status="ERROR", runtime="pytest unavailable", reason="pytest unavailable")
+        text = text.replace(marker, "- CHECK-ERR: " + json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
+        _, issues = review.check(text, state, {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]})
+        self.assertEqual([], issues)
+
+    def test_material_provenance_mismatch_takes_hold_priority_over_required_not_run(self):
+        state = review_state()
+        state["checks"] = [{"id": "CHECK-ENV", "type": "command", "required": True, "argv": ["pytest"], "cwd": ".", "env": {}, "timeout_seconds": 10, "expected_exit_codes": [0]}]
+        text = review.template(state, author="Codex (GPT-6)").replace("- 担当: 別のレビュー担当名", "- 担当: Reviewer B").replace("- 結論: INCONCLUSIVE", "- 結論: HOLD")
+        text = text.replace("SHA256:" + "b" * 64, "SHA256:" + "e" * 64)
+        parsed, issues = review.check(text, state, {"version": 1, "correction_id": "なし", "replaces": "なし", "review_path": state["review_path"]})
+        self.assertEqual("HOLD", parsed["gate"])
+        self.assertFalse(any("Gate優先順位" in issue for issue in issues), issues)
 
     def test_python_version_check_rejects_runtime_below_contract(self):
         state = review_state()
@@ -566,6 +635,44 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             with self.assertRaisesRegex(QAError, "状態が更新されています"):
                 workflow.handoff(prepared_request, revision=current["revision"])
 
+    def test_reqa_cannot_remove_or_weaken_existing_check_contract(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, _ = self.setup_bare_remote(Path(tmp))
+            check = {"id": "CHECK-REQUIRED", "type": "command", "required": True, "argv": ["pytest", "tests"], "cwd": "quality-loop", "env": {"PYTHONDONTWRITEBYTECODE": "1"}, "timeout_seconds": 120, "expected_exit_codes": [0]}
+            workflow = Workflow(repository)
+            prepared = workflow.prepare("QAを行う", ["基準を満たす"], ["src/product.py"], "Implementer", "Codex (GPT-6)", "local", repository="example/repo", checks=[check])
+            self.run_git(repository, "add", "src/product.py")
+            self.run_git(repository, "commit", "-m", "reviewed target")
+            workflow.finalize(prepared["id"], target="HEAD")
+            state = workflow.store.read(prepared["state_path"])
+            state["phase"] = "submitted"
+            review_hash = "a" * 64
+            state["reviews"] = [{"hash": review_hash, "path": state["review_path"], "issues": [], "content_checked": True, "parsed": {"findings": [], "previous": {}}}]
+            state["active_review"] = review_hash
+            product_paths = ["src/product.py"]
+            snapshot = gitops.snapshot(repository, product_paths)
+            state["submission"] = {"product_paths": product_paths, "product_snapshot": snapshot}
+            workflow.store.save(state, state["revision"], "submitted fixture")
+            with self.assertRaisesRegex(QAError, "check契約が変わっています"):
+                workflow.requa(prepared["id"], "local", checks=[])
+            weakened = [{**check, "required": False}]
+            with self.assertRaisesRegex(QAError, "check契約が変わっています"):
+                workflow.requa(prepared["id"], "local", checks=weakened)
+            extra = {"id": "CHECK-EXTRA", "type": "command", "required": False, "argv": ["python", "-m", "compileall", "src"], "cwd": ".", "env": {}, "timeout_seconds": 30, "expected_exit_codes": [0]}
+            with self.assertRaisesRegex(QAError, "check契約が変わっています"):
+                workflow.requa(prepared["id"], "local", checks=[check, extra])
+            next_cycle = workflow.requa(
+                prepared["id"], "local", checks=[check, extra],
+                check_contract_approval="必須check契約を変更し、CHECK-EXTRAを追加する",
+            )
+            next_state = workflow.store.read(next_cycle["state_path"])
+            self.assertEqual([check, extra], next_state["checks"])
+            self.assertEqual(check, next_state["check_contract_approval"]["previous"][0])
+
     def test_local_finalize_commits_only_approved_target_and_preserves_other_staged_changes(self):
         from qa_workflow.workflow import Workflow
         from qa_workflow import gitops
@@ -789,6 +896,33 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             remote_master_after = subprocess.run(["git", "--git-dir", str(repository.parent / "remote.git"), "rev-parse", "refs/heads/master"], check=True, capture_output=True, text=True).stdout.strip()
             self.assertEqual(remote_master_before, remote_master_after)
 
+    def test_duplicate_invalid_review_is_revalidated_without_changing_original_body(self):
+        from unittest.mock import patch
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import review
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, _ = self.setup_bare_remote(Path(tmp))
+            workflow = Workflow(repository)
+            prepared = workflow.prepare("対象を確認する", ["出力を確認する"], ["src/product.py"], "Implementer", "Codex (GPT-6)", "local", repository="example/repo")
+            self.run_git(repository, "add", "src/product.py")
+            self.run_git(repository, "commit", "-m", "fix reviewed target")
+            workflow.finalize(prepared["id"], target="HEAD")
+            state = workflow.store.read(prepared["state_path"])
+            body = repository / "review.md"
+            raw = review.template(state, author="Reviewer (GPT-6)").replace("- 担当: 別のレビュー担当名", "- 担当: Reviewer B")
+            body.write_text(raw)
+            with patch("qa_workflow.workflow.review.check", return_value=({}, ["旧validatorのGate矛盾"] )):
+                first = workflow.acquire(prepared["id"], body=body)
+            self.assertEqual("invalid", first["phase"])
+            original = (repository / state["review_path"]).read_bytes()
+            second = workflow.acquire(prepared["id"], body=body)
+            updated = workflow.store.read(prepared["state_path"])
+            self.assertEqual("content_pending", second["phase"])
+            self.assertEqual(original, (repository / state["review_path"]).read_bytes())
+            self.assertEqual(["旧validatorのGate矛盾"], updated["reviews"][0]["validation_history"][0]["issues"])
+            self.assertEqual([], updated["reviews"][0]["issues"])
+
     def test_legacy_four_file_import_is_read_only_and_checks_gate_consistency(self):
         from qa_workflow.legacy import read_legacy
 
@@ -916,6 +1050,72 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertNotIn("src/unrelated.txt", gitops.changed(repository, state["baseline"], state["published"]["tip"]))
             remote_tip = gitops.remote_tip(repository, "topic/qa")
             self.assertEqual(state["published"]["tip"], remote_tip)
+
+    def test_cloud_publish_requires_snapshot_bound_check_evidence_before_any_git_mutation(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, remote = self.setup_bare_remote(Path(tmp))
+            check = {"id": "CHECK-SMOKE", "type": "command", "required": True, "argv": ["python3", "-c", "print('ok')"], "cwd": ".", "env": {}, "timeout_seconds": 10, "expected_exit_codes": [0]}
+            workflow = Workflow(repository)
+            prepared = workflow.prepare("対象を検査する", ["検査が成功する"], ["src/product.py"], "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo", checks=[check])
+            invite = prepared["next"]["必要入力"]
+            head_before = gitops.sha(repository, "HEAD")
+            remote_before = gitops.remote_tip(repository, "topic/qa")
+            self.run_git(repository, "add", "src/unrelated.txt")
+            index_before = gitops.git(repository, "diff", "--cached", "--name-only")
+            with self.assertRaisesRegex(QAError, "必須checkの成功Evidence"):
+                workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+            self.assertEqual(head_before, gitops.sha(repository, "HEAD"))
+            self.assertEqual(remote_before, gitops.remote_tip(repository, "topic/qa"))
+            self.assertEqual(index_before, gitops.git(repository, "diff", "--cached", "--name-only"))
+            verified = workflow.verify(prepared["id"])
+            evidence = workflow.store.read(prepared["state_path"])["check_evidence"]
+            self.assertEqual("PASS", evidence["results"][0]["status"])
+            original = (repository / "src/product.py").read_text()
+            (repository / "src/product.py").write_text(original + "changed after verify\n")
+            with self.assertRaisesRegex(QAError, "snapshotが依頼固定時点から変化"):
+                workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite], revision=verified["revision"])
+            self.assertEqual(head_before, gitops.sha(repository, "HEAD"))
+            (repository / "src/product.py").write_text(original)
+            published = workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite], revision=verified["revision"])
+            self.assertEqual("published", published["phase"])
+
+    def test_publish_secret_and_personal_path_guards_stop_before_commit_or_push(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, remote = self.setup_bare_remote(Path(tmp))
+            (repository / "src/product.py").write_text("API_TOKEN=live-secret-value-123\npath=/Users/real-person/private/data.csv\n-----BEGIN PRIVATE KEY-----\n")
+            (repository / "src/unrelated.txt").write_text("staged unrelated edit\n")
+            self.run_git(repository, "add", "src/unrelated.txt")
+            workflow = Workflow(repository)
+            prepared = workflow.prepare("対象を公開する", ["対象を確認"], ["src/product.py"], "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo")
+            invite = prepared["next"]["必要入力"]
+            head_before = gitops.sha(repository, "HEAD")
+            index_before = gitops.git(repository, "diff", "--cached", "--name-only")
+            remote_before = subprocess.run(["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"], check=True, capture_output=True, text=True).stdout.strip()
+            with self.assertRaisesRegex(QAError, "機密情報または個人ローカルパス") as raised:
+                workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+            self.assertIn("secret-like-assignment", raised.exception.action)
+            self.assertIn("personal-local-path", raised.exception.action)
+            self.assertIn("private-key", raised.exception.action)
+            self.assertEqual(head_before, gitops.sha(repository, "HEAD"))
+            self.assertEqual(index_before, gitops.git(repository, "diff", "--cached", "--name-only"))
+            self.assertEqual(remote_before, subprocess.run(["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"], check=True, capture_output=True, text=True).stdout.strip())
+            self.assertIsNone(workflow.store.read(prepared["state_path"])["reviewed"])
+
+    def test_publication_scanner_allows_explicit_synthetic_fixture_markers(self):
+        from qa_workflow import gitops
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixture = root / "fixture.md"
+            fixture.write_text("API_KEY=test-token\npath=/Users/qa-user/private/data.csv\n")
+            self.assertEqual([], gitops.publication_findings(root, {"fixture.md"}))
 
     def test_cloud_publish_on_default_branch_stops_before_git_mutation(self):
         from qa_workflow.workflow import Workflow

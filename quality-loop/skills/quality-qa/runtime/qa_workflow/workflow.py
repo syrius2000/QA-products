@@ -127,7 +127,7 @@ class Workflow:
         invitation = safe_path(self.root, artifact).read_text() if artifact and safe_path(self.root, artifact).is_file() else None
         return {"id": s["id"], "cycle": s["cycle"], "revision": s["revision"], "phase": phase, "reviewed": s["reviewed"], "next": {"担当": actor, "操作": action, "理由": reason, "必要入力": artifact or s["id"], "依頼文": invitation}, "issues": s["reviews"][-1]["issues"] if s["reviews"] else [], "plan_hash": s.get("plan", {}).get("hash"), "plan_paths": s.get("plan", {}).get("paths", []), "review_path": self._expected(s)["review_path"], "products": sorted(s["products"]), "state_path": s["state_path"], "checks": {"構造検査": "確認済み" if s["active_review"] else "未完了", "独立性": "担当・経路の記録。完全な証明ではない", "実クラウドQA": "結果の実行Evidenceを別途確認", "外部配置": "この操作では実施しない"}}
 
-    def prepare(self, purpose: str, criteria: list[str], products: list[str], implementer: str, author: str, audience="cloud", assumptions="未指定", baseline=None, reviewed=None, repository=None, excluded=None, previous=None, required_tests=None, checks=None):
+    def prepare(self, purpose: str, criteria: list[str], products: list[str], implementer: str, author: str, audience="cloud", assumptions="未指定", baseline=None, reviewed=None, repository=None, excluded=None, previous=None, required_tests=None, checks=None, check_contract_approval=None):
         if not purpose.strip() or not criteria or not all(isinstance(x, str) and x.strip() for x in criteria) or not products or not implementer.strip() or audience not in {"local", "cloud"}:
             raise QAError("目的・受入基準・対象ファイル・実装担当・宛先が必要です")
         for p in products: relative(p)
@@ -157,11 +157,17 @@ class Workflow:
             pending = not reviewed and bool(set(products) & gitops.dirty(self.root))
             if checks is not None:
                 check_contract = checks
+                if old:
+                    if checks != old.get("checks", []):
+                        if not isinstance(check_contract_approval, str) or not re.search(r"(?:契約.{0,12}(?:変更|追加|更新|見直し)|(?:check|確認|検証).{0,24}契約.{0,12}(?:変更|追加|更新|見直し))", check_contract_approval, re.I):
+                            raise QAError("再QAで実行check契約が変わっています", "契約変更を承認する明示指示を記録してください")
             else:
                 check_contract = old.get("checks", []) if old else []
                 if old and old.get("required_tests") and not check_contract:
                     raise QAError("旧形式の自由文必須確認を安全に再QAへ移せません", "各確認をID・argv・必須性・cwd・env・timeout・期待結果の構造化checkへ直し、再QA依頼を作成してください")
             s = {"schema": "unified-qa-workflow-v1", "id": f"QA-{number}", "cycle": old["cycle"]+1 if old else 1, "revision": 1, "state_path": state_path, "repository": repo, "branch": branch, "initial_baseline": initial, "baseline": base, "reviewed": None if pending else target, "purpose": purpose, "criteria": criteria, "assumptions": assumptions, "requirements_hash": fingerprint([purpose, assumptions, criteria]), "reviewer_materials": reviewer_materials(self.root, target), "products": {p: "明示された製品対象" for p in products}, "operational": dict(old["operational"]) if old else {}, "excluded": excluded, "snapshot": gitops.snapshot(self.root, products) if pending else gitops.tree_snapshot(self.root, target, products), "phase": "draft" if pending else "prepared", "audience": audience, "implementer": implementer, "author": author, "invite": "", "review_path": "", "reviews": [], "active_review": None, "pending_correction": None, "unresolved": copy.deepcopy(old["unresolved"]) if old else {}, "events": [], "checks": check_contract, "required_tests": [], "previous": old["id"] if old else None, "published": None, "history_reviews": copy.deepcopy(old.get("history_reviews", []) + old["reviews"]) if old else [], "published_paths": list(old.get("published_paths", [])) if old else []}
+            if old and checks is not None and checks != old.get("checks", []):
+                s["check_contract_approval"] = {"message": check_contract_approval, "previous": copy.deepcopy(old.get("checks", [])), "approved": copy.deepcopy(check_contract), "at": now()}
             if old:
                 s["products"] = {**old["products"], **s["products"]}
                 s["excluded"] = {**old["excluded"], **excluded}
@@ -225,6 +231,23 @@ class Workflow:
                 raise QAError("公開対象集合が表示した製品と依頼の集合に一致しません")
             if allowed != required:
                 raise QAError("公開対象へ未定義の範囲を追加できません")
+            current_products = gitops.snapshot(self.root, s["products"])
+            if current_products != s["snapshot"]:
+                raise QAError("QA対象snapshotが依頼固定時点から変化しています", "対象とEvidenceを再確認して依頼を作り直してください")
+            content_findings = gitops.publication_findings(self.root, set(s["products"]) | {s["invite"]})
+            if content_findings:
+                raise QAError("公開対象に機密情報または個人ローカルパスの疑いがあります", "検出: " + ", ".join(content_findings) + "。公開前に対象を修正してください")
+            contracts = s.get("checks", [])
+            if any(check.get("required") for check in contracts):
+                evidence = s.get("check_evidence")
+                if (
+                    not isinstance(evidence, dict)
+                    or evidence.get("snapshot_hash") != fingerprint(current_products)
+                    or evidence.get("contract_hash") != fingerprint(contracts)
+                    or any(item.get("status") != "PASS" for item in evidence.get("results", []) if next((c.get("required") for c in contracts if c["id"] == item.get("id")), False))
+                    or {item.get("id") for item in evidence.get("results", [])} != {item["id"] for item in contracts}
+                ):
+                    raise QAError("必須checkの成功Evidenceが対象snapshotと一致しません", "verifyでcheckを実行し、全必須checkのPASS Evidenceを記録してください")
             # 過去の公開済み運用成果物も履歴には現れる。新規送出は承認集合だけ。
             history_allowed = allowed | set(s.get("published_paths", []))
             flight = gitops.preflight(self.root, s, history_allowed)
@@ -253,6 +276,25 @@ class Workflow:
                 s["phase"] = "published"
             s.pop("publish_error", None)
             return self._save(s, "topic公開・到達可能性確認")
+
+    def verify(self, request, revision=None):
+        """Execute only the explicitly declared argv checks and bind evidence to this product snapshot."""
+        with self.store.transaction():
+            s = self._load(request, revision)
+            if not s.get("checks"):
+                raise QAError("実行するcheck契約がありません")
+            before = gitops.snapshot(self.root, s["products"])
+            if before != s["snapshot"]:
+                raise QAError("check実行前に製品snapshotが変化しています", "対象とQA依頼を再固定してください")
+            results = gitops.execute_checks(self.root, s["checks"])
+            after = gitops.snapshot(self.root, s["products"])
+            if after != before:
+                raise QAError("check実行中に製品対象が変更されました", "変更を確認し、新しい対象snapshotで依頼してください")
+            s["check_evidence"] = {
+                "snapshot_hash": fingerprint(before), "contract_hash": fingerprint(s["checks"]),
+                "results": results, "recorded_at": now(),
+            }
+            return self._save(s, "QA対象に結び付けたcheck実行Evidence")
 
     def handoff(self, request, revision=None):
         with self.store.transaction():
@@ -286,9 +328,20 @@ class Workflow:
             raw_hash = digest(raw)
             existing = next((r for r in s["reviews"] if r["hash"] == raw_hash), None)
             if existing:
-                # 再取込で旧版が有効化されることはない。
-                if source not in existing["sources"]:
+                source_added = source not in existing["sources"]
+                if source_added:
                     existing["sources"].append(source)
+                if existing is s["reviews"][-1] and existing.get("issues") and not existing.get("content_checked") and not s.get("pending_correction"):
+                    expected = self._expected(s)
+                    try:
+                        parsed, issues = review.check(raw.decode("utf-8"), s, expected)
+                    except UnicodeDecodeError:
+                        parsed, issues = {}, ["レビューはUTF-8のMarkdownが必要です"]
+                    existing.setdefault("validation_history", []).append({"at": now(), "issues": copy.deepcopy(existing["issues"])})
+                    existing["parsed"], existing["issues"] = parsed, issues
+                    s["phase"] = "invalid" if issues else "content_pending"
+                    return self._save(s, "同一原文を現行validatorで再検査")
+                if source_added:
                     return self._save(s, "同一原文の出典追加")
                 return self.describe(s)
             expected = self._expected(s)
@@ -354,6 +407,9 @@ class Workflow:
                 raise QAError("訂正依頼の明示的な公開指示が必要です")
             if set(approved_paths) != {c["invite"]}:
                 raise QAError("訂正依頼だけを公開対象にしてください")
+            findings = gitops.publication_findings(self.root, {c["invite"]})
+            if findings:
+                raise QAError("訂正依頼に機密情報または個人ローカルパスの疑いがあります", "検出: " + ", ".join(findings) + "。公開前に対象を修正してください")
             allowed = set(s.get("published_paths", [])) | {c["invite"]}
             gitops.preflight(self.root, s, allowed)
             commit = gitops.commit_paths(self.root, [c["invite"]], gitops.snapshot(self.root, [c["invite"]]), f"QA correction {c['correction_id']}")
@@ -434,11 +490,11 @@ class Workflow:
             s["phase"] = "submitted"
             return self._save(s, "承認範囲の修正提出（独立検証前）")
 
-    def requa(self, request, audience=None, revision=None, **kwargs):
+    def requa(self, request, audience=None, revision=None, check_contract_approval=None, **kwargs):
         s = self._load(request, revision)
         if audience is None:
             raise QAError("再QAの宛先が未指定です", "ローカルかクラウドを指定してください")
-        return self.prepare(s["purpose"], s["criteria"], sorted(set(s["products"]) | set(s.get("plan", {}).get("paths", []))), s["implementer"], s["author"], audience, previous=s["id"], repository=s["repository"], **kwargs)
+        return self.prepare(s["purpose"], s["criteria"], sorted(set(s["products"]) | set(s.get("plan", {}).get("paths", []))), s["implementer"], s["author"], audience, previous=s["id"], repository=s["repository"], check_contract_approval=check_contract_approval, **kwargs)
 
     def assess_residual(self, request, message: str, reason: str, revision=None):
         with self.store.transaction():

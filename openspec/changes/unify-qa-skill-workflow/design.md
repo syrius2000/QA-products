@@ -83,7 +83,7 @@ Reviewerが読む固定資料は、新Skillの`quality-qa/SKILL.md`と`quality-q
 
 固定項目と指摘IDは決まった見出し・箇条書きで読めるようにし、解説本文は自由な日本語とする。ローカル解析は限定した文法を使い、一般Markdown全体を理解しようとしない。引用やコードブロック内の見出しを状態項目と誤認せず、欠落・重複・不正な列挙値を拒否する。
 
-結論だけを読んで状態を進めない。`PASS`と重大未解決指摘の併存、必須checkの未実施・error、前回指摘への確認不足は訂正・追加確認へ進める。必須checkの非zero exitは`FAIL`、実行不能は`INCONCLUSIVE`、SHA・Skill・check契約の不一致は`HOLD`とし、状態要約はcheckごとのEvidenceから導出する。`required_checks`は互換用の総括に留め、個別Evidenceの代用にしない。環境不足自体を再現済み不具合へ置き換えない。修正案も元要求と根拠に照らしてローカルAIが吟味する。
+結論だけを読んで状態を進めない。`HOLD`（provenance不一致）を最優先し、次に確認済み受入基準または必須checkの`FAIL`、FAILがない場合の必須check未完了を`INCONCLUSIVE`、全条件成功のみ`PASS`とする。したがって既知FAILと別checkのERROR/NOT_RUNはFAILを維持し、全状態・理由を個別に記録する。`required_checks`は互換用の総括に留め、個別Evidenceの代用にしない。環境不足自体を再現済み不具合へ置き換えない。修正案も元要求と根拠に照らしてローカルAIが吟味する。
 
 実行契約はstable check ID、kind、required、argv配列、cwd、明示された環境変数、timeout、期待exit code／結果を持つ。commandはshell文字列として評価せずargvとして実行する。必要なPython／tool versionを前提に記し、依存install、network、credential利用は個別許可なしに行わない。依頼に固定された必須checkがすべてPASSでなければ総合PASSを許さない。任意checkのNOT_RUNも未検証事項に残す。
 
@@ -138,7 +138,9 @@ PR全体をmergeしたり、ユーザーのチェックアウトをpullしたり
 
 ### 8. 公開は製品対象版と依頼のcommitを分ける
 
-公開前に、現在のbranch、remote、承認済み対象パス、Git差分とindex、送出するcommit一覧を表示・照合する。公開はmain/master以外の選択済み開発ブランチに限り、force-pushや暗黙の履歴統合をしない。
+Git preflightより前に、製品対象・依頼本文の秘密鍵、secretらしいassignment、個人絶対パスを検査し、固定argv checkがあるときは全checkを実行してEvidenceをsnapshot hashとcontract hashへ結合する。全必須checkの成功Evidenceがない、または公開前後でsnapshotが変化した場合はcommit・index・remote変更に進まない。検査は明示されたtest/example placeholderと専用合成パスだけを許可する。公開前にbranch、remote、承認済み対象パス、Git差分とindex、送出するcommit一覧を表示・照合する。公開はmain/master以外の選択済み開発ブランチに限り、force-pushや暗黙の履歴統合をしない。
+
+再QAでは前回のcheck契約をそのまま継承し、削除・required解除・argv/cwd/env/timeout/expected result/Python最低版の弱化を拒否する。追加checkは新しいIDでのみ加えられる。
 
 対象製品のcommitを先に固定して`reviewed`にし、その後、そのSHAを参照する依頼を別commitへ保存する。対象が既にcommit済みならその版を再利用し、空commitや事前checkpointを作らない。依頼commitの分離に加え、第3節の集合選別で過去サイクルの依頼・結果も製品差分から除く。状態管理ファイルや取込原文を無条件で公開集合に含めない。
 

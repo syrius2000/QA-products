@@ -11,4 +11,4 @@ Use when the invite lists `provenance-plans`.
 
 ## Placement contract
 
-See [`docs/Artifacts/README.md`](../../../../docs/Artifacts/README.md): no new Markdown at Artifacts root; no flat `independent_qa_*` for new independent QA.
+See [`docs/Archives/README.md`](../../../../docs/Archives/README.md) for the repository's document/archive map. New Artifacts remain in the location and naming contract stated by the current repository instructions; do not infer that a historical plan was archived unless its copy exists at the stated path.

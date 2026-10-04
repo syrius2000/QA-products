@@ -194,18 +194,28 @@ def check(raw: str, state: dict, expected: dict) -> tuple[dict, list[str]]:
     required_results = {c.get("id"): c for c in actual_checks}
     required_failed = any(c.get("required") and required_results.get(c["id"], {}).get("status") == "FAIL" for c in expected_checks)
     required_incomplete = any(c.get("required") and required_results.get(c["id"], {}).get("status") in {"NOT_RUN", "ERROR", None} for c in expected_checks)
+    criteria_failed = any(c["result"] == "FAIL" for c in data["criteria"])
+    identity_fields = {"contract", "id", "repository", "branch", "initial_baseline", "baseline", "reviewed", "cycle", "requirements_hash", "version", "correction_id", "replaces", "path"}
+    provenance_hold = (
+        any(m["sha256"] == "不足" for m in actual_materials)
+        or actual_materials != expected_materials
+        or actual_criteria != expected_criteria
+        or any(issue.startswith("QA Skill・出力契約のパスとSHA-256が") for issue in issues)
+        or any(issue.startswith("依頼との不一致: ") and issue.split(": ", 1)[1] in identity_fields for issue in issues)
+        or any(issue == "実装チャットと分離した担当・実行経路を記録してください" for issue in issues)
+    )
     if required_incomplete and data.get("required_checks") == "完了":
         issues.append("未実施またはERRORの必須checkを完了にできません")
-    if required_failed and data.get("gate") != "FAIL":
-        issues.append("必須checkのFAILを総合FAILへ反映してください")
-    elif required_incomplete and data.get("gate") != "INCONCLUSIVE":
+    # Priority is deterministic: identity/provenance HOLD, known FAIL, incomplete INCONCLUSIVE, then PASS.
+    expected_gate = "HOLD" if provenance_hold else "FAIL" if (criteria_failed or required_failed) else "INCONCLUSIVE" if required_incomplete else None
+    if expected_gate and data.get("gate") != expected_gate:
+        issues.append(f"Gate優先順位に従い総合{expected_gate}が必要です")
+    if required_incomplete and data.get("gate") not in {"FAIL", "HOLD", "INCONCLUSIVE"}:
         issues.append("環境不足などで必須checkが未完了のため総合INCONCLUSIVEが必要です")
     if data.get("gate") == "PASS" and data.get("required_checks") != "完了":
         issues.append("未完了の必須確認をPASSにできません")
     if data.get("gate") == "PASS" and any(c["result"] != "PASS" for c in data["criteria"]):
         issues.append("未達または未検証の受入基準があるためPASSにできません")
-    if any(c["result"] == "FAIL" for c in data["criteria"]) and data.get("gate") != "FAIL":
-        issues.append("受入基準のFAILを総合FAILへ反映してください")
     ids = set()
     for f in data["findings"]:
         if f["id"] in ids: issues.append(f"指摘IDが重複: {f['id']}")

@@ -16,7 +16,7 @@
 
 依頼にある各 `AC-NNN` を同じID・原文・順序で「受入基準の照合」へすべて列挙する。各基準を `PASS`、`FAIL`、`UNVERIFIED` のいずれかで判定し、Reviewed SHA上の具体的な根拠を記す。欠落、追加、重複、並べ替え、原文改変をせず、要件指紋を補助識別値として保持する。
 
-依頼に構造化checkがある場合、check ID・種類・必須性・argv・cwd・env・timeout・期待終了値を保ち、status・runtime・exit code・duration・stdout/stderr excerptとSHA-256・切詰め有無をEvidenceへ記録する。必須checkのFAILはGateをFAILにする。必須checkがNOT_RUNまたはERRORならPASSにせずINCONCLUSIVEとし、未実行理由を記す。任意checkの未実施は理由付きで未検証事項へ残す。
+依頼に構造化checkがある場合、check ID・種類・必須性・argv・cwd・env・timeout・期待終了値を保ち、status・runtime・exit code・duration・stdout/stderr excerptとSHA-256・切詰め有無をEvidenceへ記録する。Gateは次の優先順位で決める。(1) 対象SHA、依頼ID、参照資材hashなどprovenanceが不一致・確認不能ならHOLD。(2) provenanceが有効で、いずれかの受入基準または必須checkがFAILならFAIL。(3) 既知のFAILがなく必須checkにNOT_RUN/ERRORがある場合はINCONCLUSIVE。(4) それ以外で全受入基準と必須checkがPASSした場合だけPASSとする。FAILと必須checkのERROR/NOT_RUNが併存してもFAILを保持し、各check状態・理由を個別に記録する。任意checkの未実施は理由付きで未検証事項へ残す。
 
 PASSは全受入基準と全必須checkがPASSの場合だけ選ぶ。要求未達または重大な未解決FindingとPASSを併記しない。確認できない事項は推測で埋めず、UNVERIFIEDまたはHOLD/INCONCLUSIVEとして扱う。
 

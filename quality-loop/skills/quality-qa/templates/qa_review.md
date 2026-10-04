@@ -15,9 +15,7 @@ author: 担当AI (実際のモデル名)
 - 対象SHA: REVIEWED_FULL_SHA
 - サイクル: 1
 - 要件指紋: REQUIREMENTS_SHA256
-- `quality-loop/skills/quality-qa/SKILL.md`: SHA256:EXPECTED_HASH
-- `quality-loop/skills/quality-qa/references/reviewer_contract.md`: SHA256:EXPECTED_HASH
-- 担当: 別のレビュー担当名
+- 担当: REVIEWER_NAME
 - 実行経路: クラウド
 - 提出版: 1
 - 訂正ID: なし
@@ -26,21 +24,29 @@ author: 担当AI (実際のモデル名)
 - 結論: INCONCLUSIVE
 - 必須確認: 未完了
 
+## 参照資材の検証
+
+- quality-loop/skills/quality-qa/SKILL.md: SHA256:EXPECTED_HASH
+- quality-loop/skills/quality-qa/references/reviewer_contract.md: SHA256:EXPECTED_HASH
+
+対象Reviewed SHAの指定QA Skillと出力契約を読み、全hashが一致することを記録。不一致または取得不能ならGateをHOLDとする。
+
 ## 確認範囲
 
 確認した対象版のファイルと要件、根拠を記載。
 
-## 参照資材の検証
-
-対象Reviewed SHAの指定QA Skillと出力契約を読み、全hashが一致することを記録。不一致または取得不能ならGateをHOLDとする。
-
 ## 受入基準の照合
 
-- AC-001: 依頼に記載された受入基準の原文を保持 | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果
+- AC-001: 欠落行を検出する | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果
+- AC-002: 依頼との全文一致を検証する | 判定: UNVERIFIED | 根拠: 対象版の根拠と確認結果
 
 ## 実施した検証
 
 実行した方法・結果・根拠を記載。実行していない場合は「なし」。
+
+各指定checkについて、JSON行でargv・cwd・env・timeout・runtime・status・exit_code・duration_ms・stdout/stderr excerptとSHA-256・output_truncatedを記録する。statusはPASS/FAIL/NOT_RUN/ERROR。
+
+- CHECK-PYTEST: {"type":"command","argv":["pytest","tests"],"cwd":".","env":{},"timeout_seconds":120,"status":"NOT_RUN","runtime":"pytest version","reason":"未実行理由"}
 
 ## 未検証事項
 
@@ -63,6 +69,10 @@ author: 担当AI (実際のモデル名)
 - 完了条件: 観察できる完了条件
 - 検証方法: 手順と期待結果
 ```
+
+## 実施側タスク
+
+OPENかつ修正または追加確認が必要なFindingごとに、Finding IDを参照する細分化タスクを列挙する。不要な場合は「なし」。
 
 ## 前回指摘の再確認
 

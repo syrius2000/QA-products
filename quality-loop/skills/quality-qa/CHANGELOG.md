@@ -1,5 +1,12 @@
 # 変更履歴
 
+## 0.2.2
+
+- クラウド公開前に、製品snapshotとQA依頼の機密・個人パス検査、および固定argvで実行した必須checkのEvidence照合を追加。
+- 再QAで既存check契約の削除・弱化・変更を拒否。
+- Gate優先順位をprovenanceのHOLD、確認済みFAIL、必須check未完了のINCONCLUSIVE、PASSの順に統一。
+- 静的Reviewer templateをparser契約へ合わせ、計画所在・Archive記録と相対リンクを訂正。
+
 ## 0.2.1
 
 - Reviewer参照を新しい単一Markdown契約へ固定し、旧blind QAの4成果物契約との競合を解消。

@@ -2,7 +2,7 @@
   "schema": "unified-qa-workflow-v1",
   "id": "QA-003",
   "cycle": 1,
-  "revision": 4,
+  "revision": 5,
   "state_path": "docs/Artifacts/qa_state_003_1004.json",
   "repository": "syrius2000/QA-products",
   "branch": "codex/unify-qa-skill-workflow",
@@ -344,13 +344,543 @@
       "hash": "67f007a9654fc1daf4214dd6d2c150ebac56ad55fee582a9dfdb6f3d82cad652"
     }
   },
-  "phase": "published",
+  "phase": "invalid",
   "audience": "cloud",
   "implementer": "Codex implementation agent",
   "author": "Codex (GPT-6)",
   "invite": "docs/Artifacts/qa_invite_003_1004.md",
   "review_path": "docs/Artifacts/qa_review_003_1004.md",
-  "reviews": [],
+  "reviews": [
+    {
+      "path": "docs/Artifacts/qa_review_003_1004.md",
+      "hash": "bdc999f1cd5c3e5127ebf97d8658b83e26b8011df15df5913ead6d82460a0f52",
+      "sources": [
+        {
+          "kind": "body",
+          "commit": null,
+          "path": "docs/Artifacts/qa_review_003_1004.md",
+          "acquired": "2026-10-05 04:54 (JST)",
+          "limit": "取得元commit未確認"
+        }
+      ],
+      "version": 1,
+      "correction_id": "なし",
+      "replaces": "なし",
+      "parsed": {
+        "findings": [
+          {
+            "id": "QA-F01",
+            "種別": "要求未達",
+            "重大度": "重大",
+            "状態": "OPEN",
+            "要求対応": "AC-005（公開前の機密・個人ローカルパス検査）、AGENTS.mdの公開前必須テスト条件",
+            "根拠": "quality-loop/qa_workflow/workflow.py:216-249 と quality-loop/qa_workflow/gitops.py:229-282。公開経路は許可path・履歴・祖先・branchを検査するが、機密／個人パスの検査結果と必須テスト結果を受け取って固定対象へ結び付ける条件がない。quality-loop/skills/quality-qa/references/publish.md:3-23にも具体的な検査手順／成功Evidenceの要求がない。E-03で合成マーカー入り・必須検証未実施のままpublishedを再現。",
+            "影響": "QA公開指示とpath承認だけで検査未了の製品・依頼を送出でき、公開停止条件を満たさない。実際の秘密流出を観測したという主張ではない。",
+            "対応案": "公開前検査をSkillとruntime双方で明文化し、Reviewed snapshot／送出commit／invite内容hashへ検査Evidenceを束縛する。必須検証失敗・不足、機密・個人パス、検査後の内容変更ならcommit/push前に停止する。テスト中の禁止パターン例と実データを区別する例外規則も明示する。",
+            "対象": "quality-loop/qa_workflow/workflow.py、quality-loop/qa_workflow/gitops.py、quality-loop/skills/quality-qa/references/publish.md、同梱runtime、quality-loop/tests/test_qa_workflow_contract.py",
+            "完了条件": "未検査／FAIL／ERROR／検査対象不一致の状態では公開されず、検査成功が固定対象と送出履歴へ対応する。",
+            "検証方法": "合成secret・macOS/Windows個人パス・必須テストFAIL/NOT_RUN・検査後変更を一時bare remoteへ送り、全て事前拒否かつHEAD/index/remote不変。安全な対象と説明用禁止例は明示規則に従って成功する。"
+          },
+          {
+            "id": "QA-F02",
+            "種別": "要求未達",
+            "重大度": "重大",
+            "状態": "OPEN",
+            "要求対応": "AC-008、AC-004（元の必須実行契約と未検証の継承）",
+            "根拠": "quality-loop/qa_workflow/workflow.py:158-164 はchecksが指定されればoldのchecksを丸ごと置換する。quality-loop/qa_workflow/workflow.py:437-442、quality-loop/qa_workflow/cli.py:43,89 で再QAの--check-jsonを渡せるが、旧checkのID／required／argv／版条件を照合せず、新要件指紋もcheck契約を含まない。E-04で必須1件→0件を再現。",
+            "影響": "前回必須検証が未了でも次サイクルで削除・任意化・低い版条件へ置換でき、新レビューがその項目なしでPASS候補になる。",
+            "対応案": "再QAで旧必須checkをそのまま保持し、追加checkとの整合を検査する。削除・任意化・argv/cwd/env/timeout/期待値/最低版の変更は明示された契約変更承認または別依頼に分離し、旧未検証履歴を保持する。",
+            "対象": "quality-loop/qa_workflow/workflow.py、quality-loop/qa_workflow/cli.py、quality-loop/qa_workflow/store.py、同梱runtime、quality-loop/tests/test_qa_workflow_contract.py",
+            "完了条件": "単なる再QA操作で前回必須checkを削除・弱体化できず、承認された変更が履歴付きで追跡できる。",
+            "検証方法": "checks=[]、旧ID省略、required=false、python_minimum低下、argv変更を拒否し、同一契約継承と追加check成功を確認する。"
+          },
+          {
+            "id": "QA-F03",
+            "種別": "不具合",
+            "重大度": "重大",
+            "状態": "OPEN",
+            "要求対応": "AC-004、AC-006（複数理由のGate整合）、Reviewer資材不足時HOLD契約",
+            "根拠": "quality-loop/qa_workflow/review.py:194-209 はrequired_incompleteならINCONCLUSIVEを必須化し、受入基準FAILならFAILを必須化する。quality-loop/qa_workflow/review.py:139 は資料不足時HOLDを要求する。E-05で両併存の正しいFAIL/HOLDが拒否され、どの単一Gateでも全制約を満たせない。今回レビューもこの不具合の影響を受ける。",
+            "影響": "契約に沿って未検証を明示したレビューを取込めず、本文訂正を繰り返しても解決しない。FAILや未実施の隠蔽を誘発する。",
+            "対応案": "Gate決定を一か所へ集約し、provenance不一致・既知FAIL・未検証の優先順位を仕様へ明示する。個別checkのERROR/NOT_RUNとFAIL理由を同時に保持し、資料不足ならHOLDを返せるようにする。既知FAILを環境不足だけで消さない。",
+            "対象": "quality-loop/qa_workflow/review.py、同梱runtime、quality-loop/skills/quality-qa/references/reviewer_contract.md、OpenSpecのspec/design、quality-loop/tests/test_qa_workflow_contract.py",
+            "完了条件": "資料不足＋必須NOT_RUN、基準FAIL＋必須ERROR、必須FAIL＋別必須NOT_RUNに、一貫した単一Gateと全理由を記録できる。",
+            "検証方法": "上記組合せを表形式の回帰fixtureで検査し、PASSは全必須check・全基準成功の場合だけ受理。本レビューの実行未了を隠さず取込可能にする。"
+          },
+          {
+            "id": "QA-F04",
+            "種別": "不具合",
+            "重大度": "通常",
+            "状態": "OPEN",
+            "要求対応": "AC-006（一Markdown契約の配布templateとの一致）",
+            "根拠": "quality-loop/skills/quality-qa/templates/qa_review.md:18-19 のhash行は識別節にbacktick付きで置かれ、review.py:70の参照資材文法では読めない。template:67の前に「実施側タスク」節がない。review.parseのE-06でも必須節不足を検出。動的review.templateは正しい形式を生成するため静的配布templateとの乖離。",
+            "影響": "配布templateを案内通り埋めても検査に失敗し、不要な訂正往復になる。",
+            "対応案": "静的templateを動的出力・Reviewer契約と同期し、参照資材節へ正しいpath/hash行と実施側タスク節・文法例を置く。",
+            "対象": "quality-loop/skills/quality-qa/templates/qa_review.md、quality-loop/tests/test_qa_workflow_contract.py",
+            "完了条件": "静的templateを依頼値とレビュー結果で埋めたものが動的templateと同じ契約で検査される。",
+            "検証方法": "指摘なし・指摘あり・必須checkありの3例を完成させreview.checkで期待するissueなしを確認。"
+          },
+          {
+            "id": "QA-F05",
+            "種別": "不具合",
+            "重大度": "通常",
+            "状態": "OPEN",
+            "要求対応": "Plan033の履歴保存・復元可能性、AC-002の周辺provenance文書（SHA固定機能自体のFAILとはしない）",
+            "根拠": "docs/Artifacts/implementation_plan_033_1004.md:95-99 と docs/Archives/qa_workflow/qa_workflow_history_001_1004.md:31-47 は9計画をdocs/Archives/qa_workflow/plansへ移動済み・復元可能と記す。対象SHAのgit ls-treeにはそのDIRの原文がなく統合履歴1ファイルだけ。029〜032は依頼に列挙されたArtifacts側へ残る。quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md:14 のArtifacts README相対リンクも解決不能。",
+            "影響": "Cloud cloneから記載hashの退避原文を取得・復元できず、文書の整理完了・リンク検査0件という説明を対象版の証拠として使えない。",
+            "対応案": "記録が別checkout／過去時点のものならその適用範囲と未同梱を明示する。対象版で復元可能とするなら必要原文を承認済み範囲で追跡し、実在パスとhashへ更新する。broken linkを実際のroot参照へ直す。旧計画削除をこのQAだけで承認しない。",
+            "対象": "docs/Artifacts/implementation_plan_033_1004.md、docs/Archives/qa_workflow/qa_workflow_history_001_1004.md、quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md",
+            "完了条件": "整理状況・復元先・hashの説明が対象SHAのtreeと一致し、参照先が存在する。",
+            "検証方法": "クリーンcloneから全9原文の所在とhashを確認するか、未同梱で復元未検証という正確な記述を確認。変更文書の相対リンクが全て解決する。"
+          },
+          {
+            "id": "QA-F06",
+            "種別": "未検証",
+            "重大度": "通常",
+            "状態": "OPEN",
+            "要求対応": "CHECK-QUALITY-LOOP、AC-004の実行Evidence",
+            "根拠": "quality-loop/tests/test_qa_workflow_contract.py:1 を含む指定testsへのpytest実行は環境にpytestがなく起動前ERROR。CHECK-QUALITY-LOOPのreasonとE-01を参照。ソース不具合ではなく検証環境の不足。",
+            "影響": "依頼固定の必須pytest結果を確定できず、今回をPASSにできない。",
+            "対応案": "pytestが既存導入された独立環境で固定SHA・同じargv/cwd/env/timeoutを追試し、版と完全出力hashを記録する。現レビュー原文は実装者が書換えず、訂正版または再QAへ引き継ぐ。",
+            "対象": "quality-loop/tests、docs/Artifacts/qa_review_003_1004.md（追試は予約された後続レビューへ提出）",
+            "完了条件": "指定必須checkの実行結果と実行証跡を独立Reviewerが取得する。",
+            "検証方法": "Python>=3.10確認後にpytest tests -qをquality-loopで900秒以内、指定envで実行。終了code・所要時間・stdout/stderrとhash・skip等を記録する。"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "T-01",
+            "finding": "QA-F01",
+            "path": "quality-loop/qa_workflow/workflow.py",
+            "action": "公開前検査Evidenceを固定SHAと送出内容へ束縛して不足時に停止",
+            "done_when": "未検査や検査後変更が公開されない",
+            "verify": "合成機密と個人パスと必須未実施をbare remoteで事前拒否"
+          },
+          {
+            "id": "T-02",
+            "finding": "QA-F01",
+            "path": "quality-loop/skills/quality-qa/references/publish.md",
+            "action": "機密と個人パスと必須検証の手順と例外規則を記載しruntimeと同期",
+            "done_when": "手順と実装の停止条件が一致",
+            "verify": "成功系と禁止パターン説明例を含む拒否系を独立再確認"
+          },
+          {
+            "id": "T-03",
+            "finding": "QA-F02",
+            "path": "quality-loop/qa_workflow/workflow.py",
+            "action": "再QAで旧必須checkの削除と弱体化を拒否し契約変更を別承認へ分離",
+            "done_when": "旧checkと未検証履歴が保持される",
+            "verify": "省略とrequired=falseと最低版低下とargv変更を拒否"
+          },
+          {
+            "id": "T-04",
+            "finding": "QA-F03",
+            "path": "quality-loop/qa_workflow/review.py",
+            "action": "Gate優先順位と理由集合を仕様化して一か所で決定",
+            "done_when": "FAILとERRORおよびHOLDとNOT_RUNの併存が記録できる",
+            "verify": "組合せ回帰と本レビューの検査でGate矛盾issueが出ない"
+          },
+          {
+            "id": "T-05",
+            "finding": "QA-F04",
+            "path": "quality-loop/skills/quality-qa/templates/qa_review.md",
+            "action": "hash行と必須タスク節を動的templateへ同期",
+            "done_when": "完成例が限定Markdown文法へ適合",
+            "verify": "指摘なしと指摘ありと必須checkありのreview.check成功"
+          },
+          {
+            "id": "T-06",
+            "finding": "QA-F05",
+            "path": "docs/Archives/qa_workflow/qa_workflow_history_001_1004.md",
+            "action": "退避原文の所在と対象版への同梱状況とhashを正確化",
+            "done_when": "整理完了と復元情報がtreeと一致",
+            "verify": "全9計画のgit ls-treeとhash照合または未同梱の明示"
+          },
+          {
+            "id": "T-07",
+            "finding": "QA-F05",
+            "path": "quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md",
+            "action": "Artifacts READMEへの相対リンクを修正",
+            "done_when": "リンク先が存在",
+            "verify": "変更Markdownの相対リンク存在検査"
+          },
+          {
+            "id": "T-08",
+            "finding": "QA-F06",
+            "path": "quality-loop/tests",
+            "action": "pytest既存環境の別Reviewerへ固定SHAの必須checkを追試依頼",
+            "done_when": "実行証跡付き結果を後続レビューへ取得",
+            "verify": "指定argvとenvとtimeoutとruntimeと出力hashを原依頼に照合"
+          }
+        ],
+        "previous": {},
+        "criteria": [
+          {
+            "id": "AC-001",
+            "text": "QA依頼前にbranch、HEAD、upstream/default branchとstaged・unstaged・untrackedを確認し、既存変更を保持してclean baselineへ導くこと",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/gitops.py:105 status_preflightとtests/test_qa_workflow_contract.py:287,314。dirty三種・branch/HEAD/upstream/defaultの読取と内容非変更を確認。自動cleanなし。"
+          },
+          {
+            "id": "AC-002",
+            "text": "初回QA依頼で初回基準SHA、reviewed SHA、全受入基準、変更対象パスを固定し、後続HEAD変更で対象がずれないこと",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/workflow.py:129,185,201とreview.py:125。正式SHA固定・ancestor・snapshot・原文hash照合。確定後の別SHA拒否の既存fixture成功。周辺履歴文書にはQA-F05がある。"
+          },
+          {
+            "id": "AC-003",
+            "text": "受入基準の全件が依頼とレビューMarkdownに列挙され、完全一致が機械検証されること",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/review.py:118-129。ID・原文・件数・順序の一致と重複検査。欠落・変更・重複・追加・順序変更fixture成功。本提出の10件も依頼と機械照合した。"
+          },
+          {
+            "id": "AC-004",
+            "text": "必須検証をargv/cwd/env/timeout/exit code付きで実行し、Evidenceと未実施理由を区別しPASSを捏造しないこと",
+            "result": "FAIL",
+            "evidence": "quality-loop/qa_workflow/review.py:194-209のGate制約が未実施と既知FAIL/HOLDの併存を表現できない（QA-F03）。今回PythonはPASS、必須pytestはERRORのまま保持。"
+          },
+          {
+            "id": "AC-005",
+            "text": "クラウドQA公開は許可対象だけのQA専用commitと新規topic branchの通常pushに限定し、機密・ローカルパス・remote ancestry・衝突を検査すること",
+            "result": "FAIL",
+            "evidence": "quality-loop/qa_workflow/workflow.py:216-249、gitops.py:229-282。path・祖先・通常pushは検査するが機密・個人ローカルパス・公開前必須検証のGateがなく、一時bare remoteで未検証のままpublishedを再現（QA-F01）。"
+          },
+          {
+            "id": "AC-006",
+            "text": "レビュー結果は指定先のMarkdown一つで回収し、依頼ID・repo・全基準・SHA・cycle・Finding・根拠・修正タスク・確認方法を照合して原文保持すること",
+            "result": "FAIL",
+            "evidence": "quality-loop/qa_workflow/workflow.py:280-323 の原文保持・識別照合・取得固定・Finding/task照合fixtureは成功。しかしGate併存時の取込拒否（QA-F03）と配布templateの必須節・hash行形式不足（QA-F04）がある。"
+          },
+          {
+            "id": "AC-007",
+            "text": "Finding修正前に計画を作り、人の承認hash・path・methodに結びつけ、承認外の変更をsubmit/re-QA snapshotへ混入させないこと",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/workflow.py:360-435。plan hash・path集合・元review・実施methodをapprove/submitへ束縛し、承認外diff、全製品snapshot、提出後の別製品変更を照合する既存fixture成功。"
+          },
+          {
+            "id": "AC-008",
+            "text": "再QAで元依頼・全受入基準・前回Findingと履歴を継承し、解消Evidenceと未解決/未検証事項を正しく判定すること",
+            "result": "FAIL",
+            "evidence": "quality-loop/qa_workflow/workflow.py:158-164,437-442とcli.pyのrequa --check-json。criteria・Finding・履歴は保持するが、checks指定で前回必須checkを削除・弱体化できる（QA-F02）。"
+          },
+          {
+            "id": "AC-009",
+            "text": "終了判断は人間に残し、自動merge/deploy/closeや実施者によるQA結果改変を行わないこと",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/workflow.py:445-467。残余判断と終了指示を別記録、PASS・完了・blocking解消を要求。local cycle fixtureでHEADとremote既定branch不変。自動merge/deploy/closeなし。"
+          },
+          {
+            "id": "AC-010",
+            "text": "旧blind-qa-cycleとの互換経路は読取専用とし、新しい一Markdown契約と矛盾しないこと",
+            "result": "PASS",
+            "evidence": "quality-loop/qa_workflow/legacy.py:13-60、cli.py:63。旧4原文・原依頼を読取してhashと整合を返し、新state/case正本へ書込まない。旧モード自体は明示起動に限定し、通常QAの保存契約と分離。"
+          }
+        ],
+        "materials": [
+          {
+            "path": "quality-loop/skills/quality-qa/SKILL.md",
+            "sha256": "57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261"
+          },
+          {
+            "path": "quality-loop/skills/quality-qa/references/reviewer_contract.md",
+            "sha256": "9a1b4460e0454f8aba7749a9460d91dc9b888048ddf204b6f6be0ceec5112efb"
+          }
+        ],
+        "checks": [
+          {
+            "type": "python-version",
+            "required": true,
+            "argv": [
+              "python3",
+              "--version"
+            ],
+            "cwd": ".",
+            "env": {},
+            "timeout_seconds": 30,
+            "expected_exit_codes": [
+              0
+            ],
+            "python_minimum": "3.10",
+            "status": "PASS",
+            "runtime": "Python 3.12.14",
+            "exit_code": 0,
+            "duration_ms": 2,
+            "stdout_excerpt": "Python 3.12.14\n",
+            "stderr_excerpt": "",
+            "stdout_sha256": "4c3569f5da09975434dd9fd9a91fadbc4367a91d8f3c3fab59e9241ab9ee4bd8",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "output_truncated": false,
+            "id": "CHECK-PYTHON"
+          },
+          {
+            "type": "command",
+            "required": true,
+            "argv": [
+              "pytest",
+              "tests",
+              "-q"
+            ],
+            "cwd": "quality-loop",
+            "env": {
+              "PYTHONDONTWRITEBYTECODE": "1",
+              "PYTHONPATH": "."
+            },
+            "timeout_seconds": 900,
+            "expected_exit_codes": [
+              0
+            ],
+            "status": "ERROR",
+            "runtime": "Python 3.12.14; pytest executable/module unavailable",
+            "exit_code": null,
+            "duration_ms": 1,
+            "stdout_excerpt": "",
+            "stderr_excerpt": "",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "output_truncated": false,
+            "reason": "[Errno 2] No such file or directory: 'pytest'",
+            "id": "CHECK-QUALITY-LOOP"
+          }
+        ],
+        "sections": {
+          "識別": [
+            "",
+            "- 契約: unified-qa-review-v1",
+            "- 依頼ID: QA-003",
+            "- リポジトリ: syrius2000/QA-products",
+            "- 開発ブランチ: codex/unify-qa-skill-workflow",
+            "- 初回基準SHA: ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+            "- 差分基準SHA: ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+            "- 対象SHA: d9bad5c125791306e38bca8830b4082f7f38fc6b",
+            "- サイクル: 1",
+            "- 要件指紋: a6173a3c16527a0d4f5216cd0afe03f69d3373553261cbcde5931e2ed0357605",
+            "- 担当: Codex independent reviewer QA-003（実装担当とは別チャット）",
+            "- 実行経路: クラウド",
+            "- 提出版: 1",
+            "- 訂正ID: なし",
+            "- 置換元SHA256: なし",
+            "- 保存先: docs/Artifacts/qa_review_003_1004.md",
+            "- 結論: FAIL",
+            "- 必須確認: 未完了",
+            "",
+            "依頼の取得元は `d6f8462f41bd9da47ca11b789551b5cad4d119a3:docs/Artifacts/qa_invite_003_1004.md`。対象は上記Reviewed SHA。別のHEAD・実装担当の過去PASSを代用していない。独立性は担当・別チャット・実行経路の記録によるもので、第三者による身元証明ではない。",
+            "",
+            "環境不足だけならINCONCLUSIVEだが、今回は要求未達を別途再現したためFAILを保持する。計画032の「既に再現した重大な製品不具合がある場合、そのFAILは別項目の未実施で消さない」に従う。現行parserがこの併存を拒否すること自体をQA-F03に記録した。必須確認を完了へ書き換えて取込検査を通すことはしない。",
+            ""
+          ],
+          "参照資材の検証": [
+            "",
+            "- quality-loop/skills/quality-qa/SKILL.md: SHA256:57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261",
+            "- quality-loop/skills/quality-qa/references/reviewer_contract.md: SHA256:9a1b4460e0454f8aba7749a9460d91dc9b888048ddf204b6f6be0ceec5112efb",
+            "",
+            "対象SHAから両ファイルを全文読取し、sha256sumで期待値との一致を確認した。ルートAGENTS.mdも読んだ。QA管理CLIの導入・起動、旧blindの4成果物作成、製品修正、GitHubへのcommit/push/PR、外部配置は行っていない。",
+            ""
+          ],
+          "確認範囲": [
+            "",
+            "事実・仕様: Baseline..Reviewedは59パス、6444追加行・11削除行。依頼の製品59パスとの集合差は双方0、renameは0。初回基準と差分基準は同一なので両範囲は一致する。依頼に挙げられた運用3パス・対象外4パスは今回59パス差分に含まれず、製品と混同していない。依頼SHAとReviewed SHAは区別して取得した。",
+            "",
+            "確認した領域:",
+            "",
+            "| 領域 | 確認内容と根拠 |",
+            "|---|---|",
+            "| AGENTS・README・機能仕様・配置説明 | 読取委任、製品修正承認、通常QAと正式case、独立性・公開・終了の境界 |",
+            "| 計画029〜033、実装報告、開始manifest・inventory、統合履歴 | 承認範囲・開始SHA・前提・実装結果の位置付け。説明を過去実行の再現証拠とは扱わない。履歴の格納先不整合はQA-F05 |",
+            "| OpenSpecのyaml・proposal・design・spec・tasks | Phase 0から終了までの要件と実装・Skillの対応。strict CLIは未実施 |",
+            "| qa_workflow全8モジュール | 全基準・check照合、SHA固定、原文保持、公開、承認、submit/requa、終了、legacy読取 |",
+            "| quality-qaパッケージ全構成 | Skill、4工程参照、Reviewer契約、template、launcher、版・履歴、eval定義、同梱runtime。8モジュールは開発版とbyte単位一致 |",
+            "| blind-qa-cycleと全8参照 | 明示旧モードと通常QAの分離、staged-only checkpoint、旧4成果物・focus・Git経路。通常QAへの旧出力契約持込なし |",
+            "| 2変更テストと同期スクリプト | 一時Git/bare remote、契約・承認・再QA・同期dry-runの既存検証と不足する拒否系 |",
+            "",
+            "製品の全59パスを依頼一覧と個別に照合した。DIR全体の黙示的除外はない。ただし読取・fixture検証は実GitHub運用、全OS、最低Python版、全自然言語会話の網羅確認とは異なる。",
+            ""
+          ],
+          "受入基準の照合": [
+            "",
+            "- AC-001: QA依頼前にbranch、HEAD、upstream/default branchとstaged・unstaged・untrackedを確認し、既存変更を保持してclean baselineへ導くこと | 判定: PASS | 根拠: quality-loop/qa_workflow/gitops.py:105 status_preflightとtests/test_qa_workflow_contract.py:287,314。dirty三種・branch/HEAD/upstream/defaultの読取と内容非変更を確認。自動cleanなし。",
+            "- AC-002: 初回QA依頼で初回基準SHA、reviewed SHA、全受入基準、変更対象パスを固定し、後続HEAD変更で対象がずれないこと | 判定: PASS | 根拠: quality-loop/qa_workflow/workflow.py:129,185,201とreview.py:125。正式SHA固定・ancestor・snapshot・原文hash照合。確定後の別SHA拒否の既存fixture成功。周辺履歴文書にはQA-F05がある。",
+            "- AC-003: 受入基準の全件が依頼とレビューMarkdownに列挙され、完全一致が機械検証されること | 判定: PASS | 根拠: quality-loop/qa_workflow/review.py:118-129。ID・原文・件数・順序の一致と重複検査。欠落・変更・重複・追加・順序変更fixture成功。本提出の10件も依頼と機械照合した。",
+            "- AC-004: 必須検証をargv/cwd/env/timeout/exit code付きで実行し、Evidenceと未実施理由を区別しPASSを捏造しないこと | 判定: FAIL | 根拠: quality-loop/qa_workflow/review.py:194-209のGate制約が未実施と既知FAIL/HOLDの併存を表現できない（QA-F03）。今回PythonはPASS、必須pytestはERRORのまま保持。",
+            "- AC-005: クラウドQA公開は許可対象だけのQA専用commitと新規topic branchの通常pushに限定し、機密・ローカルパス・remote ancestry・衝突を検査すること | 判定: FAIL | 根拠: quality-loop/qa_workflow/workflow.py:216-249、gitops.py:229-282。path・祖先・通常pushは検査するが機密・個人ローカルパス・公開前必須検証のGateがなく、一時bare remoteで未検証のままpublishedを再現（QA-F01）。",
+            "- AC-006: レビュー結果は指定先のMarkdown一つで回収し、依頼ID・repo・全基準・SHA・cycle・Finding・根拠・修正タスク・確認方法を照合して原文保持すること | 判定: FAIL | 根拠: quality-loop/qa_workflow/workflow.py:280-323 の原文保持・識別照合・取得固定・Finding/task照合fixtureは成功。しかしGate併存時の取込拒否（QA-F03）と配布templateの必須節・hash行形式不足（QA-F04）がある。",
+            "- AC-007: Finding修正前に計画を作り、人の承認hash・path・methodに結びつけ、承認外の変更をsubmit/re-QA snapshotへ混入させないこと | 判定: PASS | 根拠: quality-loop/qa_workflow/workflow.py:360-435。plan hash・path集合・元review・実施methodをapprove/submitへ束縛し、承認外diff、全製品snapshot、提出後の別製品変更を照合する既存fixture成功。",
+            "- AC-008: 再QAで元依頼・全受入基準・前回Findingと履歴を継承し、解消Evidenceと未解決/未検証事項を正しく判定すること | 判定: FAIL | 根拠: quality-loop/qa_workflow/workflow.py:158-164,437-442とcli.pyのrequa --check-json。criteria・Finding・履歴は保持するが、checks指定で前回必須checkを削除・弱体化できる（QA-F02）。",
+            "- AC-009: 終了判断は人間に残し、自動merge/deploy/closeや実施者によるQA結果改変を行わないこと | 判定: PASS | 根拠: quality-loop/qa_workflow/workflow.py:445-467。残余判断と終了指示を別記録、PASS・完了・blocking解消を要求。local cycle fixtureでHEADとremote既定branch不変。自動merge/deploy/closeなし。",
+            "- AC-010: 旧blind-qa-cycleとの互換経路は読取専用とし、新しい一Markdown契約と矛盾しないこと | 判定: PASS | 根拠: quality-loop/qa_workflow/legacy.py:13-60、cli.py:63。旧4原文・原依頼を読取してhashと整合を返し、新state/case正本へ書込まない。旧モード自体は明示起動に限定し、通常QAの保存契約と分離。",
+            ""
+          ],
+          "実施した検証": [
+            "",
+            "実務上の制約: このQA専用の新規cloneをdetached HEADで固定した。Linux x86_64、Python 3.12.14。VMを新規作成したとは主張しない。既存ユーザー作業領域と分離し、テストはtemporary directory／ローカルbare remoteを使用した。追加依存install・credential利用・外部サービス変更はない。GitHubからの読取cloneは指定リポジトリ取得のために行った。",
+            "",
+            "cwdの`.`はQA専用cloneのルート、`quality-loop`はその直下。絶対実行rootは `/workspace/scratch/52efd3672b4a/qa-products`。envは依頼が指定した上書き集合であり、親プロセス環境を継承した。秘密を含み得る親環境の全dumpは行っていない。両必須checkはPython subprocess.runのargv配列、shell=False、capture_output=True、指定timeoutで起動を試みた。",
+            "",
+            "- CHECK-PYTHON: {\"type\":\"python-version\",\"required\":true,\"argv\":[\"python3\",\"--version\"],\"cwd\":\".\",\"env\":{},\"timeout_seconds\":30,\"expected_exit_codes\":[0],\"python_minimum\":\"3.10\",\"status\":\"PASS\",\"runtime\":\"Python 3.12.14\",\"exit_code\":0,\"duration_ms\":2,\"stdout_excerpt\":\"Python 3.12.14\\n\",\"stderr_excerpt\":\"\",\"stdout_sha256\":\"4c3569f5da09975434dd9fd9a91fadbc4367a91d8f3c3fab59e9241ab9ee4bd8\",\"stderr_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"output_truncated\":false}",
+            "- CHECK-QUALITY-LOOP: {\"type\":\"command\",\"required\":true,\"argv\":[\"pytest\",\"tests\",\"-q\"],\"cwd\":\"quality-loop\",\"env\":{\"PYTHONDONTWRITEBYTECODE\":\"1\",\"PYTHONPATH\":\".\"},\"timeout_seconds\":900,\"expected_exit_codes\":[0],\"status\":\"ERROR\",\"runtime\":\"Python 3.12.14; pytest executable/module unavailable\",\"exit_code\":null,\"duration_ms\":1,\"stdout_excerpt\":\"\",\"stderr_excerpt\":\"\",\"stdout_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"stderr_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"output_truncated\":false,\"reason\":\"[Errno 2] No such file or directory: 'pytest'\"}",
+            "",
+            "pytestは子プロセス生成前のFileNotFoundError。exit code=nullと空stdout/stderrは製品テスト成功を意味しない。エラー文はreasonに記録し、存在しない子プロセスのstderrと偽らない。Pythonでpytestのfind_specはNone、通常の実行file配置にもpytestなし。無許可installは行わなかった。",
+            "",
+            "追加Evidence E-01（必須pytestの置換ではない）:",
+            "",
+            "",
+            "E-02: 契約・同期の2変更test moduleだけのunittestも41件、exit 0、OK。最終根拠はE-01の全suite結果と個別再現を用いる。skipは任意jsonschema依存の検証で、実施済みと数えない。",
+            "",
+            "E-03（公開拒否系、実外部pushなし）: 既存ExecutionContractIntegrationTests.setup_bare_remoteで一時repoを作り、製品に合成API_TOKEN文字列と `/Users/qa-user/private/data.csv` を入れ、必須CHECK-MUSTを設定。検証結果を登録せずprepare→publishした結果は `published`。秘密実物は使用していない。通常の実装テストと同じtopic・bare remote経路で、path承認だけでは内容検査と必須検証Gateを代替できないことを再現した。",
+            "",
+            "E-04（必須check継承）: 既存local完全cycle fixtureの再QA直前の前回stateに必須checkを1件設定し、requa(checks=[])を実行。新stateのchecks件数は0。これは前回checkの継承境界の追加fixtureであり、その前回checkが実実行済みという証拠ではない。CLI経路も--check-jsonで別配列を渡せるため、元checkを省略／required=falseへ変更する際の照合欠落が実利用に及ぶ。",
+            "",
+            "E-05（Gate併存）: testsのreview_state fixtureから、資料hash=不足・必須check=NOT_RUN・Gate=HOLDのMarkdownを生成してreview.checkへ渡すと「環境不足などで必須checkが未完了のため総合INCONCLUSIVEが必要です」。資料正常・受入基準FAIL・必須check=NOT_RUN・Gate=FAILでも同じissueを再現した。反対にINCONCLUSIVEでは基準FAILの総合FAIL要求と衝突する。",
+            "",
+            "E-06（配布と文書）: 開発・同梱runtime全8ファイルbyte比較は不一致0。static templateをreview.parseすると「見出しまたは内容が不足: 実施側タスク」。全変更Markdownの相対リンク存在検査でblindのfocus_provenance_plans.mdの1参照が解決不能。git ls-treeではアーカイブplansの9原文は不存在。成果物の10基準原文・順序は依頼と別途機械照合した。返却前のreview.parseはissueなし。review.checkではQA-F03に該当する総合INCONCLUSIVE要求だけが残り、識別・資料hash・10基準・2check・Finding/task対応の他のissueはなかった。管理stateは変更せず、検査用期待値は固定依頼からメモリ上に構成した。",
+            "",
+            "E-03〜06はargv配列によるPythonプログラム／読取Gitの追加監査であり、依頼固定の必須check一覧を増減していない。ソース改変を伴う回帰テスト追加は行っていない。",
+            ""
+          ],
+          "未検証事項": [
+            "",
+            "- CHECK-QUALITY-LOOP: pytest実行file/moduleなし。ERROR。利用可能なpytestを持つ独立環境で指定argvを追試する必要がある（QA-F06）。",
+            "- Python 3.10そのもの、Windows/macOS、実GitHubでの認証・fork PR取得・公開・衝突、LLM会話eval実行は未検証。Linux 3.12 fixture成功から他環境の成功を推測しない。",
+            "- OpenSpec strict validationはCLIがなく未実施。実装報告のvalid記録は今回の独立実行結果ではない。",
+            "- 任意jsonschema検証1件がskip。skipをPASSに換算しない。",
+            "- 機密の検出規則がどこまで網羅できるかは未確定。QA-F01は実秘密の流出を観測した指摘ではなく、要求された停止検査が経路に存在しないという再現済み不具合。",
+            ""
+          ],
+          "指摘": [
+            "",
+            "### 指摘 QA-F01",
+            "",
+            "- 種別: 要求未達",
+            "- 重大度: 重大",
+            "- 状態: OPEN",
+            "- 要求対応: AC-005（公開前の機密・個人ローカルパス検査）、AGENTS.mdの公開前必須テスト条件",
+            "- 根拠: quality-loop/qa_workflow/workflow.py:216-249 と quality-loop/qa_workflow/gitops.py:229-282。公開経路は許可path・履歴・祖先・branchを検査するが、機密／個人パスの検査結果と必須テスト結果を受け取って固定対象へ結び付ける条件がない。quality-loop/skills/quality-qa/references/publish.md:3-23にも具体的な検査手順／成功Evidenceの要求がない。E-03で合成マーカー入り・必須検証未実施のままpublishedを再現。",
+            "- 影響: QA公開指示とpath承認だけで検査未了の製品・依頼を送出でき、公開停止条件を満たさない。実際の秘密流出を観測したという主張ではない。",
+            "- 対応案: 公開前検査をSkillとruntime双方で明文化し、Reviewed snapshot／送出commit／invite内容hashへ検査Evidenceを束縛する。必須検証失敗・不足、機密・個人パス、検査後の内容変更ならcommit/push前に停止する。テスト中の禁止パターン例と実データを区別する例外規則も明示する。",
+            "- 対象: quality-loop/qa_workflow/workflow.py、quality-loop/qa_workflow/gitops.py、quality-loop/skills/quality-qa/references/publish.md、同梱runtime、quality-loop/tests/test_qa_workflow_contract.py",
+            "- 完了条件: 未検査／FAIL／ERROR／検査対象不一致の状態では公開されず、検査成功が固定対象と送出履歴へ対応する。",
+            "- 検証方法: 合成secret・macOS/Windows個人パス・必須テストFAIL/NOT_RUN・検査後変更を一時bare remoteへ送り、全て事前拒否かつHEAD/index/remote不変。安全な対象と説明用禁止例は明示規則に従って成功する。",
+            "",
+            "### 指摘 QA-F02",
+            "",
+            "- 種別: 要求未達",
+            "- 重大度: 重大",
+            "- 状態: OPEN",
+            "- 要求対応: AC-008、AC-004（元の必須実行契約と未検証の継承）",
+            "- 根拠: quality-loop/qa_workflow/workflow.py:158-164 はchecksが指定されればoldのchecksを丸ごと置換する。quality-loop/qa_workflow/workflow.py:437-442、quality-loop/qa_workflow/cli.py:43,89 で再QAの--check-jsonを渡せるが、旧checkのID／required／argv／版条件を照合せず、新要件指紋もcheck契約を含まない。E-04で必須1件→0件を再現。",
+            "- 影響: 前回必須検証が未了でも次サイクルで削除・任意化・低い版条件へ置換でき、新レビューがその項目なしでPASS候補になる。",
+            "- 対応案: 再QAで旧必須checkをそのまま保持し、追加checkとの整合を検査する。削除・任意化・argv/cwd/env/timeout/期待値/最低版の変更は明示された契約変更承認または別依頼に分離し、旧未検証履歴を保持する。",
+            "- 対象: quality-loop/qa_workflow/workflow.py、quality-loop/qa_workflow/cli.py、quality-loop/qa_workflow/store.py、同梱runtime、quality-loop/tests/test_qa_workflow_contract.py",
+            "- 完了条件: 単なる再QA操作で前回必須checkを削除・弱体化できず、承認された変更が履歴付きで追跡できる。",
+            "- 検証方法: checks=[]、旧ID省略、required=false、python_minimum低下、argv変更を拒否し、同一契約継承と追加check成功を確認する。",
+            "",
+            "### 指摘 QA-F03",
+            "",
+            "- 種別: 不具合",
+            "- 重大度: 重大",
+            "- 状態: OPEN",
+            "- 要求対応: AC-004、AC-006（複数理由のGate整合）、Reviewer資材不足時HOLD契約",
+            "- 根拠: quality-loop/qa_workflow/review.py:194-209 はrequired_incompleteならINCONCLUSIVEを必須化し、受入基準FAILならFAILを必須化する。quality-loop/qa_workflow/review.py:139 は資料不足時HOLDを要求する。E-05で両併存の正しいFAIL/HOLDが拒否され、どの単一Gateでも全制約を満たせない。今回レビューもこの不具合の影響を受ける。",
+            "- 影響: 契約に沿って未検証を明示したレビューを取込めず、本文訂正を繰り返しても解決しない。FAILや未実施の隠蔽を誘発する。",
+            "- 対応案: Gate決定を一か所へ集約し、provenance不一致・既知FAIL・未検証の優先順位を仕様へ明示する。個別checkのERROR/NOT_RUNとFAIL理由を同時に保持し、資料不足ならHOLDを返せるようにする。既知FAILを環境不足だけで消さない。",
+            "- 対象: quality-loop/qa_workflow/review.py、同梱runtime、quality-loop/skills/quality-qa/references/reviewer_contract.md、OpenSpecのspec/design、quality-loop/tests/test_qa_workflow_contract.py",
+            "- 完了条件: 資料不足＋必須NOT_RUN、基準FAIL＋必須ERROR、必須FAIL＋別必須NOT_RUNに、一貫した単一Gateと全理由を記録できる。",
+            "- 検証方法: 上記組合せを表形式の回帰fixtureで検査し、PASSは全必須check・全基準成功の場合だけ受理。本レビューの実行未了を隠さず取込可能にする。",
+            "",
+            "### 指摘 QA-F04",
+            "",
+            "- 種別: 不具合",
+            "- 重大度: 通常",
+            "- 状態: OPEN",
+            "- 要求対応: AC-006（一Markdown契約の配布templateとの一致）",
+            "- 根拠: quality-loop/skills/quality-qa/templates/qa_review.md:18-19 のhash行は識別節にbacktick付きで置かれ、review.py:70の参照資材文法では読めない。template:67の前に「実施側タスク」節がない。review.parseのE-06でも必須節不足を検出。動的review.templateは正しい形式を生成するため静的配布templateとの乖離。",
+            "- 影響: 配布templateを案内通り埋めても検査に失敗し、不要な訂正往復になる。",
+            "- 対応案: 静的templateを動的出力・Reviewer契約と同期し、参照資材節へ正しいpath/hash行と実施側タスク節・文法例を置く。",
+            "- 対象: quality-loop/skills/quality-qa/templates/qa_review.md、quality-loop/tests/test_qa_workflow_contract.py",
+            "- 完了条件: 静的templateを依頼値とレビュー結果で埋めたものが動的templateと同じ契約で検査される。",
+            "- 検証方法: 指摘なし・指摘あり・必須checkありの3例を完成させreview.checkで期待するissueなしを確認。",
+            "",
+            "### 指摘 QA-F05",
+            "",
+            "- 種別: 不具合",
+            "- 重大度: 通常",
+            "- 状態: OPEN",
+            "- 要求対応: Plan033の履歴保存・復元可能性、AC-002の周辺provenance文書（SHA固定機能自体のFAILとはしない）",
+            "- 根拠: docs/Artifacts/implementation_plan_033_1004.md:95-99 と docs/Archives/qa_workflow/qa_workflow_history_001_1004.md:31-47 は9計画をdocs/Archives/qa_workflow/plansへ移動済み・復元可能と記す。対象SHAのgit ls-treeにはそのDIRの原文がなく統合履歴1ファイルだけ。029〜032は依頼に列挙されたArtifacts側へ残る。quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md:14 のArtifacts README相対リンクも解決不能。",
+            "- 影響: Cloud cloneから記載hashの退避原文を取得・復元できず、文書の整理完了・リンク検査0件という説明を対象版の証拠として使えない。",
+            "- 対応案: 記録が別checkout／過去時点のものならその適用範囲と未同梱を明示する。対象版で復元可能とするなら必要原文を承認済み範囲で追跡し、実在パスとhashへ更新する。broken linkを実際のroot参照へ直す。旧計画削除をこのQAだけで承認しない。",
+            "- 対象: docs/Artifacts/implementation_plan_033_1004.md、docs/Archives/qa_workflow/qa_workflow_history_001_1004.md、quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md",
+            "- 完了条件: 整理状況・復元先・hashの説明が対象SHAのtreeと一致し、参照先が存在する。",
+            "- 検証方法: クリーンcloneから全9原文の所在とhashを確認するか、未同梱で復元未検証という正確な記述を確認。変更文書の相対リンクが全て解決する。",
+            "",
+            "### 指摘 QA-F06",
+            "",
+            "- 種別: 未検証",
+            "- 重大度: 通常",
+            "- 状態: OPEN",
+            "- 要求対応: CHECK-QUALITY-LOOP、AC-004の実行Evidence",
+            "- 根拠: quality-loop/tests/test_qa_workflow_contract.py:1 を含む指定testsへのpytest実行は環境にpytestがなく起動前ERROR。CHECK-QUALITY-LOOPのreasonとE-01を参照。ソース不具合ではなく検証環境の不足。",
+            "- 影響: 依頼固定の必須pytest結果を確定できず、今回をPASSにできない。",
+            "- 対応案: pytestが既存導入された独立環境で固定SHA・同じargv/cwd/env/timeoutを追試し、版と完全出力hashを記録する。現レビュー原文は実装者が書換えず、訂正版または再QAへ引き継ぐ。",
+            "- 対象: quality-loop/tests、docs/Artifacts/qa_review_003_1004.md（追試は予約された後続レビューへ提出）",
+            "- 完了条件: 指定必須checkの実行結果と実行証跡を独立Reviewerが取得する。",
+            "- 検証方法: Python>=3.10確認後にpytest tests -qをquality-loopで900秒以内、指定envで実行。終了code・所要時間・stdout/stderrとhash・skip等を記録する。",
+            ""
+          ],
+          "実施側タスク": [
+            "",
+            "- T-01: Finding=QA-F01; path=quality-loop/qa_workflow/workflow.py; action=公開前検査Evidenceを固定SHAと送出内容へ束縛して不足時に停止; done_when=未検査や検査後変更が公開されない; verify=合成機密と個人パスと必須未実施をbare remoteで事前拒否",
+            "- T-02: Finding=QA-F01; path=quality-loop/skills/quality-qa/references/publish.md; action=機密と個人パスと必須検証の手順と例外規則を記載しruntimeと同期; done_when=手順と実装の停止条件が一致; verify=成功系と禁止パターン説明例を含む拒否系を独立再確認",
+            "- T-03: Finding=QA-F02; path=quality-loop/qa_workflow/workflow.py; action=再QAで旧必須checkの削除と弱体化を拒否し契約変更を別承認へ分離; done_when=旧checkと未検証履歴が保持される; verify=省略とrequired=falseと最低版低下とargv変更を拒否",
+            "- T-04: Finding=QA-F03; path=quality-loop/qa_workflow/review.py; action=Gate優先順位と理由集合を仕様化して一か所で決定; done_when=FAILとERRORおよびHOLDとNOT_RUNの併存が記録できる; verify=組合せ回帰と本レビューの検査でGate矛盾issueが出ない",
+            "- T-05: Finding=QA-F04; path=quality-loop/skills/quality-qa/templates/qa_review.md; action=hash行と必須タスク節を動的templateへ同期; done_when=完成例が限定Markdown文法へ適合; verify=指摘なしと指摘ありと必須checkありのreview.check成功",
+            "- T-06: Finding=QA-F05; path=docs/Archives/qa_workflow/qa_workflow_history_001_1004.md; action=退避原文の所在と対象版への同梱状況とhashを正確化; done_when=整理完了と復元情報がtreeと一致; verify=全9計画のgit ls-treeとhash照合または未同梱の明示",
+            "- T-07: Finding=QA-F05; path=quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md; action=Artifacts READMEへの相対リンクを修正; done_when=リンク先が存在; verify=変更Markdownの相対リンク存在検査",
+            "- T-08: Finding=QA-F06; path=quality-loop/tests; action=pytest既存環境の別Reviewerへ固定SHAの必須checkを追試依頼; done_when=実行証跡付き結果を後続レビューへ取得; verify=指定argvとenvとtimeoutとruntimeと出力hashを原依頼に照合",
+            "",
+            "修正対象の同梱runtime・OpenSpec・拒否系テストも各対応計画に含める。製品修正は人の計画承認後に行い、このレビュー作成を承認とみなさない。",
+            ""
+          ],
+          "前回指摘の再確認": [
+            "",
+            "- 対象: なし",
+            "",
+            "依頼は前回指摘なしのcycle 1。計画内の旧QA-F01／QA-F02は要件由来の論点として確認し、本レビューの新Finding IDとは区別した。旧説明だけで解消判定していない。",
+            ""
+          ],
+          "残余事項": [
+            "",
+            "提案: QA-F01〜03の停止条件と契約継承を先に直し、QA-F04〜05の配布・文書整合をそろえる。pytestが利用できる別の独立環境で全必須checkと追加拒否系を再確認する。人の受入・終了・統合はその結果を見て別途判断する。",
+            "",
+            "批判的立場: 163件の既存unittest成功は今回の追加拒否系の欠落を補わず、既知FAILと必須pytest未完了は残る。機密検査の完全性や人の承認の真正性を、regex・自己申告・整ったJSONだけで証明できるとは限らない。実GitHub・最低Python版・OS別運用には別のEvidenceが必要。代替は公開せずローカル独立QAを継続することだが、公開機能の受入を代替するものではない。",
+            "",
+            "返却は本文返却。本ファイルはReviewed SHAをcheckoutした検証cloneの指定pathへ保存したが、GitHubの新commitは作成していない。成果物commit SHAはなし。対象HEADは保存前後ともd9bad5c125791306e38bca8830b4082f7f38fc6b。他の製品・依頼・管理状態ファイルに変更なし。",
+            ""
+          ]
+        },
+        "contract": "unified-qa-review-v1",
+        "id": "QA-003",
+        "repository": "syrius2000/QA-products",
+        "branch": "codex/unify-qa-skill-workflow",
+        "initial_baseline": "ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+        "baseline": "ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+        "reviewed": "d9bad5c125791306e38bca8830b4082f7f38fc6b",
+        "cycle": "1",
+        "requirements_hash": "a6173a3c16527a0d4f5216cd0afe03f69d3373553261cbcde5931e2ed0357605",
+        "actor": "Codex independent reviewer QA-003（実装担当とは別チャット）",
+        "execution": "クラウド",
+        "version": "1",
+        "correction_id": "なし",
+        "replaces": "なし",
+        "path": "docs/Artifacts/qa_review_003_1004.md",
+        "gate": "FAIL",
+        "required_checks": "未完了"
+      },
+      "issues": [
+        "環境不足などで必須checkが未完了のため総合INCONCLUSIVEが必要です"
+      ],
+      "content_checked": false
+    }
+  ],
   "active_review": null,
   "pending_correction": null,
   "unresolved": {},
@@ -374,6 +904,11 @@
       "at": "2026-10-04 21:22 (JST)",
       "event": "topic公開・到達可能性確認",
       "revision": 4
+    },
+    {
+      "at": "2026-10-05 04:54 (JST)",
+      "event": "原文取得・構造検査",
+      "revision": 5
     }
   ],
   "checks": [

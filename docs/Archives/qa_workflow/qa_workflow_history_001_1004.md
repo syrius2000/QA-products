@@ -1,7 +1,7 @@
 # QAループ統合計画024〜032の履歴
 
 created: 2026-10-04 17:48 (JST)
-update: 2026-10-04 17:48 (JST)
+update: 2026-10-05 05:24 (JST)
 author: Codex (GPT-6)
 
 ## 対象期間と結論
@@ -28,20 +28,14 @@ author: Codex (GPT-6)
 - GitHub push、PR、merge、外部Skill配置、deploymentは本履歴統合の対象外。計画028の未承認push案を実行済みと解釈しない。
 - dirtyな元checkoutの既存差分、未追跡物、別の作業ツリー成果は変更・破棄していない。
 
-## 元計画と復元情報
+## 元計画の対象SHA上の所在（2026-10-05訂正）
 
-元の9文書はファイル名と記録内容を維持して`docs/Archives/qa_workflow/plans/`へ移動した。移動で切れる相対リンクだけ移動先から有効になるよう更新した。原文SHA-256は移動前の識別値、アーカイブSHA-256はリンク修復後の退避ファイルの識別値である。復元時はアーカイブSHAで退避内容を確認し、元の`docs/Artifacts/`へ戻す。元配置に戻す際、移動によるリンク差分を元の相対参照へ戻せば原文SHAと一致する。
+以前の本節は9計画すべてを`docs/Archives/qa_workflow/plans/`へ退避済みとし、hashを復元根拠としていた。しかしReviewed SHA `d9bad5c125791306e38bca8830b4082f7f38fc6b`のtreeに同ディレクトリはなく、退避・復元可能性は確認できない。現状のtreeで確認した所在は次のとおりである。
 
-| 元のパス | アーカイブ先 | 原文SHA-256 | アーカイブSHA-256 |
-|---|---|---|---|
-| `docs/Artifacts/implementation_plan_024_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_024_1004.md` | `27c427e942bee4e79555d52816fa3ebe493d576b919e6db42130e12499e77403` | `d76b2ac15f8dbd494d8589e5a1af9507e5a9117b696e9300931c7ced0dac981b` |
-| `docs/Artifacts/implementation_plan_025_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_025_1004.md` | `6315d6d33b9a15ffb038a497f926cc11be738a8de0cecd79ff946d505cbc5e28` | `6315d6d33b9a15ffb038a497f926cc11be738a8de0cecd79ff946d505cbc5e28` |
-| `docs/Artifacts/implementation_plan_026_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_026_1004.md` | `ec0e6e4efd39858eaefa60cbb3541fe28489885a48162df4436d5e7fcd09da43` | `ec0e6e4efd39858eaefa60cbb3541fe28489885a48162df4436d5e7fcd09da43` |
-| `docs/Artifacts/implementation_plan_027_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_027_1004.md` | `40f512338c3d2062545fb51a3cf0400d133400432c96cf318753a85fbf96333f` | `40f512338c3d2062545fb51a3cf0400d133400432c96cf318753a85fbf96333f` |
-| `docs/Artifacts/implementation_plan_028_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_028_1004.md` | `6e68fa9508d5184d5d6f019766382aaa24e178caa5abdc3e5f3aa8b1b4b8700d` | `6e68fa9508d5184d5d6f019766382aaa24e178caa5abdc3e5f3aa8b1b4b8700d` |
-| `docs/Artifacts/implementation_plan_029_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_029_1004.md` | `fd5fe8e693d141c9d42df06691a136e5eedb4dff650792ad50e088a3ba71c5b7` | `fd5fe8e693d141c9d42df06691a136e5eedb4dff650792ad50e088a3ba71c5b7` |
-| `docs/Artifacts/implementation_plan_030_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_030_1004.md` | `86e658b2d06c15abc690ada38d9bd57c91fb7a0c788b6078014faec111a3c472` | `86e658b2d06c15abc690ada38d9bd57c91fb7a0c788b6078014faec111a3c472` |
-| `docs/Artifacts/implementation_plan_031_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_031_1004.md` | `b9f64e710b960bd487ec161cf19ae4ae75554bc46f66920c84877f4913c2995c` | `b9f64e710b960bd487ec161cf19ae4ae75554bc46f66920c84877f4913c2995c` |
-| `docs/Artifacts/implementation_plan_032_1004.md` | `docs/Archives/qa_workflow/plans/implementation_plan_032_1004.md` | `0f8a20b6f66eaf162181554b7d2cc093b30c3ff3b59f6198db79aac02548eff1` | `0f8a20b6f66eaf162181554b7d2cc093b30c3ff3b59f6198db79aac02548eff1` |
+| 計画 | 対象SHAの確認結果 |
+|---|---|
+| 024〜028 | 原文・記載された退避先のいずれも存在しない。旧表のhashは過去の記録値で、現存ファイルの識別・復元証明ではない。 |
+| 029、030、032 | `docs/Artifacts/`直下にあり、旧表の原文hashと一致。Archive退避済みという記述は誤り。 |
+| 031 | `docs/Artifacts/`直下にあるが、旧表の原文hash `b9f64e…` とは一致しない。旧記録のアーカイブhashも現存コピーとして確認できない。 |
 
-現行計画は`docs/Artifacts/implementation_plan_033_1004.md`に保持する。アーカイブ移動はGit commit、push、外部公開を行っていない。
+したがって、所在不明の計画を復元可能とは扱わず、外部コピーや別履歴からの復元もこの訂正では試みていない。QA対象treeとの照合を経ないhash表を原本保全の根拠にしない。
