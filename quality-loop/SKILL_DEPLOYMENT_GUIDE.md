@@ -119,11 +119,12 @@ diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' "$SOURCE_RUNTIME" "$COPI
 
 ## 7. Productivity-Skillへ確定版を同期する
 
-Productivity-Skill側の次の2ディレクトリだけを同期対象とします。
+Productivity-Skill側の次の3ディレクトリだけを同期対象とします。
 
 ```text
 Productivity-Skill/.agents/skills/quality-review/
 Productivity-Skill/.agents/skills/quality-response/
+Productivity-Skill/.agents/skills/quality-qa/
 ```
 
 QA-productsのルートから、まずdry-runを実行します。
@@ -132,7 +133,7 @@ QA-productsのルートから、まずdry-runを実行します。
 python3 -B scripts/sync_productivity_skills.py --dry-run
 ```
 
-差分、追加、変更、削除、SHA-256を確認します。宛先のGitワークツリーがdirtyの場合、通常同期は拒否されます。Productivity-Skill側の変更を確認し、管理対象2Skillの上書きを明示的に許可する場合だけ`--force`を指定します。
+差分、追加、変更、SHA-256を確認します。宛先のGitワークツリーがdirtyの場合は同期を拒否します。同一VERSIONの差分や宛先だけにあるファイルは未知の追加機能として保持し、自動上書きしません。異なるVERSIONの置換は、差分確認後に`--replace-version <Skill名>=<宛先VERSION>`でSkill単位に明示します。`--force`はdirty宛先を上書きする機能ではありません。
 
 実同期では、QA-products側の記録先と確定tagを明示します。
 
@@ -146,7 +147,7 @@ python3 -B scripts/sync_productivity_skills.py \
 
 ## 8. 開発正本を更新した後
 
-開発正本`quality-loop/quality_loop/`を変更した場合は、先にリポジトリ内の2つの同梱runtimeを正本と一致させ、相対パスとSHA-256を比較します。その後、既存のグローバル・ローカル配置先には自動反映しません。
+正式case engineの開発正本`quality-loop/quality_loop/`は既存`quality-review`／`quality-response`の2同梱runtimeへ同期します。独立QA workflowの開発正本`quality-loop/qa_workflow/`は`quality-qa/runtime/qa_workflow/`へ同期します。各ペアの相対パス・ファイル一覧・SHA-256を比較します。その後、既存のグローバル・ローカル配置先には自動反映しません。
 
 配置先が同一なら更新不要です。差異がある場合は、差分の内容と対象パスを示して別途承認を得るまで上書きしません。
 
@@ -155,7 +156,7 @@ python3 -B scripts/sync_productivity_skills.py \
 次のいずれかを検出した場合は、追加コピーや上書きを行わず停止してください。
 
 - 同名Skillが既に存在し、コピー元と差異がある
-- `SKILL.md`、`runtime/quality_loop/`、`bin/`が欠けている
+- `SKILL.md`、package固有の`runtime/`、`bin/`が欠けている
 - ラッパーの`--help`が失敗する
 - Pythonソースの差分または生成物を検出する
 - 配置対象または承認範囲が不明である

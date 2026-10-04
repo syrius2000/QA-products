@@ -1,0 +1,55 @@
+{
+  "skill_name": "quality-qa",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "この未commitの修正をローカルQAに出して",
+      "expected": "下書き、SHA未確定、commit/pushなし。別担当への依頼と対象確定の次操作"
+    },
+    {
+      "id": 2,
+      "prompt": "QA依頼文を作って",
+      "expected": "Git preflightで既存差分を保持し、目的・全基準・対象を取得。クラウド検証契約がある場合は利用可能なPython等を条件付きで実行し、未実施を成功扱いしない"
+    },
+    {
+      "id": 3,
+      "prompt": "クラウドQAに出して。対象は表示済みファイルだけ",
+      "expected": "対象集合・履歴照合、製品と依頼commit分離、topicだけ公開、手渡し"
+    },
+    {
+      "id": 4,
+      "prompt": "QA結果を確認して。対象SHAが違っている",
+      "expected": "原文保持、新パスの訂正依頼。コード修正なし"
+    },
+    {
+      "id": 5,
+      "prompt": "指摘は仕様にない改善提案です。修正が必須ですか",
+      "expected": "元要求と対象ソースを確認し、強制せず根拠付き再確認"
+    },
+    {
+      "id": 6,
+      "prompt": "この計画で修正して",
+      "expected": "実際の指示・計画内容と対象を照合し、ローカル修正・提出。自己解消なし"
+    },
+    {
+      "id": 7,
+      "prompt": "再QAに出して",
+      "expected": "宛先確認、初回要求・前回指摘継承、重点差分・運用選別"
+    },
+    {
+      "id": 8,
+      "prompt": "QA状況を教えて",
+      "expected": "読取りだけで次担当・操作・理由・必要入力を案内"
+    },
+    {
+      "id": 9,
+      "prompt": "このdirtyな作業ツリーの製品ファイルを監査QAに出して",
+      "expected": "read-only preflightを実施し、staged/unstaged/untrackedを分類。stage/stash/reset/clean/restoreせず、不明な差分やdefault branchでは停止"
+    },
+    {
+      "id": 10,
+      "prompt": "クラウドQAではpytestを実行して。pip追加は不要",
+      "expected": "固定SHAとcheck契約を確認し、利用可能かつ許可された環境でPython/pytestを実行。runtime・argv・cwd・env・exit code・ログhashを記録し、必須check失敗/未実施をGateへ反映"
+    }
+  ]
+}

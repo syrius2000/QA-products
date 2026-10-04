@@ -19,6 +19,14 @@
 - 未検証の機能は`unverified`または`evidence-gap`として残し、完了扱いにしない。
 - 作業開始時と編集ラウンド終了時に、既存変更を保持した状態で差分と対象範囲を確認する。
 
+## QAループの定型実行（限定委任）
+
+- ユーザーがQuality QAなどのQA Skillを明示してQAを依頼した場合、その案件内の読み取り専用調査とSkill指定先へのQA成果物作成は定型手順として事前委任されている。案件ごとのimplementation plan作成と追加承認は不要とする。
+- ユーザーがクラウドQAを明示して依頼した場合は、Skillの手順に従い、既に選択された非main topic branch上で、固定した対象に必要なReviewed commit、QA依頼commit、QA成果物commitのうちSkillが定めるものだけを許可範囲・SHA・起動条件を区別して実行できる。必要なcheckpoint、staged-only条件、Skill読込、公開対象検査を満たさない場合は停止する。QAのためのbranch自動作成、新規topic branchへの暗黙切替、既定ブランチへのpush、force-pushは行わない。通常QAの依頼だけからクラウド公開の許可を推定してはならない。
+- QA公開前に、対象差分・全受入基準・許可対象パス・baseline/reviewed SHAを固定し、必須テスト、機密情報と個人ローカルパス、remote ancestry、branch衝突を検査する。独立Reviewerは対象commitに含まれる指定QA Skillと出力契約を読み、そのSHA-256を依頼・記録に残す。必要ファイルの不在、hash不一致、取得不能、または範囲外変更があればHOLD相当で止める。
+- 独立Reviewerには固定された差分と全受入基準、自己完結した指示を渡し、実施者AIの説明を結論の根拠にしない。Reviewerは自ら根拠を記録する。QA記録は合意済みの出力先に保存し、指摘ごとの詳細Findingと実施側taskを対応付ける。実施AIはQA結果やFindingを変更・削除・選別しない。
+- この限定委任はQA実行とQA記録に限る。製品コード・仕様の修正、Finding disposition、Owner裁定、merge、production deploymentには適用せず、それぞれの明示承認を得る。QA依頼を製品変更の承認とみなしてはならない。
+
 ## 全体ロードマップ
 
 ```text

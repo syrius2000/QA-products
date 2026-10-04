@@ -1,5 +1,7 @@
 # Quality Loop 機能仕様 (v1.3.0)
 
+> 独立QA依頼・Cloud実行検証を含む通常QA workflowは [`skills/quality-qa/`](skills/quality-qa/SKILL.md) に実装し、この文書の正式case state machineとは別管理する。通常QAの状態を既存 `case.json` へ自動反映しない。
+
 ## 1. 目的
 
 単一の案件正本 `case.json`、明示的な handoff、決定論的信号機要約 `resume.md` を用いて、人間Owner、Reviewer (AI-2)、Implementer (AI-1) の3者協働QMSループを実行する。

@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-SKILL_NAMES = ("quality-review", "quality-response")
+SKILL_NAMES = ("quality-review", "quality-response", "quality-qa")
 FORBIDDEN_NAMES = {"__pycache__", ".pytest_cache"}
 
 
@@ -71,11 +71,12 @@ def ensure_productivity_repository(destination: Path) -> None:
 
 
 def ensure_source_skill(skill_dir: Path, skill_name: str) -> None:
+    runtime_package = "qa_workflow" if skill_name == "quality-qa" else "quality_loop"
     required = (
         skill_dir / "SKILL.md",
         skill_dir / "VERSION",
         skill_dir / "bin" / f"{skill_name}-cli",
-        skill_dir / "runtime" / "quality_loop" / "__init__.py",
+        skill_dir / "runtime" / runtime_package / "__init__.py",
     )
     missing = [str(path.relative_to(skill_dir)) for path in required if not path.is_file()]
     if missing:
@@ -148,6 +149,27 @@ def print_plan(source_root: Path, destination_root: Path) -> bool:
         if not (added or changed or removed):
             print("差分なし")
     return has_changes
+
+
+def version(path: Path) -> str:
+    value = (path / "VERSION").read_text(encoding="utf-8").strip()
+    if not value:
+        raise RuntimeError(f"VERSIONが空です: {path}")
+    return value
+
+
+def validate_package_replacement(source: Path, destination: Path, accepted_old_version: str | None) -> None:
+    if not destination.exists():
+        return
+    added, changed, removed = compare(source, destination)
+    source_version = version(source)
+    destination_version = version(destination)
+    if removed:
+        raise RuntimeError(f"宛先Skillにコピー元にない追加ファイルがあります。保護のため上書きしません: {destination.name}: {removed}")
+    if source_version == destination_version and (added or changed):
+        raise RuntimeError(f"同じVERSION `{source_version}` で内容差異があります。未知差異を保護するため停止します: {destination.name}: {added + changed}")
+    if (added or changed) and accepted_old_version != destination_version:
+        raise RuntimeError(f"{destination.name} の更新には既存VERSION `{destination_version}` を明示した --replace-version {destination.name}={destination_version} が必要です")
 
 
 def copy_skill(source: Path, destination: Path, temp_root: Path) -> Path:
@@ -251,8 +273,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="宛先がdirtyでも管理対象2Skillだけを上書きする",
+        help="後方互換のため受け付けるが、dirty宛先の同期を強制する機能はありません",
     )
+    parser.add_argument("--replace-version", action="append", default=[], metavar="SKILL=VERSION", help="差分確認済みの宛先Skill版を指定して置換を認可する（skill単位）")
     parser.add_argument("--record", type=Path, help="同期記録の出力先")
     parser.add_argument("--tag", default="", help="コピー元の確定tag")
     return parser.parse_args(argv)
@@ -264,20 +287,29 @@ def main(argv: list[str] | None = None) -> int:
     source_root = source_skills_root()
     destination_root = (args.destination or root.parent / "Productivity-Skill").resolve()
     try:
+        accepted_versions = {}
+        for item in args.replace_version:
+            if "=" not in item:
+                raise RuntimeError("--replace-versionはSKILL=VERSION形式で指定してください")
+            name, value = item.split("=", 1)
+            if name not in SKILL_NAMES or not value or name in accepted_versions:
+                raise RuntimeError(f"--replace-versionの対象または指定が不正です: {item}")
+            accepted_versions[name] = value
         for skill_name in SKILL_NAMES:
             ensure_source_skill(source_root / skill_name, skill_name)
         ensure_productivity_repository(destination_root)
         target_skills = destination_root / ".agents" / "skills"
         has_changes = print_plan(source_root, target_skills)
+        for skill_name in SKILL_NAMES:
+            validate_package_replacement(source_root / skill_name, target_skills / skill_name, accepted_versions.get(skill_name))
         if args.dry_run:
             return 0
         if not has_changes:
             return 0
         dirty = git_is_dirty(destination_root)
-        if dirty and not args.force:
+        if dirty:
             raise RuntimeError(
-                "宛先Gitワークツリーに未コミット変更があります。"
-                "確認後、必要な場合だけ--forceを指定してください。"
+                "宛先Gitワークツリーに未コミット変更があります。Skill単位の--replace-versionはdirty状態を上書きしません。"
             )
         if args.record is None:
             raise RuntimeError("実同期には--recordで同期記録の出力先を指定してください。")

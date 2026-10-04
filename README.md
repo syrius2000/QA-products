@@ -54,7 +54,7 @@ Python 3.10および現行Python環境での検証を行います。未検証の
 python3 scripts/sync_productivity_skills.py --dry-run
 ```
 
-同期先がdirtyの場合は停止します。内容を確認して明示的に許可する場合だけ`--force`を使います。同期スクリプトはProductivity-Skill側へコピーしません。remoteへのpushはこのリポジトリの同期処理には含めません。
+同期先がdirtyの場合は常に停止します。Skillごとの更新では宛先VERSIONを確認し、同一VERSIONの未知差異や宛先だけにある追加ファイルを保護して停止します。異なる既存VERSIONの置換は、差分確認後に`--replace-version quality-qa=<宛先VERSION>`のようにSkill単位で明示します。外部配置は独立QAと別途承認が揃った後に行います。同期スクリプトはProductivity-Skill側へコピーしません。remoteへのpushはこのリポジトリの同期処理には含めません。
 
 ## アーカイブと開発継続
 

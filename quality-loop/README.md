@@ -24,6 +24,16 @@ RuntimeはPython 3.10以上の標準ライブラリだけで動作し、外部pi
 
 ## 単発QAの開始
 
+### 独立QA依頼とクラウド検証
+
+通常のコードQA・実装修正ループは、Quality Loop正式case (`quality-review`／`quality-response`) とは分離した [`quality-qa`](skills/quality-qa/SKILL.md) を入口にします。最初にread-only Git preflightを行い、既存差分を分類してから対象と全受入基準を固定します。dirty checkoutを自動整理せず、正式case状態やOwner裁定にも書き込みません。
+
+実行テストは `--check-json` でcheck ID、必須性、argv配列、cwd、env、timeout、期待終了codeを固定できます。Cloud Reviewerは対象SHAから指定Skillと出力契約を読み、Python/pytest等の製品ツールが利用可能で規則上実行できる場合は実行します。管理CLI導入は要求しません。レビューは依頼で指定した単一Markdownに全受入基準、判定・根拠、checkごとのruntime・終了code・ログhash、Finding、タスクリストを記録します。
+
+```bash
+skills/quality-qa/bin/quality-qa-cli --root /path/to/repo preflight
+```
+
 正式case情報がまだない単発の実装結果QAでは、`quality-review` Skillの補助入口から対象を直接指定できます。
 
 ```bash
@@ -72,5 +82,6 @@ Python標準ライブラリだけを使用します。外部ライブラリへ�
 
 - `skills/quality-review/`: 初回レビュー、Plan合意、独立検証、最終リスク評価
 - `skills/quality-response/`: Response Plan提出、修正提出とEvidence添付
+- `skills/quality-qa/`: 独立QA依頼、結果検査、承認済み修正と再QAを扱う別workflow
 
 どちらも最初に`status`を確認し、CLIが返した次Roleとhandoffを次工程へ渡します。Skillは案件正本`case.json`を直接編集しません。
