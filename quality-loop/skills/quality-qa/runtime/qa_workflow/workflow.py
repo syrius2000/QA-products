@@ -12,8 +12,7 @@ from .store import Store, QAError, atomic, digest, fingerprint, header, now, rel
 
 REVIEWER_MATERIAL_PATHS = [
     "quality-loop/skills/quality-qa/SKILL.md",
-    "quality-loop/skills/blind-qa-cycle/SKILL.md",
-    "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md",
+    "quality-loop/skills/quality-qa/references/reviewer_contract.md",
 ]
 
 
@@ -392,7 +391,8 @@ class Workflow:
                 text += f"## {item['id']}\n\n" + "\n".join(f"- {k}: {item[k]}" for k in fields[1:]) + "\n\n"
             self.store.preserve(p, text.encode())
             paths = sorted({p for item in items for p in item["対象"]})
-            s["plan"] = {"path": p, "hash": digest(text.encode()), "signature": signature, "items": items, "paths": paths, "review_hash": r["hash"], "before": gitops.snapshot(self.root, paths), "dirty_before": gitops.snapshot(self.root, gitops.dirty(self.root)), "method": fingerprint([item["方針"] for item in items])}
+            planned_method = "\n".join(f"{item['id']}: {item['方針']}" for item in items)
+            s["plan"] = {"path": p, "hash": digest(text.encode()), "signature": signature, "items": items, "paths": paths, "review_hash": r["hash"], "before": gitops.snapshot(self.root, paths), "dirty_before": gitops.snapshot(self.root, gitops.dirty(self.root)), "method": planned_method}
             s["approval"] = None; s["phase"] = "planned"
             return self._save(s, "指摘別修正計画（製品変更なし）")
 
@@ -416,7 +416,7 @@ class Workflow:
                 raise QAError("修正承認がありません")
             if not evidence.strip() or not paths or not set(paths) <= set(a["paths"]):
                 raise QAError("修正提出の対象と確認Evidenceが必要です")
-            if digest(safe_path(self.root, p["path"]).read_bytes()) != a["plan_hash"] or (method and method != p["method"]):
+            if digest(safe_path(self.root, p["path"]).read_bytes()) != a["plan_hash"] or not method or method.strip() != p["method"]:
                 raise QAError("計画または実装方式が変わっています", "計画更新と再承認が必要です")
             head = gitops.sha(self.root, "HEAD")
             committed = gitops.changed(self.root, a["head"], head)

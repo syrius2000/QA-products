@@ -30,7 +30,7 @@ def parser():
         if name=='confirm-content':a.add_argument('--evidence',required=True);a.add_argument('--checker',required=True)
         if name=='correction':a.add_argument('--reason',required=True)
         if name=='plan':a.add_argument('--input',type=Path,required=True)
-        if name=='submit':a.add_argument('--target',action='append',required=True);a.add_argument('--evidence',required=True);a.add_argument('--unverified',action='append',default=[]);a.add_argument('--method')
+        if name=='submit':a.add_argument('--target',action='append',required=True);a.add_argument('--evidence',required=True);a.add_argument('--unverified',action='append',default=[]);a.add_argument('--method',required=True,help='承認計画に記載された実施方式。計画と異なる場合は再承認が必要')
         if name=='requa':a.add_argument('--audience',choices=['local','cloud']);a.add_argument('--reviewed');a.add_argument('--exclude',action='append',default=[]);a.add_argument('--check-json',action='append',default=[])
         if name=='assess-residual':a.add_argument('--message',required=True);a.add_argument('--reason',required=True)
         if name=='decide':a.add_argument('--message',required=True);a.add_argument('--residual',required=True)
@@ -96,9 +96,10 @@ def main(argv=None):
             print(result['next'])
         if 'id' in result:print(f"依頼 {result['id']} ／ サイクル {result['cycle']} ／ 状況 {result['phase']}")
         n=result.get('next',{})
-        for label in ['担当','操作','理由','必要入力']:
-            if n.get(label):print(f"{label}: {n[label]}")
-        if n.get('依頼文'):print('\n渡す文書:\n'+n['依頼文'])
+        if isinstance(n,dict):
+            for label in ['担当','操作','理由','必要入力']:
+                if n.get(label):print(f"{label}: {n[label]}")
+            if n.get('依頼文'):print('\n渡す文書:\n'+n['依頼文'])
         for issue in result.get('issues',[]):print('確認事項: '+issue)
     return code
 

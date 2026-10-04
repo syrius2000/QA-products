@@ -1,7 +1,7 @@
 # 統合QAの導線とローカル管理の設計
 
 created: 2026-10-04 09:34 (JST)
-update: 2026-10-04 18:54 (JST)
+update: 2026-10-04 21:07 (JST)
 author: Codex (GPT-6)
 
 ## 背景と設計の境界
@@ -70,6 +70,8 @@ QA依頼前にGit監査を求められたら、CLIのread-only `preflight`でrep
 ### 4. クラウドのレビュー契約をMarkdownだけで固定する
 
 新しいレビュー契約を`unified-qa-review-v1`とする。依頼には全文の記載例を埋め込む。レビューは次の構造を持つ。
+
+Reviewerが読む固定資料は、新Skillの`quality-qa/SKILL.md`と`quality-qa/references/reviewer_contract.md`である。両方のSHA-256を依頼へ固定し、欠落・不一致はHOLDとする。旧`blind-qa-cycle`の4成果物出力契約は旧形式結果の読み取り専用変換に限って使い、通常QA Reviewerへ同時に指示してはならない。通常レビューは依頼に予約された一つのMarkdownへ全Evidence・Finding・実施側タスクをまとめる。
 
 1. 日本語タイトルとcreated/update/author。
 2. 契約名、依頼ID、リポジトリ、開発ブランチ、初回基準SHA、差分基準SHA、対象SHA、サイクル、要件指紋、担当識別、提出版番号、訂正ID、置換対象の原文SHA-256の固定項目。初回の提出版番号は1、訂正IDと置換対象は「なし」とする。

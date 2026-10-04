@@ -32,7 +32,7 @@ dirtyなら各pathを今回の対象、無関係な既存変更、不明に分�
 
 実装担当の同じチャットでは独立QAを実施せず、別担当へ渡す依頼を返す。担当名の申告だけで独立性を完全に証明したとは言わず、実行経路とEvidenceを残す。
 
-クラウドReviewerには依頼本文に記載されたReviewed SHAのQA Skillと出力契約を読ませる。依頼とレビュー本文に各参照path・SHA-256・全受入基準の安定ID付き原文を含め、結果取込時にcriterionの欠落、追加、重複、順序変更、原文改変、参照hashの不一致を拒否する。Skillが読めない、またはhashが合わない場合はレビュー結果を有効化しない。
+クラウドReviewerには依頼本文に記載されたReviewed SHAの `quality-qa/SKILL.md` と [独立Reviewer契約](references/reviewer_contract.md) を読ませる。依頼とレビュー本文に各参照path・SHA-256・全受入基準の安定ID付き原文を含め、結果取込時にcriterionの欠落、追加、重複、順序変更、原文改変、参照hashの不一致を拒否する。旧 `blind-qa-cycle` の4成果物契約は通常QAへ持ち込まない。SkillまたはReviewer契約が読めない、あるいはhashが合わない場合はレビュー結果を有効化しない。
 
 ## 指示と確認を結び付ける
 

@@ -16,8 +16,7 @@ author: 担当AI (実際のモデル名)
 - サイクル: 1
 - 要件指紋: REQUIREMENTS_SHA256
 - `quality-loop/skills/quality-qa/SKILL.md`: SHA256:EXPECTED_HASH
-- `quality-loop/skills/blind-qa-cycle/SKILL.md`: SHA256:EXPECTED_HASH
-- `quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md`: SHA256:EXPECTED_HASH
+- `quality-loop/skills/quality-qa/references/reviewer_contract.md`: SHA256:EXPECTED_HASH
 - 担当: 別のレビュー担当名
 - 実行経路: クラウド
 - 提出版: 1

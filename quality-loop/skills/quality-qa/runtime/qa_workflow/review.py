@@ -230,7 +230,8 @@ def check(raw: str, state: dict, expected: dict) -> tuple[dict, list[str]]:
             issues.append(f"対応が必要なFindingに実施側タスクがありません: {finding['id']}")
     for fid in state["unresolved"]:
         previous = data["previous"].get(fid)
-        if not previous or not previous["evidence"] or previous["result"] not in {"解消", "未解消", "未検証", "撤回提案"}:
+        placeholder = previous and re.search(r"(?:記載してください|根拠と確認方法を記載|確認結果を記載|TODO|TBD)", previous["evidence"], re.I)
+        if not previous or not previous["evidence"] or placeholder or previous["result"] not in {"解消", "未解消", "未検証", "撤回提案"}:
             issues.append(f"前回指摘の再確認が不足: {fid}")
     return data, issues
 
