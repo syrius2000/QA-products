@@ -1,0 +1,524 @@
+{
+  "schema": "unified-qa-workflow-v1",
+  "id": "QA-001",
+  "cycle": 1,
+  "revision": 1,
+  "state_path": "docs/Artifacts/qa_state_001_1004.json",
+  "repository": "syrius2000/QA-products",
+  "branch": "codex/unify-qa-skill-workflow",
+  "initial_baseline": "ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+  "baseline": "ad6ca1ee196bd75bed026858c2de9586ca49c85c",
+  "reviewed": "22b0a3e24fa95cd477afe5a0b7e6d559c1c65f14",
+  "purpose": "Plan033で実装した統合QAループ（QA依頼前Git基準づくりから、独立QA、結果回収、承認後修正、再QA、終了判断まで）の全残実装を独立レビューする",
+  "criteria": [
+    "QA依頼前にbranch、HEAD、upstream/default branchとstaged・unstaged・untrackedを確認し、既存変更を保持してclean baselineへ導くこと",
+    "初回QA依頼で初回基準SHA、reviewed SHA、全受入基準、変更対象パスを固定し、後続HEAD変更で対象がずれないこと",
+    "受入基準の全件が依頼とレビューMarkdownに列挙され、完全一致が機械検証されること",
+    "必須検証をargv/cwd/env/timeout/exit code付きで実行し、Evidenceと未実施理由を区別しPASSを捏造しないこと",
+    "クラウドQA公開は許可対象だけのQA専用commitと新規topic branchの通常pushに限定し、機密・ローカルパス・remote ancestry・衝突を検査すること",
+    "レビュー結果は指定先のMarkdown一つで回収し、依頼ID・repo・全基準・SHA・cycle・Finding・根拠・修正タスク・確認方法を照合して原文保持すること",
+    "Finding修正前に計画を作り、人の承認hash・path・methodに結びつけ、承認外の変更をsubmit/re-QA snapshotへ混入させないこと",
+    "再QAで元依頼・全受入基準・前回Findingと履歴を継承し、解消Evidenceと未解決/未検証事項を正しく判定すること",
+    "終了判断は人間に残し、自動merge/deploy/closeや実施者によるQA結果改変を行わないこと",
+    "旧blind-qa-cycleとの互換経路は読取専用とし、新しい一Markdown契約と矛盾しないこと"
+  ],
+  "assumptions": "QA基準はPlan033開始時点から今回のReviewed SHAまでの全差分。必要な実行検証は指定環境で試し、不能ならINCONCLUSIVE/未検証として明示する。",
+  "requirements_hash": "43b52486c3be8b7f4759357443f3bcba44d83a24b4348899e4ec6a1c90797c6b",
+  "reviewer_materials": [
+    {
+      "path": "quality-loop/skills/quality-qa/SKILL.md",
+      "sha256": "653d9ecc29ee59b954f2010d3e6dfa9c00bc65a872078f0945156098885d681d"
+    },
+    {
+      "path": "quality-loop/skills/quality-qa/references/reviewer_contract.md",
+      "sha256": "不足"
+    }
+  ],
+  "products": {
+    "AGENTS.md": "明示された製品対象",
+    "README.md": "明示された製品対象",
+    "docs/Archives/qa_workflow/qa_workflow_history_001_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_plan_029_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_plan_030_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_plan_031_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_plan_032_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_plan_033_1004.md": "明示された製品対象",
+    "docs/Artifacts/implementation_report_001_1004.md": "明示された製品対象",
+    "docs/Artifacts/qa_implementation_baseline_001_1004.md": "明示された製品対象",
+    "docs/Artifacts/qa_runtime_inventory_001_1004.md": "明示された製品対象",
+    "docs/Artifacts/qa_source_manifest_001_1004.md": "明示された製品対象",
+    "openspec/changes/unify-qa-skill-workflow/.openspec.yaml": "明示された製品対象",
+    "openspec/changes/unify-qa-skill-workflow/design.md": "明示された製品対象",
+    "openspec/changes/unify-qa-skill-workflow/proposal.md": "明示された製品対象",
+    "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md": "明示された製品対象",
+    "openspec/changes/unify-qa-skill-workflow/tasks.md": "明示された製品対象",
+    "quality-loop/FUNCTIONAL_SPEC.md": "明示された製品対象",
+    "quality-loop/README.md": "明示された製品対象",
+    "quality-loop/SKILL_DEPLOYMENT_GUIDE.md": "明示された製品対象",
+    "quality-loop/qa_workflow/__init__.py": "明示された製品対象",
+    "quality-loop/qa_workflow/cli.py": "明示された製品対象",
+    "quality-loop/qa_workflow/github.py": "明示された製品対象",
+    "quality-loop/qa_workflow/gitops.py": "明示された製品対象",
+    "quality-loop/qa_workflow/legacy.py": "明示された製品対象",
+    "quality-loop/qa_workflow/review.py": "明示された製品対象",
+    "quality-loop/qa_workflow/store.py": "明示された製品対象",
+    "quality-loop/qa_workflow/workflow.py": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/SKILL.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/audience_channels.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/focus_math_definitions.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/focus_openspec_coherence.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/focus_path_sanitization.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md": "明示された製品対象",
+    "quality-loop/skills/blind-qa-cycle/references/machine_schema.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/CHANGELOG.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/SKILL.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/VERSION": "明示された製品対象",
+    "quality-loop/skills/quality-qa/bin/quality-qa-cli": "明示された製品対象",
+    "quality-loop/skills/quality-qa/evals/evals.json": "明示された製品対象",
+    "quality-loop/skills/quality-qa/references/prepare.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/references/publish.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/references/repair.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/references/results.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/references/reviewer_contract.md": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/__init__.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/cli.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/github.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/gitops.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/legacy.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/review.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/store.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/workflow.py": "明示された製品対象",
+    "quality-loop/skills/quality-qa/templates/qa_review.md": "明示された製品対象",
+    "quality-loop/tests/test_qa_workflow_contract.py": "明示された製品対象",
+    "quality-loop/tests/test_sync_productivity_skills.py": "明示された製品対象",
+    "scripts/sync_productivity_skills.py": "明示された製品対象"
+  },
+  "operational": {
+    "docs/Artifacts/qa_state_001_1004.json": "ローカル状態",
+    "docs/Artifacts/qa_invite_001_1004.md": "QA依頼",
+    "docs/Artifacts/qa_review_001_1004.md": "レビュー予約先"
+  },
+  "excluded": {},
+  "snapshot": {
+    "AGENTS.md": {
+      "mode": "100644",
+      "hash": "4cc8a965c04cc3a5564de1d7de33377164c320451e1a4b91ccfde52aa61ac61a"
+    },
+    "README.md": {
+      "mode": "100644",
+      "hash": "21b976a147758e30105774a77f9f26eb7f9bcd365082b9eac3b428f9fd4798c0"
+    },
+    "docs/Archives/qa_workflow/qa_workflow_history_001_1004.md": {
+      "mode": "100644",
+      "hash": "4dcaf949588451d3bc1ef0f15978dc1a838bca24725c0f13d8f9c01cf00f6938"
+    },
+    "docs/Artifacts/implementation_plan_029_1004.md": {
+      "mode": "100644",
+      "hash": "fd5fe8e693d141c9d42df06691a136e5eedb4dff650792ad50e088a3ba71c5b7"
+    },
+    "docs/Artifacts/implementation_plan_030_1004.md": {
+      "mode": "100644",
+      "hash": "86e658b2d06c15abc690ada38d9bd57c91fb7a0c788b6078014faec111a3c472"
+    },
+    "docs/Artifacts/implementation_plan_031_1004.md": {
+      "mode": "100644",
+      "hash": "ab44327627ab626446948ae36159114669750dbe13f46571dda0bb0a615034b8"
+    },
+    "docs/Artifacts/implementation_plan_032_1004.md": {
+      "mode": "100644",
+      "hash": "0f8a20b6f66eaf162181554b7d2cc093b30c3ff3b59f6198db79aac02548eff1"
+    },
+    "docs/Artifacts/implementation_plan_033_1004.md": {
+      "mode": "100644",
+      "hash": "79ca146dad64ee2ace133dc8d20bb6424c22ab7d7f52d9abb79b6ec109bad58c"
+    },
+    "docs/Artifacts/implementation_report_001_1004.md": {
+      "mode": "100644",
+      "hash": "e7988ac0d64bd23aac87ff676c3caf36ba06355135359d7b333a599d41b1a01c"
+    },
+    "docs/Artifacts/qa_implementation_baseline_001_1004.md": {
+      "mode": "100644",
+      "hash": "d4348be5b52589dedcf1e72b2ea730312f56a84a903e5d6d2de40abe70a5f56c"
+    },
+    "docs/Artifacts/qa_runtime_inventory_001_1004.md": null,
+    "docs/Artifacts/qa_source_manifest_001_1004.md": {
+      "mode": "100644",
+      "hash": "d7eee6cfc7591c57912f7d3bb75935c13ccad3e07639dce8be3e934af0facd50"
+    },
+    "openspec/changes/unify-qa-skill-workflow/.openspec.yaml": {
+      "mode": "100644",
+      "hash": "ad734da2ba5f4c5a6979a8bbb6bad4db20fb21ec275ceca5f24842fbdfaf5bef"
+    },
+    "openspec/changes/unify-qa-skill-workflow/design.md": {
+      "mode": "100644",
+      "hash": "76e146451c0f6af1d22ceaaf45fe7dac92714187806d0fb7b5706c8dfcc6ba15"
+    },
+    "openspec/changes/unify-qa-skill-workflow/proposal.md": {
+      "mode": "100644",
+      "hash": "267b87cf5ac4cbb862d9947685feb98477e279655dd184b44dafb7e6e95a8609"
+    },
+    "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md": {
+      "mode": "100644",
+      "hash": "ecbc3030b0a8d46ea287d764251b787e9c4ce3a661a124e991a9c8c67ef77f67"
+    },
+    "openspec/changes/unify-qa-skill-workflow/tasks.md": {
+      "mode": "100644",
+      "hash": "f6726aab02d5d8c4dbcbe71405a3ff5f80b275dd7e17296fb303d7cff706e0dd"
+    },
+    "quality-loop/FUNCTIONAL_SPEC.md": {
+      "mode": "100644",
+      "hash": "18bb47454d89e4befd719f8efca7c114bbadef39f6dcdc7c73ed6f703a132d3f"
+    },
+    "quality-loop/README.md": {
+      "mode": "100644",
+      "hash": "26da545ce3a6d0b12ed3bc7e87411364d2a4a8839f8937b3d80e1ee09547490c"
+    },
+    "quality-loop/SKILL_DEPLOYMENT_GUIDE.md": {
+      "mode": "100644",
+      "hash": "03bef2456b17160dd142550bc73821efa89a6ccb36b75100123056c382742c7a"
+    },
+    "quality-loop/qa_workflow/__init__.py": {
+      "mode": "100644",
+      "hash": "d34c722ded7fb33593e3c861d54ffe14ca4e3146fce414a65f68d0aaea436ca5"
+    },
+    "quality-loop/qa_workflow/cli.py": {
+      "mode": "100644",
+      "hash": "fc7d49cce143e4177085688ebafe91a03c9db854804d5ea9eccce795c57847db"
+    },
+    "quality-loop/qa_workflow/github.py": {
+      "mode": "100644",
+      "hash": "6acff302c31a33900b452b647c96886fa7045b8770e251cdf35b068ad0902c89"
+    },
+    "quality-loop/qa_workflow/gitops.py": {
+      "mode": "100644",
+      "hash": "da5f8f5488a1ea4f95cad6d159ed092a8e76ad0a1b02e7edc1365491ae6deda1"
+    },
+    "quality-loop/qa_workflow/legacy.py": {
+      "mode": "100644",
+      "hash": "7d75ddb5528aafaa139a29841a3b6067df33dfafe2f2684849a446570ebb6f04"
+    },
+    "quality-loop/qa_workflow/review.py": {
+      "mode": "100644",
+      "hash": "99871195bc37444b6b50d3a9c81f0b7d4d409d5b4e513363452cea5803a86ead"
+    },
+    "quality-loop/qa_workflow/store.py": {
+      "mode": "100644",
+      "hash": "d69ec90849f085a148dea8e4cda3dbe12c843a1384626b5b059050f4a4d3dd70"
+    },
+    "quality-loop/qa_workflow/workflow.py": {
+      "mode": "100644",
+      "hash": "6c7391cb97456a0138c90122f4e7b8af1b7a264ec8d50aa2b35a3fff66a4303d"
+    },
+    "quality-loop/skills/blind-qa-cycle/SKILL.md": {
+      "mode": "100644",
+      "hash": "da9fb5ac062ab2a183422b593cdbafabd3fe9fad48f44751defb1d0ad75ae35a"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/audience_channels.md": {
+      "mode": "100644",
+      "hash": "3ec0ab9144a36f3278e370af59ae3700058bd1b2cfc379377175c21852b7ee43"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md": {
+      "mode": "100644",
+      "hash": "53f63b557b386a4930d1146e15dd69707f5ef7ca4fadc60a9f75e12a42ac0eb6"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/focus_math_definitions.md": {
+      "mode": "100644",
+      "hash": "f99f8959434089a0c73002a4a354e2c18594fd9ab348b96bca6b7da475d0c905"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/focus_openspec_coherence.md": {
+      "mode": "100644",
+      "hash": "df929ddb903b76d9410620302e9f5b2d8309cec9b63e89cb6ca2e1a9356fe0af"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/focus_path_sanitization.md": {
+      "mode": "100644",
+      "hash": "ee95b7a09af3d8596aef16a51f763b2275dec08ff682e2c64307465a1c897304"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md": {
+      "mode": "100644",
+      "hash": "947d708eeb9e724bf17ad7f8b5dc594a50533b28cf688a4b83cca96f04f414ed"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md": {
+      "mode": "100644",
+      "hash": "3351c829d1f45f9ec60cb60a655c70b9f080862294c1814d5f42bb6e4ef950af"
+    },
+    "quality-loop/skills/blind-qa-cycle/references/machine_schema.md": {
+      "mode": "100644",
+      "hash": "664684e8f991380a5273d6b4f99990e6e38f8a625f8952eb367865ad94b484f2"
+    },
+    "quality-loop/skills/quality-qa/CHANGELOG.md": {
+      "mode": "100644",
+      "hash": "b6d544b383e06304dfbd3f31639e87b294594987fc2ed70a3ac7d62d22604d85"
+    },
+    "quality-loop/skills/quality-qa/SKILL.md": {
+      "mode": "100644",
+      "hash": "653d9ecc29ee59b954f2010d3e6dfa9c00bc65a872078f0945156098885d681d"
+    },
+    "quality-loop/skills/quality-qa/VERSION": {
+      "mode": "100644",
+      "hash": "1f930dd1f133c1f97a94fe3acb8db34372cf4c01ffdb2b3ff4ca72f9494121e9"
+    },
+    "quality-loop/skills/quality-qa/bin/quality-qa-cli": {
+      "mode": "100755",
+      "hash": "e19b778f66f944236cfcf6dfe4f191693582357dfeeb975fe7913cb7c6c7a5df"
+    },
+    "quality-loop/skills/quality-qa/evals/evals.json": {
+      "mode": "100644",
+      "hash": "bb7a96c47289073644f25f771c9621bd261272d3661580d7ba7a211b8edc3804"
+    },
+    "quality-loop/skills/quality-qa/references/prepare.md": {
+      "mode": "100644",
+      "hash": "d3ae50473c6bcc406af48f5d78f356aaee340a5368171090893c913502cc8f89"
+    },
+    "quality-loop/skills/quality-qa/references/publish.md": {
+      "mode": "100644",
+      "hash": "2d5bdb221a1fb33efebed198d274a58f5796c32c9be9deee70f44fa452fa9e77"
+    },
+    "quality-loop/skills/quality-qa/references/repair.md": {
+      "mode": "100644",
+      "hash": "4216159d99816242bc56590caa2d6bf27bf28cb8e90f740d381c52f803e5e2ba"
+    },
+    "quality-loop/skills/quality-qa/references/results.md": {
+      "mode": "100644",
+      "hash": "c4267b70bedad99f12f30e47102ef3c1648a9a32dbedf8d9eabf3b25426f4d34"
+    },
+    "quality-loop/skills/quality-qa/references/reviewer_contract.md": null,
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/__init__.py": {
+      "mode": "100644",
+      "hash": "d34c722ded7fb33593e3c861d54ffe14ca4e3146fce414a65f68d0aaea436ca5"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/cli.py": {
+      "mode": "100644",
+      "hash": "fc7d49cce143e4177085688ebafe91a03c9db854804d5ea9eccce795c57847db"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/github.py": {
+      "mode": "100644",
+      "hash": "6acff302c31a33900b452b647c96886fa7045b8770e251cdf35b068ad0902c89"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/gitops.py": {
+      "mode": "100644",
+      "hash": "da5f8f5488a1ea4f95cad6d159ed092a8e76ad0a1b02e7edc1365491ae6deda1"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/legacy.py": {
+      "mode": "100644",
+      "hash": "7d75ddb5528aafaa139a29841a3b6067df33dfafe2f2684849a446570ebb6f04"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/review.py": {
+      "mode": "100644",
+      "hash": "99871195bc37444b6b50d3a9c81f0b7d4d409d5b4e513363452cea5803a86ead"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/store.py": {
+      "mode": "100644",
+      "hash": "d69ec90849f085a148dea8e4cda3dbe12c843a1384626b5b059050f4a4d3dd70"
+    },
+    "quality-loop/skills/quality-qa/runtime/qa_workflow/workflow.py": {
+      "mode": "100644",
+      "hash": "6c7391cb97456a0138c90122f4e7b8af1b7a264ec8d50aa2b35a3fff66a4303d"
+    },
+    "quality-loop/skills/quality-qa/templates/qa_review.md": {
+      "mode": "100644",
+      "hash": "cec07269e23cf407999a6bdfb238426d451084c349590f77b18a5c2908f954f8"
+    },
+    "quality-loop/tests/test_qa_workflow_contract.py": {
+      "mode": "100644",
+      "hash": "aca1bfad90401683ea47b532e6f6c721292f0dafa6504c0dfbc5a9366ba86015"
+    },
+    "quality-loop/tests/test_sync_productivity_skills.py": {
+      "mode": "100644",
+      "hash": "9b9628d417808504cc992f7435099985dd31de02ab9bc0a6306b266c0ea384b8"
+    },
+    "scripts/sync_productivity_skills.py": {
+      "mode": "100755",
+      "hash": "67f007a9654fc1daf4214dd6d2c150ebac56ad55fee582a9dfdb6f3d82cad652"
+    }
+  },
+  "phase": "prepared",
+  "audience": "cloud",
+  "implementer": "Codex implementation agent",
+  "author": "Codex (GPT-6)",
+  "invite": "docs/Artifacts/qa_invite_001_1004.md",
+  "review_path": "docs/Artifacts/qa_review_001_1004.md",
+  "reviews": [],
+  "active_review": null,
+  "pending_correction": null,
+  "unresolved": {},
+  "events": [
+    {
+      "at": "2026-10-04 21:20 (JST)",
+      "event": "作成",
+      "revision": 1
+    }
+  ],
+  "checks": [
+    {
+      "id": "CHECK-PYTHON",
+      "type": "python-version",
+      "python_minimum": "3.10",
+      "required": true,
+      "argv": [
+        "python3",
+        "--version"
+      ],
+      "cwd": ".",
+      "env": {},
+      "timeout_seconds": 30,
+      "expected_exit_codes": [
+        0
+      ]
+    },
+    {
+      "id": "CHECK-QUALITY-LOOP",
+      "type": "command",
+      "required": true,
+      "argv": [
+        "pytest",
+        "tests",
+        "-q"
+      ],
+      "cwd": "quality-loop",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": "."
+      },
+      "timeout_seconds": 900,
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "required_tests": [],
+  "previous": null,
+  "published": null,
+  "history_reviews": [],
+  "published_paths": [],
+  "classification": {
+    "initial": {
+      "product": [
+        "AGENTS.md",
+        "README.md",
+        "docs/Archives/qa_workflow/qa_workflow_history_001_1004.md",
+        "docs/Artifacts/implementation_plan_029_1004.md",
+        "docs/Artifacts/implementation_plan_030_1004.md",
+        "docs/Artifacts/implementation_plan_031_1004.md",
+        "docs/Artifacts/implementation_plan_032_1004.md",
+        "docs/Artifacts/implementation_plan_033_1004.md",
+        "docs/Artifacts/implementation_report_001_1004.md",
+        "docs/Artifacts/qa_implementation_baseline_001_1004.md",
+        "docs/Artifacts/qa_source_manifest_001_1004.md",
+        "openspec/changes/unify-qa-skill-workflow/.openspec.yaml",
+        "openspec/changes/unify-qa-skill-workflow/design.md",
+        "openspec/changes/unify-qa-skill-workflow/proposal.md",
+        "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md",
+        "openspec/changes/unify-qa-skill-workflow/tasks.md",
+        "quality-loop/FUNCTIONAL_SPEC.md",
+        "quality-loop/README.md",
+        "quality-loop/SKILL_DEPLOYMENT_GUIDE.md",
+        "quality-loop/qa_workflow/__init__.py",
+        "quality-loop/qa_workflow/cli.py",
+        "quality-loop/qa_workflow/github.py",
+        "quality-loop/qa_workflow/gitops.py",
+        "quality-loop/qa_workflow/legacy.py",
+        "quality-loop/qa_workflow/review.py",
+        "quality-loop/qa_workflow/store.py",
+        "quality-loop/qa_workflow/workflow.py",
+        "quality-loop/skills/blind-qa-cycle/SKILL.md",
+        "quality-loop/skills/blind-qa-cycle/references/audience_channels.md",
+        "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_math_definitions.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_openspec_coherence.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_path_sanitization.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md",
+        "quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md",
+        "quality-loop/skills/blind-qa-cycle/references/machine_schema.md",
+        "quality-loop/skills/quality-qa/CHANGELOG.md",
+        "quality-loop/skills/quality-qa/SKILL.md",
+        "quality-loop/skills/quality-qa/VERSION",
+        "quality-loop/skills/quality-qa/bin/quality-qa-cli",
+        "quality-loop/skills/quality-qa/evals/evals.json",
+        "quality-loop/skills/quality-qa/references/prepare.md",
+        "quality-loop/skills/quality-qa/references/publish.md",
+        "quality-loop/skills/quality-qa/references/repair.md",
+        "quality-loop/skills/quality-qa/references/results.md",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/__init__.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/cli.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/github.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/gitops.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/legacy.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/review.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/store.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/workflow.py",
+        "quality-loop/skills/quality-qa/templates/qa_review.md",
+        "quality-loop/tests/test_qa_workflow_contract.py",
+        "quality-loop/tests/test_sync_productivity_skills.py",
+        "scripts/sync_productivity_skills.py"
+      ],
+      "operational": [],
+      "excluded": {}
+    },
+    "delta": {
+      "product": [
+        "AGENTS.md",
+        "README.md",
+        "docs/Archives/qa_workflow/qa_workflow_history_001_1004.md",
+        "docs/Artifacts/implementation_plan_029_1004.md",
+        "docs/Artifacts/implementation_plan_030_1004.md",
+        "docs/Artifacts/implementation_plan_031_1004.md",
+        "docs/Artifacts/implementation_plan_032_1004.md",
+        "docs/Artifacts/implementation_plan_033_1004.md",
+        "docs/Artifacts/implementation_report_001_1004.md",
+        "docs/Artifacts/qa_implementation_baseline_001_1004.md",
+        "docs/Artifacts/qa_source_manifest_001_1004.md",
+        "openspec/changes/unify-qa-skill-workflow/.openspec.yaml",
+        "openspec/changes/unify-qa-skill-workflow/design.md",
+        "openspec/changes/unify-qa-skill-workflow/proposal.md",
+        "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md",
+        "openspec/changes/unify-qa-skill-workflow/tasks.md",
+        "quality-loop/FUNCTIONAL_SPEC.md",
+        "quality-loop/README.md",
+        "quality-loop/SKILL_DEPLOYMENT_GUIDE.md",
+        "quality-loop/qa_workflow/__init__.py",
+        "quality-loop/qa_workflow/cli.py",
+        "quality-loop/qa_workflow/github.py",
+        "quality-loop/qa_workflow/gitops.py",
+        "quality-loop/qa_workflow/legacy.py",
+        "quality-loop/qa_workflow/review.py",
+        "quality-loop/qa_workflow/store.py",
+        "quality-loop/qa_workflow/workflow.py",
+        "quality-loop/skills/blind-qa-cycle/SKILL.md",
+        "quality-loop/skills/blind-qa-cycle/references/audience_channels.md",
+        "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_math_definitions.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_openspec_coherence.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_path_sanitization.md",
+        "quality-loop/skills/blind-qa-cycle/references/focus_provenance_plans.md",
+        "quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md",
+        "quality-loop/skills/blind-qa-cycle/references/machine_schema.md",
+        "quality-loop/skills/quality-qa/CHANGELOG.md",
+        "quality-loop/skills/quality-qa/SKILL.md",
+        "quality-loop/skills/quality-qa/VERSION",
+        "quality-loop/skills/quality-qa/bin/quality-qa-cli",
+        "quality-loop/skills/quality-qa/evals/evals.json",
+        "quality-loop/skills/quality-qa/references/prepare.md",
+        "quality-loop/skills/quality-qa/references/publish.md",
+        "quality-loop/skills/quality-qa/references/repair.md",
+        "quality-loop/skills/quality-qa/references/results.md",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/__init__.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/cli.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/github.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/gitops.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/legacy.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/review.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/store.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/workflow.py",
+        "quality-loop/skills/quality-qa/templates/qa_review.md",
+        "quality-loop/tests/test_qa_workflow_contract.py",
+        "quality-loop/tests/test_sync_productivity_skills.py",
+        "scripts/sync_productivity_skills.py"
+      ],
+      "operational": [],
+      "excluded": {}
+    }
+  },
+  "invite_hash": "b915f0a5bb8e3a3ca97c841f4a83c46dc98918049a98aa19420728c460b189db"
+}
