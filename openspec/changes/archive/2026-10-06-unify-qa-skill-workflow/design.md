@@ -1,12 +1,12 @@
 # 統合QAの導線とローカル管理の設計
 
 created: 2026-10-04 09:34 (JST)
-update: 2026-10-04 21:07 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 ## 背景と設計の境界
 
-動機と機能範囲は[提案](proposal.md)、外部から観測できる契約は[仕様](specs/unified-qa-workflow/spec.md)、現在の承認境界は[計画031](../../../docs/Artifacts/implementation_plan_031_1004.md)に記載する。
+動機と機能範囲は[提案](proposal.md)、外部から観測できる契約は[仕様](specs/unified-qa-workflow/spec.md)、現在の承認境界は[計画031](../../../docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/implementation_plan_031_1004.md)に記載する。
 
 旧Quality Loopは案件正本・Role・handoff・実装許可を持つが、通常のクラウドQAではこれらの手動準備が操作負担となっている。クラウドAIにはGitHub閲覧・Markdown作成を依頼できる一方、Pythonや旧CLIの利用可否は保証されていない。既存blindは固定SHAと独立性を持つが、結果回収と初回要件の継承が十分に定義されていない。
 

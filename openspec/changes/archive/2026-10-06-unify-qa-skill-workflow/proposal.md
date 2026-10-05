@@ -1,7 +1,7 @@
 # QA依頼とローカル修正を一つの入口で繰り返す提案
 
 created: 2026-10-04 09:26 (JST)
-update: 2026-10-04 18:54 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 ## 変更が必要な理由
@@ -52,4 +52,4 @@ author: Codex (GPT-6)
 
 運用方針と4書類の作成は合意済み。現在は実装前レビューであり、実装・実QA・commit・push・外部配置を開始していない。
 
-実装境界は承認済み[実装計画031](../../../docs/Artifacts/implementation_plan_031_1004.md)に従う。外部公開・配置・実Cloud QA・Owner裁定はこのChangeの実装確認とは別状態である。
+実装境界は承認済み[実装計画031](../../../docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/implementation_plan_031_1004.md)に従う。外部公開・配置・実Cloud QA・Owner裁定はこのChangeの実装確認とは別状態である。

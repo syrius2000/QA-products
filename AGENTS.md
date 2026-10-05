@@ -2,9 +2,9 @@
 
 ## 現在の優先開発
 
-- 現在の状態: v1.4.0 Coreは実装者側検証と独立QAを完了し、Owner最終裁定待ち。詳細は[最終独立QA受入サマリー](docs/Archives/qa_acceptance_summary_001_0831.md)を参照する。
+- 現在の状態: Quality Loop v1.4.0 Coreは2026-10-05にOwnerが正式受入済み。判断記録は[Owner正式受入記録](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/owner_adjudication_001_1005.md)、QA根拠は[最終独立QA受入サマリー](docs/Archives/qa_acceptance_summary_001_0831.md)を参照する。
 - 新規実装先: `quality-loop/`
-- 次段階: Ownerがv1.4.0のQA結果と残余リスクを裁定する。外部配置、commit、pushは別途明示承認が必要である。
+- 次段階: v1.4.0 Coreの外部Skill配置・production deploymentは未実施。専用計画、backup、dry-run、rollback確認を行い、実行前に別途明示承認を得る。remote pushも別途明示承認が必要である。
 - 開発履歴: Plan 011〜016と初期QA資料は[実装履歴統合アーカイブ](docs/Archives/archived_summary_003_0831.md)へ集約した。
 - 旧OpenSpec移行期の詳細は [統合アーカイブ要約](docs/Archives/archived_summary_002_0828.md) を参照する。下記の旧ロードマップは経緯確認専用である。
 - 既存の「基本ルール」は引き続き適用する。

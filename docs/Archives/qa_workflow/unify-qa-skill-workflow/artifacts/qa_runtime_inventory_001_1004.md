@@ -1,7 +1,7 @@
 # QA runtime・既存基盤の開始時インベントリ
 
 created: 2026-10-04 20:49 (JST)
-update: 2026-10-04 20:49 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 ## 対象と集計方法
@@ -15,7 +15,7 @@ author: Codex (GPT-6)
 | 既存Author runtime | `quality-loop/skills/quality-response/runtime/` | 12 | 149866 | `0b8f2f656e69451c4cc7e5b631fd447822a3e871f37aa4052f2e8a0a0d82d08a` |
 | 新QA runtime | `quality-loop/qa_workflow/` | 14 | 257998 | `3676b189cec151aecfb7df944fcb4c85353748daa469a7d582cc704f3d44330c` |
 
-既存のunittest suiteは `quality-loop/tests/` 配下の既存入口を維持する。既存アーカイブの過去115件PASSは開始時の歴史Evidenceであり、今回の完了判定には使用しない。既存runtimeを変更せず新QA runtimeを追加する対応は、[統合QAの実装タスク](../../openspec/changes/unify-qa-skill-workflow/tasks.md)とそのテストEvidenceで追跡する。
+既存のunittest suiteは `quality-loop/tests/` 配下の既存入口を維持する。既存アーカイブの過去115件PASSは開始時の歴史Evidenceであり、今回の完了判定には使用しない。既存runtimeを変更せず新QA runtimeを追加する対応は、[統合QAの実装タスク](../../../../../openspec/changes/unify-qa-skill-workflow/tasks.md)とそのテストEvidenceで追跡する。
 
 ## 新runtimeと受入領域の対応
 

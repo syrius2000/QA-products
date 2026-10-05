@@ -66,4 +66,4 @@ python3 scripts/sync_productivity_skills.py --dry-run
 
 ## 変更時の境界
 
-大きな変更は、先に日本語の実装計画を作成します。現在の実装計画は[implementation_plan_023_0906.md](docs/Artifacts/implementation_plan_023_0906.md)です。完了済みArtifactの統合履歴は[archived_summary_004_0906.md](docs/Archives/archived_summary_004_0906.md)を参照してください。Productivity-Skillへの同期、既存Skillの上書き、旧資料の移動・削除、commit、remoteへのpushは対象と承認を分けて扱います。
+大きな変更は、先に日本語の実装計画を作成します。現在の整理作業計画は[implementation_plan_040_1005.md](docs/Artifacts/implementation_plan_040_1005.md)です。QAループ統合の過去計画・報告・QA記録は[統合アーカイブ](docs/Archives/archived_summary_005_1005.md)を参照してください。Productivity-Skillへの同期、既存Skillの上書き、旧資料の移動・削除、commit、remoteへのpushは対象と承認を分けて扱います。

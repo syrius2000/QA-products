@@ -8,7 +8,7 @@ ReviewerとAuthorが同じQAケースを安全に引き継ぎ、状態・権限�
 
 ### Requirement: 公開handoff契約を提供する
 
-QAケースは、Authorが次に実行できる工程、対象Finding、実装許可、基準revision、`contract_version`、`semantic_digest`、`content_digest`、要求Evidenceを含む公開handoffを提供しなければならない。handoffはReviewer正本から生成されなければならず、Authorが直接編集した内容を正本として扱ってはならない。`semantic_digest`は意思決定に影響する正規化済み構造から、`content_digest`は対象文書の内容から、それぞれ独立して決定的に算出しなければならない。これらの条件はMUST（必須）とする。
+QAケースは、Authorが次に実行できる工程、対象Finding、実装許可、基準revision、`contract_version`、`semantic_digest`、`content_digest`、要求Evidenceを含む公開handoffを提供しなければならない。handoffはReviewer正本から生成されなければならず、Authorが直接編集した内容を正本として扱ってはならない。Author提出のReviewer検証経路でも、入力handoffのdigest鮮度は正本再計算と一致しなければならない。これらの条件はMUST（必須）とする。
 
 #### Scenario: Authorが有効なhandoffを受け取る
 
@@ -23,7 +23,7 @@ QAケースは、Authorが次に実行できる工程、対象Finding、実装�
 #### Scenario: 内容だけが変更される
 
 - **WHEN** `content_digest`だけが不一致で`semantic_digest`は一致する
-- **THEN** Validatorは内容変更として識別し、handoffの再生成と人間確認を要求し、意味変更として自動受理しない
+- **THEN** Validatorはhandoffの再生成と人間確認を要求し、意味変更として自動受理しない
 
 #### Scenario: Reviewer検証がstale digestのhandoffを拒否する
 
@@ -49,15 +49,15 @@ Authorはhandoffから参照される実装・テスト・Evidenceを読み取�
 - **WHEN** AuthorがFinding、events、closureなどのReviewer所有記録を変更した提出を行う
 - **THEN** 統合Validatorは書込み境界違反として拒否する
 
-#### Scenario: Reviewerが欠落参照のある提出を拒否する
-
-- **WHEN** Author提出のリポジトリ相対Evidenceパスまたは要求される`modified_files`のいずれかが実在しない
-- **THEN** Reviewer検証は提出を拒否し、正本を変更しない
-
 #### Scenario: Reviewerが提出物を受理する
 
 - **WHEN** `submission_id`、内容ハッシュ、基準revision、対象Finding、Evidenceが正本と整合する
 - **THEN** Reviewer側の統合処理だけが変更候補を正本へ反映できる
+
+#### Scenario: Reviewerが欠落参照のある提出を拒否する
+
+- **WHEN** Author提出のリポジトリ相対Evidenceパスまたは要求される`modified_files`のいずれかが実在しない
+- **THEN** Reviewer検証は提出を拒否し、正本を変更しない
 
 ### Requirement: ケース状態とFinding状態を検証可能にする
 

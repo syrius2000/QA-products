@@ -1,12 +1,12 @@
 # QA-003 Cycle 3 Finding 対応計画
 
 created: 2026-10-05 (JST)
-update: 2026-10-05 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 ## 受領した独立QA結果
 
-QA-003 Cycle 3はGate FAIL。QA-F01とQA-F02は解消確認済み。新規Finding `QA-C3-F01`（Medium / OPEN）は、最終依頼走査が拒否された場合、製品対象commitが既に作成されている一方で、正式なReviewed SHAと最終依頼hashが状態へ保存されず、再試行時に状態と本文が不整合になる点を指摘する。レビュー原文・4成果物は[Cycle 3出力](qa_cycles/unify-qa-skill-workflow/c3/01_review.md)に保存されており、変更しない。
+QA-003 Cycle 3はGate FAIL。QA-F01とQA-F02は解消確認済み。新規Finding `QA-C3-F01`（Medium / OPEN）は、最終依頼走査が拒否された場合、製品対象commitが既に作成されている一方で、正式なReviewed SHAと最終依頼hashが状態へ保存されず、再試行時に状態と本文が不整合になる点を指摘する。レビュー原文・4成果物は[Cycle 3出力](../artifacts/qa_cycles/unify-qa-skill-workflow/c3/01_review.md)に保存されており、変更しない。
 
 ## 修復方針
 

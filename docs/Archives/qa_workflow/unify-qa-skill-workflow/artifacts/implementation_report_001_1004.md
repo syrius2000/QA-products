@@ -1,7 +1,7 @@
 # QAループ統合実装の進捗・検証報告
 
 created: 2026-10-04 18:54 (JST)
-update: 2026-10-04 21:17 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 ## 実装範囲と状態
@@ -10,7 +10,7 @@ author: Codex (GPT-6)
 
 新QA runtime/Skill、Cloud/Python実行契約、Git preflight、指摘別計画と承認、対象限定公開、訂正と再QA、QA終了判断、旧blind結果読取を実装した。QA-F01の全受入基準列挙・原文照合、QA-F02の修正提出後の全製品snapshot固定を含む。追加確認で前回Findingにテンプレート文しかないのに再確認済みになる穴を見つけ、根拠検査で拒否するよう修正した。承認計画の実施方式を提出時に省略すると照合を迂回できる点も、計画方式の必須照合へ修正した。
 
-Cloud handoff確認で、新Skillの単一Markdown契約と旧 `blind-qa-cycle` の4成果物契約を同じ依頼で読む矛盾も発見した。通常QA用の [独立Reviewer契約](../../quality-loop/skills/quality-qa/references/reviewer_contract.md) を追加し、固定Reviewer資料を新Skillと新契約へ限定した。Skillを0.2.1へ更新し、生成依頼・静的template・OpenSpec設計・回帰fixtureに同じ境界を反映した。
+Cloud handoff確認で、新Skillの単一Markdown契約と旧 `blind-qa-cycle` の4成果物契約を同じ依頼で読む矛盾も発見した。通常QA用の [独立Reviewer契約](../../../../../quality-loop/skills/quality-qa/references/reviewer_contract.md) を追加し、固定Reviewer資料を新Skillと新契約へ限定した。Skillを0.2.1へ更新し、生成依頼・静的template・OpenSpec設計・回帰fixtureに同じ境界を反映した。
 
 最終preflightからCLIの非JSON表示で例外終了する問題も検出し、表示処理と回帰テストを修正した。最終QA依頼は `ad6ca1ee196bd75bed026858c2de9586ca49c85c` を計画033開始baseline、`22b0a3e24fa95cd477afe5a0b7e6d559c1c65f14` をpush済み実装前tipとして、両者以降を固定範囲にする。
 
@@ -26,7 +26,7 @@ OpenSpecタスクは37/39完了。独立QA（9.3）とQA後の最終引渡し報
 - 開発runtimeと配布Skill内runtimeは同一。既存Quality Loop Core、`quality-review` runtime、`quality-response` runtimeの差分なし。
 - 回帰fixtureは全基準照合、複数製品pathの提出境界、commit/push失敗再試行、remote review-only fast-forwardと製品変更拒否、修正方式承認、前回FindingのEvidence付き再確認、ローカル全サイクル終了判断を含む。
 
-開始時インベントリは[QA runtime・既存基盤一覧](qa_runtime_inventory_001_1004.md)、残タスクと検証契約は[OpenSpecタスクリスト](../../openspec/changes/unify-qa-skill-workflow/tasks.md)を参照。
+開始時インベントリは[QA runtime・既存基盤一覧](qa_runtime_inventory_001_1004.md)、残タスクと検証契約は[OpenSpecタスクリスト](../../../../../openspec/changes/unify-qa-skill-workflow/tasks.md)を参照。
 
 ## 独立QAと次操作
 

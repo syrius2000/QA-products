@@ -1,7 +1,7 @@
 # 別PCでの開発引継ぎメモ
 
 created: 2026-10-05 06:10 (JST)
-update: 2026-10-05 06:10 (JST)
+update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
 
 このメモは、会社など別の場所・PCで開発を再開するための入口です。clone後は最初にここを読み、記載された作業branchから始めてください。
@@ -61,10 +61,10 @@ git status -sb
 
 ## 確認すべき資料
 
-- [Plan 035と対象パス](docs/Artifacts/implementation_plan_035_1005.md)
-- [QA-003 Cycle 1レビュー](docs/Artifacts/qa_review_003_1004.md)
-- [QAレビュー評価記録](docs/Artifacts/qa_review_evaluation_001_1005.md)
-- [QA-003状態記録](docs/Artifacts/qa_state_003_1004.json)
+- [Plan 035と対象パス](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/implementation_plan_035_1005.md)
+- [QA-003 Cycle 1レビュー](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_review_003_1004.md)
+- [QAレビュー評価記録](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_review_evaluation_001_1005.md)
+- [QA-003状態記録](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_state_003_1004.json)
 - [統合QA OpenSpecタスク](openspec/changes/unify-qa-skill-workflow/tasks.md)
 
 ## 検証状況と注意点
