@@ -1,0 +1,684 @@
+{
+  "schema": "blind-qa-cycle-v1",
+  "topic": "unify-qa-skill-workflow",
+  "cycle": 3,
+  "baseline": "17bd3e7a3d81842bb5906ac7ab25329ec0be4ffb",
+  "reviewed": "47b6a58f3323d4fcd455d768314f2e4c97b88dfd",
+  "audience": "local",
+  "remote_visibility": "local-only",
+  "gate": "FAIL",
+  "focus_packs": [
+    "path-sanitization",
+    "openspec-coherence"
+  ],
+  "findings": [
+    {
+      "id": "QA-F01",
+      "severity": "PASS",
+      "status": "CLOSED",
+      "path": "quality-loop/qa_workflow/workflow.py:291",
+      "expected": "最終依頼と製品を走査し、招待commitのblob hashをpush前に照合する",
+      "repair_surface": "code",
+      "recheck": "解消",
+      "evidence": "291–315行、未確定経路の回帰testおよび固定SHA正常系・走査後改変・最終化時機密/個人パスfault injectionで確認。新しい拒否境界・状態保存問題はQA-C3-F01として分離。"
+    },
+    {
+      "id": "QA-F02",
+      "severity": "PASS",
+      "status": "CLOSED",
+      "path": "quality-loop/qa_workflow/workflow.py:162",
+      "expected": "既存必須checkを完全保持し、許される変更の旧新hashと構造化差分を記録する",
+      "repair_surface": "code",
+      "recheck": "解消",
+      "evidence": "162–198行。10種の必須契約変更×承認あり/なしの20件を拒否。hash不足/誤hash/他契約hash拒否、任意追加成功とhash/diff一致。"
+    },
+    {
+      "id": "QA-C3-F01",
+      "severity": "Medium",
+      "status": "OPEN",
+      "path": "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md:119",
+      "related_paths": [
+        "quality-loop/qa_workflow/workflow.py:285",
+        "quality-loop/qa_workflow/workflow.py:300",
+        "quality-loop/qa_workflow/workflow.py:312",
+        "quality-loop/skills/quality-qa/references/publish.md:21"
+      ],
+      "expected": "最終走査の拒否境界と対象commit保持・状態保存・再試行契約が仕様/手順/runtimeで一致すること",
+      "repair_surface": "code",
+      "acceptance_criteria": [
+        "AC-003"
+      ],
+      "title": "最終走査拒否時の対象commit/状態が公開停止・再試行契約と一致しない",
+      "evidence": "spec:119は対象commit前停止、publish.md:21はcommit開始禁止を約束するが、workflow:285の対象commitと_finalize:231の依頼書換えは最終走査:300より前。secret/個人パスの最終化fault injectionで対象commit作成済み、state.reviewed=null、最終本文と保存invite_hash不一致を観測。正常な最終本文へ戻して再試行しても「下書き依頼が外部で変更されています」。招待commit/pushは未実施、remoteと対象外indexは不変。",
+      "impact": "仕様が約束する無変更停止を満たさず、拒否後に同じ操作だけで整合した再試行を行えない。秘密情報が公開された証拠はない。"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-C3-01",
+      "closes": [
+        "QA-C3-F01"
+      ],
+      "repair_surface": "code",
+      "paths": [
+        "quality-loop/qa_workflow/workflow.py",
+        "quality-loop/skills/quality-qa/runtime/qa_workflow/workflow.py",
+        "quality-loop/tests/test_qa_workflow_contract.py",
+        "openspec/changes/unify-qa-skill-workflow/specs/unified-qa-workflow/spec.md",
+        "quality-loop/skills/quality-qa/references/publish.md"
+      ],
+      "action": "対象SHA確定前/後で公開停止境界を明確化し、承認した契約にruntime・OpenSpec・公開手順を合わせる。最終走査拒否時も作成済み対象commitと最終依頼hashを整合した非公開状態として保持するか、採用する停止契約に沿った安全な回復経路を設ける。",
+      "done_when": "最終化で危険内容/走査失敗が発生しても招待commitとremote更新はなく、対象外index不変。HEAD/依頼/stateの状態が仕様どおりで、原因解消後に既存対象commitを再利用して再試行できる。",
+      "verify": "未確定対象でfinalize後secret/個人パスを注入するfixture、拒否後のstate/hash照合と回復再試行fixtureを追加し、正本/配布同期、pytest全suite、OpenSpec strictを固定SHAで再検証する。"
+    }
+  ],
+  "blocking_count": 1,
+  "reviewer": "Codex (GPT-6)、独立レビュー依頼の別担当セッション",
+  "created": "2026-10-05 15:55 (JST)",
+  "updated": "2026-10-05 15:55 (JST)",
+  "provenance": {
+    "repository": "syrius2000/qa-products",
+    "branch": "codex/unify-qa-skill-workflow",
+    "ancestry": "baselineはreviewedの祖先",
+    "invitation_path": "docs/Artifacts/qa_cycles/unify-qa-skill-workflow/c3/00_invite.md",
+    "invitation_sha256": "0043edf3f2396586de2afaa230d73801701948928e2cb9d99db41a2af393c153",
+    "materials": {
+      "quality-loop/skills/quality-qa/SKILL.md": "57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261",
+      "quality-loop/skills/quality-qa/references/reviewer_contract.md": "0a0cf6793197fedd16bd365b8d1b8280a790d77c83c8f3b7d1eda0338c6dec42"
+    },
+    "baseline_reviewer_contract_sha256": "84f11def7f338acbf91362bbd8ad62834cd195383830a8684ec7ec7f4d3bf8cc",
+    "status": "PASS"
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "label": "QA-F01",
+      "text": "対象SHA確定後に生成された最終依頼本文と製品対象が走査され、最終依頼SHAが公開状態へ記録される。走査後の変更は招待commit前に拒否され、commit内blob hashと走査hashの一致をpush前に検証する。正常系・改変拒否・機密/個人パス拒否で、拒否時にremoteへ公開されないこと。",
+      "status": "PASS",
+      "evidence": "workflow.py:291–315、tests/test_qa_workflow_contract.py:1078–1122。固定SHA正常系ではsnapshot/contract/招待blob/commit識別の全一致。未確定正常系はsuiteで確認。改変拒否、最終化後のsecret/個人パス拒否は独立fixtureでremote不変・対象外index不変。"
+    },
+    {
+      "id": "AC-002",
+      "label": "QA-F02",
+      "text": "既存必須checkの削除、ID変更、`required=false`、argv/cwd/env/timeout/期待終了コード等の変更を承認文があっても拒否する。許される契約変更では旧新hashを明示承認へ結び付け、記録に旧新契約hashと構造化差分を保存する。",
+      "status": "PASS",
+      "evidence": "workflow.py:162–198、tests/test_qa_workflow_contract.py:660–706。Python minimum・typeを含む20拒否fixture、hash不足/誤hash/他契約hash拒否、任意追加の旧新hashとadded/removed/changedを確認。"
+    },
+    {
+      "id": "AC-003",
+      "label": "同期・仕様",
+      "text": "正本runtimeと配布runtime、OpenSpec要件、公開手順、Reviewer契約が実装挙動と一致し、対象SHA上のReviewer資材hashが依頼記載値と一致する。",
+      "status": "FAIL",
+      "evidence": "runtime全5モジュールraw bytes一致とReviewer資材hash一致はPASS。ただしspec.md:119、publish.md:21/29とworkflow.py:285–312の拒否境界・状態保存にQA-C3-F01の不一致。"
+    },
+    {
+      "id": "AC-004",
+      "label": "回帰",
+      "text": "対象SHAでF01/F02の正常系・拒否系を含む `quality-loop` の必須suiteが実行可能である。実行できない項目は結果と理由を残し、PASSにしない。",
+      "status": "PASS",
+      "evidence": "固定SHAの隔離tree、Python 3.12.3/pytest 7.4.4で174 passed、exit 0。同期6 passed、strict OpenSpec valid=true。初回実行の隔離条件不備と再実行を区別して記録。"
+    }
+  ],
+  "checks": [
+    {
+      "argv": [
+        "python3",
+        "--version"
+      ],
+      "cwd": ".",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e7wzazoe",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider"
+      },
+      "timeout": 30,
+      "exit_code": 0,
+      "duration_ms": 2,
+      "stdout": "Python 3.12.3\n",
+      "stderr": "",
+      "stdout_sha256": "5b3e43dc38ca01e3f5a7854ba50d4330864b0c1e0f646650b2c78cf072acc366",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-PYTHON",
+      "required": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "argv": [
+        "pytest",
+        "--version"
+      ],
+      "cwd": "quality-loop",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e7wzazoe",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider"
+      },
+      "timeout": 30,
+      "exit_code": 0,
+      "duration_ms": 221,
+      "stdout": "pytest 7.4.4\n",
+      "stderr": "",
+      "stdout_sha256": "4f9dfcc21a1f93a4ee147352b319c30a08c87083c56c6a21684da3d93ebbf0e9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-PYTEST-VERSION",
+      "required": false,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "argv": [
+        "pytest",
+        "tests",
+        "-q"
+      ],
+      "cwd": "quality-loop",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e7wzazoe",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider"
+      },
+      "timeout": 900,
+      "exit_code": 1,
+      "duration_ms": 10919,
+      "stdout": "............................................................F........... [ 41%]\n........................................................................ [ 82%]\n..............................                                           [100%]\n=================================== FAILURES ===================================\n_ ObservationTest.test_observe_git_changes_fails_gracefully_when_not_git_repo __\n\nself = <test_observation.ObservationTest testMethod=test_observe_git_changes_fails_gracefully_when_not_git_repo>\n\n    def test_observe_git_changes_fails_gracefully_when_not_git_repo(self) -> None:\n        with tempfile.TemporaryDirectory() as temp_dir:\n            non_git = Path(temp_dir)\n>           with self.assertRaises(QualityLoopError) as ctx:\nE           AssertionError: QualityLoopError not raised\n\ntests/test_observation.py:67: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_observation.py::ObservationTest::test_observe_git_changes_fails_gracefully_when_not_git_repo\n1 failed, 173 passed in 10.67s\n",
+      "stderr": "",
+      "stdout_sha256": "bf79e08fe7687210babf90013014dc1f3f9c8631fb8f08212d855340ef2fcf97",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-SUITE-INITIAL",
+      "required": false,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "FAIL",
+      "note": "隔離配置の親Git探索によるReviewer実行条件不備。探索境界を設定したCHECK-SUITEで再実行。"
+    },
+    {
+      "argv": [
+        "pytest",
+        "tests/test_sync_productivity_skills.py",
+        "-q"
+      ],
+      "cwd": "quality-loop",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e7wzazoe",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider"
+      },
+      "timeout": 120,
+      "exit_code": 0,
+      "duration_ms": 801,
+      "stdout": "......                                                                   [100%]\n6 passed in 0.58s\n",
+      "stderr": "",
+      "stdout_sha256": "83ef11ace12d1ef8964708e04e58196db7ea23f86721f1686aa707958b594b11",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-RUNTIME-SYNC",
+      "required": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "argv": [
+        "openspec",
+        "validate",
+        "unify-qa-skill-workflow",
+        "--strict",
+        "--json"
+      ],
+      "cwd": ".",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e7wzazoe",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider"
+      },
+      "timeout": 120,
+      "exit_code": 0,
+      "duration_ms": 429,
+      "stdout": "OpenSpec valid=true、issues=[]。root.pathの個人絶対パスのみ表示上置換。{\n  \"items\": [\n    {\n      \"id\": \"unify-qa-skill-workflow\",\n      \"type\": \"change\",\n      \"valid\": true,\n      \"issues\": [],\n      \"durationMs\": 27\n    }\n  ],\n  \"summary\": {\n    \"totals\": {\n      \"items\": 1,\n      \"passed\": 1,\n      \"failed\": 0\n    },\n    \"byType\": {\n      \"change\": {\n        \"items\": 1,\n        \"passed\": 1,\n        \"failed\": 0\n      }\n    }\n  },\n  \"version\": \"1.0\",\n  \"root\": {\n    \"path\": \"<OUTPUT>/.review-e7wzazoe/tree\",\n    \"source\": \"nearest\"\n  }\n}\n",
+      "stderr": "",
+      "stdout_sha256": "cd69625783159725fcb4d8bef6fc8c7128a39c6ddfc72b8cb066558385bf0416",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-OPENSPEC",
+      "required": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "argv": [
+        "pytest",
+        "tests",
+        "-q"
+      ],
+      "cwd": "quality-loop/",
+      "env": {
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPATH": ".",
+        "TMPDIR": "<OUTPUT>/.review-e6b8d80u",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "GIT_CEILING_DIRECTORIES": "<OUTPUT>",
+        "OPENSPEC_TELEMETRY": "0"
+      },
+      "timeout": 900,
+      "exit_code": 0,
+      "duration_ms": 10254,
+      "stdout": "........................................................................ [ 41%]\n........................................................................ [ 82%]\n..............................                                           [100%]\n174 passed in 10.01s\n",
+      "stderr": "",
+      "stdout_sha256": "dc5b11a4bdc8b7e6800203c825bcea6027c5310289c1fe312722314f3ddfa4a0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false,
+      "id": "CHECK-SUITE",
+      "required": true,
+      "expected_exit_codes": [
+        0
+      ],
+      "python_version": "3.12.3",
+      "pytest_version": "7.4.4",
+      "status": "PASS",
+      "note": ""
+    }
+  ],
+  "additional_evidence": {
+    "required_contract_probes": [
+      {
+        "case": "required-delete",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-delete",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-id",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-id",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-required",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-required",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-argv",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-argv",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-cwd",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-cwd",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-env",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-env",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-timeout",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-timeout",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-exit",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-exit",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-python_minimum",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-python_minimum",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-type",
+        "approval": false,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "required-type",
+        "approval": true,
+        "result": "QAError: 再QAで既存の必須checkが削除または変更されています"
+      },
+      {
+        "case": "missing-hashes",
+        "result": "QAError: 再QAで実行check契約が変わっています",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "wrong-new",
+        "result": "QAError: 再QAで実行check契約が変わっています",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "other-contract",
+        "result": "QAError: 再QAで実行check契約が変わっています",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "duplicate",
+        "result": "QAError: 実行check IDが不正または重複しています",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "unhashable-id",
+        "result": "TypeError: unhashable type: 'list'",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "non-dict",
+        "result": "TypeError: 'NoneType' object is not subscriptable",
+        "old_state_unchanged": true
+      },
+      {
+        "case": "allowed-addition",
+        "checks": [
+          {
+            "id": "CHECK-REQUIRED",
+            "type": "python-version",
+            "required": true,
+            "argv": [
+              "python3",
+              "--version"
+            ],
+            "cwd": ".",
+            "env": {
+              "PYTHONDONTWRITEBYTECODE": "1"
+            },
+            "timeout_seconds": 120,
+            "expected_exit_codes": [
+              0
+            ],
+            "python_minimum": "3.12"
+          },
+          {
+            "id": "CHECK-EXTRA",
+            "type": "command",
+            "required": false,
+            "argv": [
+              "true"
+            ],
+            "cwd": ".",
+            "env": {},
+            "timeout_seconds": 30,
+            "expected_exit_codes": [
+              0
+            ]
+          }
+        ],
+        "approval_record": {
+          "message": "check契約を追加する 旧hash=cda6296e7271dfd92a6ca1575bf48ba0aad0ec6cad15e216ca0f553809796586 新hash=a82c0af9e935b48fe666d2da14313dea9e0925174472fb77381623afdcc58766",
+          "previous": [
+            {
+              "id": "CHECK-REQUIRED",
+              "type": "python-version",
+              "required": true,
+              "argv": [
+                "python3",
+                "--version"
+              ],
+              "cwd": ".",
+              "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+              },
+              "timeout_seconds": 120,
+              "expected_exit_codes": [
+                0
+              ],
+              "python_minimum": "3.12"
+            }
+          ],
+          "approved": [
+            {
+              "id": "CHECK-REQUIRED",
+              "type": "python-version",
+              "required": true,
+              "argv": [
+                "python3",
+                "--version"
+              ],
+              "cwd": ".",
+              "env": {
+                "PYTHONDONTWRITEBYTECODE": "1"
+              },
+              "timeout_seconds": 120,
+              "expected_exit_codes": [
+                0
+              ],
+              "python_minimum": "3.12"
+            },
+            {
+              "id": "CHECK-EXTRA",
+              "type": "command",
+              "required": false,
+              "argv": [
+                "true"
+              ],
+              "cwd": ".",
+              "env": {},
+              "timeout_seconds": 30,
+              "expected_exit_codes": [
+                0
+              ]
+            }
+          ],
+          "previous_hash": "cda6296e7271dfd92a6ca1575bf48ba0aad0ec6cad15e216ca0f553809796586",
+          "approved_hash": "a82c0af9e935b48fe666d2da14313dea9e0925174472fb77381623afdcc58766",
+          "diff": {
+            "added": [
+              "CHECK-EXTRA"
+            ],
+            "removed": [],
+            "changed": []
+          },
+          "at": "2026-10-05 15:51 (JST)"
+        }
+      }
+    ],
+    "finalization_and_recovery_probes": [
+      {
+        "case": "finalized-danger-and-recovery",
+        "payload": "API_TOKEN=live-secret-value-123",
+        "error": "QAError: 最終公開対象に機密情報または個人ローカルパスの疑いがあります",
+        "target_commit_created": true,
+        "unrelated_index_entry_unchanged": true,
+        "staged_paths": "src/unrelated.txt",
+        "remote_unchanged": true,
+        "state_reviewed": null,
+        "stored_invite_hash_matches_healthy_final": false,
+        "retry_after_safe_regeneration": "QAError: 下書き依頼が外部で変更されています"
+      },
+      {
+        "case": "finalized-danger-and-recovery",
+        "payload": "path=/Users/real-person/private/data.csv",
+        "error": "QAError: 最終公開対象に機密情報または個人ローカルパスの疑いがあります",
+        "target_commit_created": true,
+        "unrelated_index_entry_unchanged": true,
+        "staged_paths": "src/unrelated.txt",
+        "remote_unchanged": true,
+        "state_reviewed": null,
+        "stored_invite_hash_matches_healthy_final": false,
+        "retry_after_safe_regeneration": "QAError: 下書き依頼が外部で変更されています"
+      }
+    ],
+    "publication_probes": [
+      {
+        "case": "postscan-mutation-with-user-index",
+        "error": "表示済み対象から内容が変わりました",
+        "no_invite_commit": true,
+        "no_remote_topic": true,
+        "user_index_unchanged": true
+      },
+      {
+        "case": "fixed-sha-publish",
+        "snapshot_hash_matches": true,
+        "contract_hash_matches": true,
+        "invite_blob_matches": true,
+        "commit_id_matches": true
+      }
+    ],
+    "management_checks": [
+      {
+        "argv": [
+          "openspec",
+          "list",
+          "--json"
+        ],
+        "cwd": ".",
+        "timeout": 60,
+        "exit_code": 0,
+        "duration_ms": 406,
+        "stdout_sha256": "d54a84514e1d8b56180f2842bd096e8e2c40392089c4120d875410a8d6b1582e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "summary": {
+          "schema": null,
+          "progress": null,
+          "changes": [
+            {
+              "name": "deploy-quality-loop-skills",
+              "completedTasks": 25,
+              "totalTasks": 25
+            },
+            {
+              "name": "spec-driven-qa-author-response-submission",
+              "completedTasks": 19,
+              "totalTasks": 19
+            },
+            {
+              "name": "spec-driven-qa-reviewer-case-lifecycle",
+              "completedTasks": 24,
+              "totalTasks": 24
+            },
+            {
+              "name": "unify-qa-skill-workflow",
+              "completedTasks": 46,
+              "totalTasks": 47
+            }
+          ]
+        }
+      },
+      {
+        "argv": [
+          "openspec",
+          "status",
+          "--change",
+          "unify-qa-skill-workflow",
+          "--json"
+        ],
+        "cwd": ".",
+        "timeout": 60,
+        "exit_code": 0,
+        "duration_ms": 389,
+        "stdout_sha256": "6289ef92f71a5452799660eca75dc0df83ff350251ffe27a191fe77d5bb3db6f",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "summary": {
+          "schema": "spec-driven",
+          "progress": null,
+          "changes": []
+        }
+      },
+      {
+        "argv": [
+          "openspec",
+          "instructions",
+          "apply",
+          "--change",
+          "unify-qa-skill-workflow",
+          "--json"
+        ],
+        "cwd": ".",
+        "timeout": 60,
+        "exit_code": 0,
+        "duration_ms": 389,
+        "stdout_sha256": "a3abcf8b4cebfcad9a02a13b3834203451c25d6a6bc926b3335ee790146762ef",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "summary": {
+          "schema": "spec-driven",
+          "progress": {
+            "total": 47,
+            "complete": 46,
+            "remaining": 1
+          },
+          "changes": []
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "最終化後の危険本文はreview.inviteを一時的に差し替えた合成fault injection。通常入力で同じ危険本文が自動生成されることを立証したものではない。",
+    "実GitHub公開、ネットワーク、認証情報、依存導入を利用していない。bare remoteへのfixture内Git操作だけ。",
+    "Python 3.10、Windows/macOS、機密検出の網羅性はunverified。"
+  ],
+  "write_scope": "指定4成果物のみ。出力DIR配下の一時tree/fixtureは終了時削除。既存00_invite.mdとCycle 2記録は保持。"
+}

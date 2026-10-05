@@ -70,7 +70,7 @@ author: Codex (GPT-6)
 - [x] 9.1 Preflight、初回依頼、結果確認、計画・承認・提出、修正commit、再QA、前回指摘再確認、終了判断までをlocal fixtureで実行。dirty preflightの非変更、default branch・範囲外remote先行・unrelated staged path拒否／保持、必須PASS/FAIL/ERROR、環境不足、任意未実行をfixtureで確認。
 - [x] 9.2 既存Quality Loop regression suite込みで163 passed・39 subtests、Python 3.14.7／pytest 9.0.2、`pytest tests -q`、cwd `quality-loop/`、exit 0、duration 15944ms、stdout SHA-256 `fb03358cc0592ec499dcae783b6012b8097fa796673386d8e6c927c10d2a2788`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を記録。Python 3.10環境は見つからずunverified。旧Core/2 runtime diffなし、新QA runtime一致、strict OpenSpec valid。
 - [x] 9.3 別の独立担当によるQA-003 Cycle 1を受領した。判定FAIL、QA-F01〜QA-F05修正対象、QA-F06追試対象として[原レビュー](../../../docs/Artifacts/qa_review_003_1004.md)へ記録。修正後の独立QAは本項の完了とは混同せず後続cycleで実施する。
-- [ ] 9.4 実装報告へ要件対応、タスク数、実行検証、独立QA状態、未確認事項、外部配置・削除・commit・push・master統合の実施有無と次操作を記載する。終了判断と統合の指示がなければ実行せず、既存差分を保持した最終差分で今回の境界を確認する。
+- [x] 9.4 [引渡し報告](../../../docs/Artifacts/implementation_report_002_1005.md)へ要件対応、タスク状況、現行HEADでの実行検証、独立QA状態、未確認事項、外部配置・削除・commit・push・master統合の実施有無と次操作を記載した。Cycle 1はFAIL、Cycle 2は未実施と明記。終了判断・統合は実行せず、既存の未追跡gomi.memo.mdを保持した。
 
 ## 10. QA-003指摘対応（Plan 035）
 
@@ -81,4 +81,19 @@ author: Codex (GPT-6)
 - [x] 10.5 静的Markdown templateにparser必須節、参照資材hash行、実施側タスク節、check記録形式を揃え、静的templateのparser受入テストを追加。
 - [x] 10.6 Plan 033と履歴の退避済み・復元可能表現をQA対象SHAのGit treeと照合し訂正。024〜028の所在不明、029/030/032のflat存在、031の記録hash不一致を区別し、復元未検証とした。
 - [x] 10.7 Provenance plansの壊れたArtifacts README相対linkを対象tree内の実在参照へ直し、関連文書linkを検査。
-- [x] 10.8 QA-003 Reviewed SHA `d9bad5c125791306e38bca8830b4082f7f38fc6b`を`git archive`で隔離し、Python 3.14.7／pytest 9.0.2、`pytest tests -q`、cwd `quality-loop/`、env `PYTHONDONTWRITEBYTECODE=1; PYTHONPATH=.`、timeout 300s、exit 0、duration 16302ms、163 passed／39 subtests、stdout SHA-256 `fd863f5c0b362da564cbbb488babbc798cdb7938de223492c7abfd18a9d7b9de`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を確認。修正候補は未commit作業ツリーのためcommit SHAではなく、HEAD `418dcb995344b611f9831e7f683d8cdbdf9cbc70`＋対象コード/runtime/test 12ファイルのsnapshot SHA-256 `930358545c56fd91377b33449d1173c979aaa44c1b39e473b01c0182885d62b6`で識別した。同環境・同argv・cwd・env・timeoutでexit 0、duration 17947ms、173 passed／44 subtests、stdout SHA-256 `d61a4001b088de997d7f61368f44150f9b526a9017b9748c574ecef413e95a2d`、stderr SHA-256（空）は同上。修正候補の固定commitでの再実行と別ReviewerによるCycle 2は次段階で行う。
+- [x] 10.8 QA-003 Cycle 1のCloud Reviewerによるpytestは、pytest未導入で起動前ERRORとなった（詳細は原レビュー）。以下はそれとは別の実装側検証記録であり、CloudQAの成功結果ではない。元Reviewed SHA `d9bad5c125791306e38bca8830b4082f7f38fc6b`を`git archive`で隔離し、Python 3.14.7／pytest 9.0.2、`pytest tests -q`、cwd `quality-loop/`、env `PYTHONDONTWRITEBYTECODE=1; PYTHONPATH=.`、timeout 300s、exit 0、duration 16302ms、163 passed／39 subtests、stdout SHA-256 `fd863f5c0b362da564cbbb488babbc798cdb7938de223492c7abfd18a9d7b9de`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を確認。修正候補は未commit作業ツリーのためcommit SHAではなく、HEAD `418dcb995344b611f9831e7f683d8cdbdf9cbc70`＋対象コード/runtime/test 12ファイルのsnapshot SHA-256 `930358545c56fd91377b33449d1173c979aaa44c1b39e473b01c0182885d62b6`で識別した。同環境・同argv・cwd・env・timeoutでexit 0、duration 17947ms、173 passed／44 subtests、stdout SHA-256 `d61a4001b088de997d7f61368f44150f9b526a9017b9748c574ecef413e95a2d`、stderr SHA-256（空）は同上。現行固定HEAD `17bd3e7a3d81842bb5906ac7ab25329ec0be4ffb`でも実装側で同じ必須suiteを再実行した。Python 3.12.3／pytest 7.4.4、`pytest tests -q`、cwd `quality-loop/`、env `PYTHONDONTWRITEBYTECODE=1; PYTHONPATH=.`、timeout 300秒、exit 0、duration 9896ms、173 passed、stdout SHA-256 `3452b8fff506aea3725c266b2ee5ca6653eac73fc988225cf784aefdfa0afd00`、stderr SHA-256（空）`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`を記録した。この実行も実装側検証であり独立追試ではない。続くQA-003 Cycle 2の独立レビューは[レビュー記録](../../../docs/Artifacts/qa_review_003_cycle2_local_1005.md)のとおりGate HOLD。Baseline `d9bad5c125791306e38bca8830b4082f7f38fc6b`は163 passed、Reviewed `17bd3e7a3d81842bb5906ac7ab25329ec0be4ffb`は173 passed。QA-F01/F02未解決とReviewer契約hash不一致によりPASSではない。
+
+## 11. QA-003 Cycle 2 HOLD対応（Plan 036）
+
+- [x] 11.1 QA-F01: 対象SHA確定後の最終招待本文を走査し、招待SHAを状態と公開Evidenceに記録。走査後の改変をcommit前に拒否し、招待commit内blobとのhash一致後に限りpushする。bare remote fixtureで最終招待hash＝状態記録hash＝commit blob hashを確認。
+- [x] 11.2 QA-F02: 既存必須checkの削除・ID変更・任意化・実行条件弱化を拒否。その他のcheck契約変更は旧新hashを含む承認を要求し、hashと構造化差分を記録する。削除、ID変更、required、argv、cwd、env、timeout、expected exit変更と不一致hashを拒否するfixtureを追加。
+- [x] 11.3 基盤/runtime同期、F01/F02正常系・拒否系、全quality-loop pytest suiteを検証。Python 3.12.3、`PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest tests -q`、cwd `quality-loop/`、exit 0、174 passed in 9.96s。`openspec validate unify-qa-skill-workflow --strict --json`はvalid。対象commit SHAの固定と独立QAは11.4で別途実施する。
+- [x] 11.4 修正後SHAからQA依頼を作り直し、Reviewer Skill・契約hashを対象treeと照合して、別担当によるローカル独立QAを実施した。Cycle 3は174 passed、QA-F01/F02解消、QA-C3-F01を新規FindingとしてGate FAIL。記録は[Cycle 3レビュー](../../../docs/Artifacts/qa_cycles/unify-qa-skill-workflow/c3/01_review.md)。Cycle 2のHOLD/Finding原文は変更していない。
+- [ ] 11.5 独立QAの結果を受領し、Finding dispositionはOwnerが判断する。修正・再QAが必要なら後続cycleへ引き継ぎ、PASS前に完了扱いしない。
+
+## 12. QA-003 Cycle 3 Finding 対応（Plan 037）
+
+- [ ] 12.1 最終走査拒否時の停止境界と状態保存を、対象commit・最終依頼hash・case state・ユーザーindex・招待commit・remoteの各条件に分けて定義し、実装計画037の承認を得る。
+- [ ] 12.2 承認された計画に従い、QA-C3-F01の拒否状態保存と回復案内を正本runtime・配布runtime・OpenSpec・公開手順へ実装する。
+- [ ] 12.3 最終化後secret/個人パス拒否、state/hash整合、target commit再利用、招待commit/pushなし、index保持の回帰fixtureを実行する。
+- [ ] 12.4 固定Reviewed SHAと正しいReviewer資材hashで別担当によるCycle 4ローカル独立QAを行う。Cycle 3のFAIL・Finding・Evidenceは変更しない。
