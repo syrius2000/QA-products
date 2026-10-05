@@ -89,11 +89,11 @@ author: Codex (GPT-6)
 - [x] 11.2 QA-F02: 既存必須checkの削除・ID変更・任意化・実行条件弱化を拒否。その他のcheck契約変更は旧新hashを含む承認を要求し、hashと構造化差分を記録する。削除、ID変更、required、argv、cwd、env、timeout、expected exit変更と不一致hashを拒否するfixtureを追加。
 - [x] 11.3 基盤/runtime同期、F01/F02正常系・拒否系、全quality-loop pytest suiteを検証。Python 3.12.3、`PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest tests -q`、cwd `quality-loop/`、exit 0、174 passed in 9.96s。`openspec validate unify-qa-skill-workflow --strict --json`はvalid。対象commit SHAの固定と独立QAは11.4で別途実施する。
 - [x] 11.4 修正後SHAからQA依頼を作り直し、Reviewer Skill・契約hashを対象treeと照合して、別担当によるローカル独立QAを実施した。Cycle 3は174 passed、QA-F01/F02解消、QA-C3-F01を新規FindingとしてGate FAIL。記録は[Cycle 3レビュー](../../../docs/Artifacts/qa_cycles/unify-qa-skill-workflow/c3/01_review.md)。Cycle 2のHOLD/Finding原文は変更していない。
-- [ ] 11.5 独立QAの結果を受領し、Finding dispositionはOwnerが判断する。修正・再QAが必要なら後続cycleへ引き継ぎ、PASS前に完了扱いしない。
+- [x] 11.5 独立QAの結果を受領し、OwnerがQA-C3-F01の修正・再QAを選択した。修正はPlan 037で管理し、Cycle 4の独立QAがPASSするまで完了扱いしない。
 
 ## 12. QA-003 Cycle 3 Finding 対応（Plan 037）
 
-- [ ] 12.1 最終走査拒否時の停止境界と状態保存を、対象commit・最終依頼hash・case state・ユーザーindex・招待commit・remoteの各条件に分けて定義し、実装計画037の承認を得る。
-- [ ] 12.2 承認された計画に従い、QA-C3-F01の拒否状態保存と回復案内を正本runtime・配布runtime・OpenSpec・公開手順へ実装する。
-- [ ] 12.3 最終化後secret/個人パス拒否、state/hash整合、target commit再利用、招待commit/pushなし、index保持の回帰fixtureを実行する。
+- [x] 12.1 最終走査拒否時の停止境界と状態保存を、対象commit・最終依頼hash・case state・ユーザーindex・招待commit・remoteの各条件に分けて定義し、2026-10-05にOwnerが実装計画037を承認した。
+- [x] 12.2 承認された計画に従い、QA-C3-F01の拒否状態保存と回復案内を正本runtime・配布runtime・OpenSpec・公開手順へ実装した。
+- [x] 12.3 secret/個人パスの最終走査拒否について、Reviewed SHA・招待本文hash・Reviewer資材hash・check契約hashのstate一致、製品限定target commit、拒否後の再公開停止、新規stateによる同SHA再利用、招待commit/pushなし、remote/index不変をfixtureで確認した。Python 3.14.7／pytest 9.0.2、`PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest tests -q`で175 passed・52 subtests passed。正本runtimeと配布runtimeは一致し、OpenSpec strict validationはvalid。
 - [ ] 12.4 固定Reviewed SHAと正しいReviewer資材hashで別担当によるCycle 4ローカル独立QAを行う。Cycle 3のFAIL・Finding・Evidenceは変更しない。

@@ -86,7 +86,15 @@ class Workflow:
 
     def describe(self, s):
         phase = s["phase"]
-        if s["pending_correction"] or phase == "invalid":
+        rejected_scan = s.get("publication_scan", {}).get("scan_result") == "REJECTED"
+        hide_artifact_content = False
+        if rejected_scan:
+            actor = "ユーザー"
+            action = s["publication_scan"].get("recovery_action", "原因を除いた新しいQA依頼を作成し、記録済み対象SHAを再利用してください")
+            reason = "最終公開走査で拒否されました。既存の依頼と状態は保持されています"
+            artifact = s["state_path"]
+            hide_artifact_content = True
+        elif s["pending_correction"] or phase == "invalid":
             actor, action, reason = "ユーザー→別のレビュー担当", "訂正依頼文を渡してください", "結果の不備または訂正待ちです"
             artifact = (s["pending_correction"] or {}).get("invite")
         elif phase == "draft":
@@ -124,7 +132,7 @@ class Workflow:
         else:
             actor, action, reason = "ユーザー→別のレビュー担当", "依頼文を渡し、指定先へレビューを提出してもらってください", "レビューを待っています"
             artifact = s["invite"]
-        invitation = safe_path(self.root, artifact).read_text() if artifact and safe_path(self.root, artifact).is_file() else None
+        invitation = safe_path(self.root, artifact).read_text() if not hide_artifact_content and artifact and safe_path(self.root, artifact).is_file() else None
         return {"id": s["id"], "cycle": s["cycle"], "revision": s["revision"], "phase": phase, "reviewed": s["reviewed"], "next": {"担当": actor, "操作": action, "理由": reason, "必要入力": artifact or s["id"], "依頼文": invitation}, "issues": s["reviews"][-1]["issues"] if s["reviews"] else [], "plan_hash": s.get("plan", {}).get("hash"), "plan_paths": s.get("plan", {}).get("paths", []), "review_path": self._expected(s)["review_path"], "products": sorted(s["products"]), "state_path": s["state_path"], "checks": {"構造検査": "確認済み" if s["active_review"] else "未完了", "独立性": "担当・経路の記録。完全な証明ではない", "実クラウドQA": "結果の実行Evidenceを別途確認", "外部配置": "この操作では実施しない"}}
 
     def prepare(self, purpose: str, criteria: list[str], products: list[str], implementer: str, author: str, audience="cloud", assumptions="未指定", baseline=None, reviewed=None, repository=None, excluded=None, previous=None, required_tests=None, checks=None, check_contract_approval=None):
@@ -251,6 +259,12 @@ class Workflow:
     def publish(self, request, message: str, approved_paths: list[str], revision=None):
         with self.store.transaction():
             s = self._load(request, revision)
+            prior_scan = s.get("publication_scan", {})
+            if prior_scan.get("scan_result") == "REJECTED":
+                raise QAError(
+                    "最終公開走査で拒否済みの依頼は再利用できません",
+                    prior_scan.get("recovery_action", "拒否理由を解消した新しいQA依頼を作成し、記録済み対象SHAを指定してください"),
+                )
             if s["audience"] != "cloud" or not re.search(r"クラウド.*(?:出して|公開)|cloud.*(?:publish|QA)", message, re.I):
                 raise QAError("クラウド公開の実際のユーザー指示が必要です")
             required = set(s["products"]) | {s["invite"]}
@@ -293,22 +307,42 @@ class Workflow:
             final_snapshot = gitops.snapshot(self.root, final_paths)
             expected_final_snapshot = dict(current_products)
             expected_final_snapshot[s["invite"]] = {"mode": "100644", "hash": digest(invite_bytes)}
-            if final_snapshot != expected_final_snapshot:
-                raise QAError("最終QA依頼または製品対象が公開検査中に変更されました")
-            content_findings = gitops.publication_findings(self.root, final_paths)
-            if content_findings:
-                raise QAError("最終公開対象に機密情報または個人ローカルパスの疑いがあります", "検出: " + ", ".join(content_findings) + "。公開前に対象を修正してください")
+            recovery_action = (
+                f"{s['id']}のstateと依頼本文を編集せず保持してください。原因を除いた新しいQA依頼/stateを作り、"
+                f"--reviewed {s['reviewed']} を指定してこの製品対象commitを再利用してください。"
+                "新しい依頼の本文を確認するまで公開しないでください。"
+            )
             s["publication_scan"] = {
                 "product_snapshot_hash": fingerprint(current_products),
                 "invite_hash": digest(invite_bytes),
+                "reviewer_materials_hash": fingerprint(s.get("reviewer_materials", [])),
                 "check_contract_hash": fingerprint(contracts),
-                "scan_result": "PASS",
-                "at": now(),
+                "reviewed": s["reviewed"],
+                "scan_result": "PENDING",
+                "stage": "final-publication-scan",
+                "started_at": now(),
+                "recovery_action": recovery_action,
             }
-            scanned_invite_snapshot = {s["invite"]: final_snapshot[s["invite"]]}
-            # 対象commitや依頼commit後の失敗でも状態を残し、再試行で既存を再利用する。
-            self.store.save(s, s["revision"], "公開準備・対象固定")
+            # Target SHAと最終依頼のhashを、拒否し得る最終走査より先に永続化する。
+            self.store.save(s, s["revision"], "対象SHA・最終依頼hashを走査前保存")
             s = self.store.read(s["state_path"])
+            if final_snapshot != expected_final_snapshot:
+                self._record_final_scan_rejection(s, "snapshot-validation", ["snapshot-mismatch"])
+                raise QAError(
+                    "最終QA依頼または製品対象が公開検査中に変更されました",
+                    recovery_action,
+                )
+            content_findings = gitops.publication_findings(self.root, final_paths)
+            if content_findings:
+                self._record_final_scan_rejection(s, "final-publication-scan", content_findings)
+                raise QAError(
+                    "最終公開対象に機密情報または個人ローカルパスの疑いがあります",
+                    "検出分類: " + ", ".join(content_findings) + "。" + recovery_action,
+                )
+            s["publication_scan"].update({"scan_result": "PASS", "completed_at": now(), "findings": []})
+            self.store.save(s, s["revision"], "最終公開走査成功を保存")
+            s = self.store.read(s["state_path"])
+            scanned_invite_snapshot = {s["invite"]: final_snapshot[s["invite"]]}
             try:
                 invite_commit = gitops.commit_paths(self.root, [s["invite"]], scanned_invite_snapshot, f"QA invite {s['id']}")
                 committed_invite = gitops.tree_snapshot(self.root, invite_commit, [s["invite"]])[s["invite"]]
@@ -329,6 +363,17 @@ class Workflow:
                 s["phase"] = "published"
             s.pop("publish_error", None)
             return self._save(s, "topic公開・到達可能性確認")
+
+    def _record_final_scan_rejection(self, s, stage, findings):
+        scan = s["publication_scan"]
+        scan.update({
+            "scan_result": "REJECTED",
+            "stage": stage,
+            "findings": sorted(set(findings)),
+            "completed_at": now(),
+        })
+        s["publish_error"] = "最終公開走査拒否: " + ", ".join(scan["findings"])
+        self.store.save(s, s["revision"], "最終公開走査拒否と再開案内を保存")
 
     def verify(self, request, revision=None):
         """Execute only the explicitly declared argv checks and bind evidence to this product snapshot."""

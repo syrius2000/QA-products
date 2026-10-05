@@ -18,7 +18,9 @@ quality-qa-cli finalize --request QA-001 --message "この対象をローカル�
 quality-qa-cli verify --request QA-001
 ```
 
-対象SHAとReviewer資材hashを依頼本文へ確定した後、実際にcommitする最終招待本文と製品対象snapshotを走査する。最終招待のSHA-256を公開状態へ記録し、commit直前に同じhashであること、依頼commit内blobのhashも同じであることを確認する。検出、固定snapshotとの不一致、走査後の変更、またはcheck Evidenceのhash不一致があればcommit/pushを開始しない。テスト用の値は `API_KEY=test-token` や `/Users/qa-user/...` のような明示的な合成fixtureだけを例外として扱い、実値らしい秘密情報は通過させない。
+対象SHAとReviewer資材hashを依頼本文へ確定した後、実際にcommitする最終招待本文と製品対象snapshotを走査する。Reviewed SHA、製品snapshot hash、最終招待hash、Reviewer資材hash、check契約hashを走査前に状態へ保存する。テスト用の値は `API_KEY=test-token` や `/Users/qa-user/...` のような明示的な合成fixtureだけを例外として扱い、実値らしい秘密情報は通過させない。
+
+走査が拒否した場合、製品だけを含む対象commitがローカルに既に作成されていることがある。拒否stage・検出分類・時刻・再開案内を状態へ保存し、招待commitとremote pushを行わない。対象外のindexは保持する。拒否済み依頼の再公開は保存済み拒否理由を返して停止し、既存state・依頼本文を編集しない。`status`は拒否された依頼本文を再掲しない。原因を除いた新しいQA依頼/stateを作成し、`prepare --reviewed <記録済みReviewed SHA>` で製品対象commitを再利用する。新しい依頼本文を確認してから公開を別途指示する。走査後の変更、またはcheck Evidenceのhash不一致でも招待commit/pushを開始しない。
 
 ```text
 quality-qa-cli publish --request QA-001 --message "クラウドQAに出して" --approved-path src/product.py --approved-path docs/Artifacts/qa_invite_001_MMDD.md

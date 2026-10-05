@@ -1176,6 +1176,99 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertEqual(remote_before, subprocess.run(["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"], check=True, capture_output=True, text=True).stdout.strip())
             self.assertIsNone(workflow.store.read(prepared["state_path"])["reviewed"])
 
+    def test_final_scan_rejection_persists_target_and_invite_state_without_invite_commit(self):
+        from unittest.mock import patch
+        from qa_workflow import gitops
+        from qa_workflow.store import digest, fingerprint
+        from qa_workflow.workflow import Workflow
+
+        for name, injected in [
+            ("secret", "API_TOKEN=live-secret-value-123"),
+            ("personal-path", "/Users/real-person/private/data.csv"),
+        ]:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
+                repository, remote = self.setup_bare_remote(Path(tmp))
+                (repository / "src/unrelated.txt").write_text("staged unrelated edit\n")
+                self.run_git(repository, "add", "src/unrelated.txt")
+                workflow = Workflow(repository)
+                prepared = workflow.prepare(
+                    "対象製品をQAする", ["対象製品を確認する"], ["src/product.py"],
+                    "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo",
+                )
+                invite = prepared["next"]["必要入力"]
+                head_before = gitops.sha(repository, "HEAD")
+                index_before = gitops.git(repository, "diff", "--cached", "--name-only")
+                remote_before = subprocess.run(
+                    ["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"],
+                    check=True, capture_output=True, text=True,
+                ).stdout.strip()
+                original_invite = review.invite
+
+                def inject_after_target_is_fixed(state):
+                    body = original_invite(state)
+                    return body + ("\n" + injected + "\n" if state["reviewed"] else "")
+
+                with patch("qa_workflow.workflow.review.invite", side_effect=inject_after_target_is_fixed):
+                    with self.assertRaisesRegex(QAError, "最終公開対象") as raised:
+                        workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+
+                state = workflow.store.read(prepared["state_path"])
+                target = gitops.sha(repository, "HEAD")
+                final_invite_bytes = (repository / invite).read_bytes()
+                self.assertNotEqual(head_before, target)
+                self.assertEqual(target, state["reviewed"])
+                self.assertEqual(digest(final_invite_bytes), state["invite_hash"])
+                self.assertEqual(state["invite_hash"], state["publication_scan"]["invite_hash"])
+                self.assertEqual(fingerprint(state["reviewer_materials"]), state["publication_scan"]["reviewer_materials_hash"])
+                self.assertEqual(fingerprint(state["checks"]), state["publication_scan"]["check_contract_hash"])
+                self.assertEqual(target, state["publication_scan"]["reviewed"])
+                self.assertEqual("REJECTED", state["publication_scan"]["scan_result"])
+                self.assertEqual("final-publication-scan", state["publication_scan"]["stage"])
+                self.assertTrue(state["publication_scan"]["started_at"])
+                self.assertTrue(state["publication_scan"]["completed_at"])
+                finding = "secret-like-assignment" if name == "secret" else "personal-local-path"
+                self.assertTrue(any(item.endswith(finding) for item in state["publication_scan"]["findings"]))
+                self.assertNotIn(injected, state["publish_error"])
+                self.assertIn("新しいQA依頼/state", raised.exception.action)
+                self.assertEqual({"src/product.py"}, gitops.changed(repository, state["baseline"], target))
+                self.assertNotIn("invite_commit", state)
+                self.assertIsNone(state["published"])
+                self.assertEqual(index_before, gitops.git(repository, "diff", "--cached", "--name-only"))
+                self.assertEqual(remote_before, subprocess.run(
+                    ["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"],
+                    check=True, capture_output=True, text=True,
+                ).stdout.strip())
+
+                status = workflow.status(prepared["id"])
+                self.assertIsNone(status["next"]["依頼文"])
+                self.assertIn("新しいQA依頼/state", status["next"]["操作"])
+                with self.assertRaisesRegex(QAError, "拒否済み") as retry:
+                    workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+                self.assertIn("--reviewed " + target, retry.exception.action)
+                self.assertEqual(target, gitops.sha(repository, "HEAD"))
+                self.assertEqual(index_before, gitops.git(repository, "diff", "--cached", "--name-only"))
+                self.assertEqual(remote_before, subprocess.run(
+                    ["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"],
+                    check=True, capture_output=True, text=True,
+                ).stdout.strip())
+
+                old_state_bytes = (repository / prepared["state_path"]).read_bytes()
+                old_invite_bytes = (repository / invite).read_bytes()
+                replacement = workflow.prepare(
+                    "対象製品をQAする", ["対象製品を確認する"], ["src/product.py"],
+                    "Implementer", "Codex (GPT-6)", "cloud", baseline=state["baseline"],
+                    reviewed=target, repository="example/repo",
+                )
+                self.assertNotEqual(prepared["id"], replacement["id"])
+                self.assertEqual(target, replacement["reviewed"])
+                self.assertEqual(old_state_bytes, (repository / prepared["state_path"]).read_bytes())
+                self.assertEqual(old_invite_bytes, (repository / invite).read_bytes())
+                self.assertEqual(index_before, gitops.git(repository, "diff", "--cached", "--name-only"))
+                self.assertEqual(remote_before, subprocess.run(
+                    ["git", "--git-dir", str(remote), "rev-parse", "refs/heads/master"],
+                    check=True, capture_output=True, text=True,
+                ).stdout.strip())
+
     def test_publication_scanner_allows_explicit_synthetic_fixture_markers(self):
         from qa_workflow import gitops
         with tempfile.TemporaryDirectory() as tmp:

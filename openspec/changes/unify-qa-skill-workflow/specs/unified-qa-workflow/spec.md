@@ -116,7 +116,7 @@ Reviewerは固定された対象SHAで、環境と依頼が許すcheckを実行�
 
 #### Scenario: 最終依頼・必須check・秘密情報検査の前提を満たさない
 - **WHEN** 対象SHA確定後の最終依頼または公開対象に危険内容がある、必須checkの成功Evidenceがない、Evidenceの対象snapshot/hashが一致しない、または走査後に公開内容が変化する
-- **THEN** 対象commit・依頼commit・remote更新の前に停止し、検出種別と再実行・修正方法を案内する。必須checkは固定argvで実行しEvidenceを製品snapshotとcheck契約hashへ結び付け、最終依頼hashは依頼commit内blobと照合する
+- **THEN** 最終走査を始める前にReviewed SHA、製品snapshot hash、最終依頼本文hash、Reviewer資材hash、check契約hashを状態へ保存する。走査が拒否した場合、製品だけのローカル対象commitが既に存在し得ることを明示し、拒否stage・検出分類・時刻・再開案内を状態へ追記する。招待commitとremote更新は行わず、ユーザーのindexを保持する。同じ拒否済み状態の再公開は拒否理由を返して止め、既存状態・依頼を編集させず、原因を除いた新規依頼/stateと保存済みReviewed SHAの再利用を案内する。拒否された依頼本文はstatusの応答へ再掲しない。必須checkは固定argvで実行しEvidenceを製品snapshotとcheck契約hashへ結び付け、最終依頼hashは依頼commit内blobと照合する
 
 #### Scenario: 同じ開発ブランチへレビューだけが返る
 - **WHEN** remoteが当該依頼のレビューArtifactだけで先行し、次のクラウド公開が明示されている
