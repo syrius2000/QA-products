@@ -1,7 +1,7 @@
 # QA-001旧対象の裁定記録と不要branch・worktree整理計画
 
 created: 2026-10-05 21:21 (JST)
-update: 2026-10-05 21:34 (JST)
+update: 2026-10-05 21:35 (JST)
 author: Codex (GPT-6)
 
 ## 目的
@@ -46,4 +46,11 @@ Owner判断「後続実装で対応済み・旧対象は廃止」を記録し、
 
 ## 承認状態
 
-2026-10-05 21:34 (JST)、Ownerから「実装して」と明示承認を受領した。QA-001レビュー・依頼・公開状態とOwner判断記録を現`master`へ保存し、hash・JSON・OpenSpecの検証を完了した。branch/worktree削除を実行中。
+2026-10-05 21:34 (JST)、Ownerから「実装して」と明示承認を受領した。実施結果:
+
+- QA-001レビュー・依頼・revision 4公開状態とOwner判断をcommit `16ba0a97e855927fba7ebd9ab128ec6d61ca0075`で`master`へ保存した。
+- 保存hashは元データと一致した。公開状態JSONの構文検査とOpenSpec strict validationはvalid。
+- cloud QA worktreeを撤去し、local `codex/qa-skill-integration`、local `codex/qa-skill-integration-cloud-qa`を削除した。
+- remote `codex/qa-skill-integration-cloud-qa`、`codex/unify-qa-skill-workflow`を削除し、`git fetch --prune origin`後のremote refsにも残っていないことを確認した。
+- `origin/master`へのpushとPR作成は行っていない。
+- 最終HEADとclean状態は後続の完了記録commitで固定する。
