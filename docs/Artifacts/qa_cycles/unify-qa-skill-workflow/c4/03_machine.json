@@ -1,0 +1,16 @@
+{
+  "schema": "blind-qa-cycle-v1",
+  "topic": "unify-qa-skill-workflow",
+  "cycle": 4,
+  "baseline": "c9817075bb314644e7defe9ff0e989dc53dfbd26",
+  "reviewed": "154e2ae875d7485fa9fafab60769f79bbfb45ec1",
+  "audience": "local",
+  "remote_visibility": "local-only",
+  "gate": "PASS",
+  "focus_packs": [
+    "path-sanitization",
+    "openspec-coherence"
+  ],
+  "findings": [],
+  "tasks": []
+}

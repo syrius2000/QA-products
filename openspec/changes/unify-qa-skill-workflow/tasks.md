@@ -96,4 +96,4 @@ author: Codex (GPT-6)
 - [x] 12.1 最終走査拒否時の停止境界と状態保存を、対象commit・最終依頼hash・case state・ユーザーindex・招待commit・remoteの各条件に分けて定義し、2026-10-05にOwnerが実装計画037を承認した。
 - [x] 12.2 承認された計画に従い、QA-C3-F01の拒否状態保存と回復案内を正本runtime・配布runtime・OpenSpec・公開手順へ実装した。
 - [x] 12.3 secret/個人パスの最終走査拒否について、Reviewed SHA・招待本文hash・Reviewer資材hash・check契約hashのstate一致、製品限定target commit、拒否後の再公開停止、新規stateによる同SHA再利用、招待commit/pushなし、remote/index不変をfixtureで確認した。Python 3.14.7／pytest 9.0.2、`PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. pytest tests -q`で175 passed・52 subtests passed。正本runtimeと配布runtimeは一致し、OpenSpec strict validationはvalid。
-- [ ] 12.4 固定Reviewed SHAと正しいReviewer資材hashで別担当によるCycle 4ローカル独立QAを行う。Cycle 3のFAIL・Finding・Evidenceは変更しない。
+- [x] 12.4 固定Reviewed SHA `154e2ae875d7485fa9fafab60769f79bbfb45ec1` とReviewer資材hashを照合して別担当によるCycle 4ローカル独立QAを実施した。175 passed・52 subtests passed、Findingなし、Gate PASS。記録は[Cycle 4レビュー](../../../docs/Artifacts/qa_cycles/unify-qa-skill-workflow/c4/01_review.md)。Cycle 3のFAIL・Finding・Evidenceは変更していない。
