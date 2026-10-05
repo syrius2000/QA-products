@@ -657,21 +657,53 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             snapshot = gitops.snapshot(repository, product_paths)
             state["submission"] = {"product_paths": product_paths, "product_snapshot": snapshot}
             workflow.store.save(state, state["revision"], "submitted fixture")
-            with self.assertRaisesRegex(QAError, "check契約が変わっています"):
+            with self.assertRaisesRegex(QAError, "既存の必須check"):
                 workflow.requa(prepared["id"], "local", checks=[])
             weakened = [{**check, "required": False}]
-            with self.assertRaisesRegex(QAError, "check契約が変わっています"):
+            with self.assertRaisesRegex(QAError, "既存の必須check"):
                 workflow.requa(prepared["id"], "local", checks=weakened)
             extra = {"id": "CHECK-EXTRA", "type": "command", "required": False, "argv": ["python", "-m", "compileall", "src"], "cwd": ".", "env": {}, "timeout_seconds": 30, "expected_exit_codes": [0]}
             with self.assertRaisesRegex(QAError, "check契約が変わっています"):
                 workflow.requa(prepared["id"], "local", checks=[check, extra])
+            with self.assertRaisesRegex(QAError, "必須checkが削除または変更"):
+                workflow.requa(
+                    prepared["id"], "local", checks=[{**check, "required": False}, extra],
+                    check_contract_approval="check契約を変更する",
+                )
+            weaker_required_checks = [
+                {**check, "id": "CHECK-REPLACED"},
+                {**check, "argv": ["pytest"]},
+                {**check, "cwd": "."},
+                {**check, "env": {}},
+                {**check, "timeout_seconds": 3600},
+                {**check, "expected_exit_codes": [0, 1]},
+            ]
+            for weaker in weaker_required_checks:
+                with self.subTest(weaker=weaker):
+                    with self.assertRaisesRegex(QAError, "必須checkが削除または変更"):
+                        workflow.requa(
+                            prepared["id"], "local", checks=[weaker],
+                            check_contract_approval="必須check契約を変更する",
+                        )
+            from qa_workflow.store import fingerprint
+            old_hash = fingerprint([check])
+            new_hash = fingerprint([check, extra])
+            with self.assertRaisesRegex(QAError, "check契約が変わっています") as caught:
+                workflow.requa(
+                    prepared["id"], "local", checks=[check, extra],
+                    check_contract_approval=f"必須check契約を変更し、旧hash={old_hash} 新hash={'0' * 64}",
+                )
+            self.assertIn(new_hash, caught.exception.action)
             next_cycle = workflow.requa(
                 prepared["id"], "local", checks=[check, extra],
-                check_contract_approval="必須check契約を変更し、CHECK-EXTRAを追加する",
+                check_contract_approval=f"必須check契約を変更し、CHECK-EXTRAを追加する。旧hash={old_hash} 新hash={new_hash}",
             )
             next_state = workflow.store.read(next_cycle["state_path"])
             self.assertEqual([check, extra], next_state["checks"])
             self.assertEqual(check, next_state["check_contract_approval"]["previous"][0])
+            self.assertEqual(old_hash, next_state["check_contract_approval"]["previous_hash"])
+            self.assertEqual(new_hash, next_state["check_contract_approval"]["approved_hash"])
+            self.assertEqual(["CHECK-EXTRA"], next_state["check_contract_approval"]["diff"]["added"])
 
     def test_local_finalize_commits_only_approved_target_and_preserves_other_staged_changes(self):
         from qa_workflow.workflow import Workflow
@@ -1046,10 +1078,45 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertTrue(gitops.ancestor(repository, state["invite_commit"], state["published"]["tip"]))
             self.assertEqual({"src/product.py"}, gitops.changed(repository, state["baseline"], target))
             self.assertIn(state["invite"], gitops.changed(repository, target, state["invite_commit"]))
+            committed_invite = gitops.tree_snapshot(repository, state["invite_commit"], [state["invite"]])[state["invite"]]
+            self.assertEqual(state["publication_scan"]["invite_hash"], committed_invite["hash"])
+            self.assertEqual(state["invite_commit"], state["publication_scan"]["invite_commit"])
             self.assertEqual(["src/unrelated.txt"], gitops.git(repository, "diff", "--cached", "--name-only").splitlines())
             self.assertNotIn("src/unrelated.txt", gitops.changed(repository, state["baseline"], state["published"]["tip"]))
             remote_tip = gitops.remote_tip(repository, "topic/qa")
             self.assertEqual(state["published"]["tip"], remote_tip)
+
+    def test_publish_rejects_invite_mutation_after_final_scan_before_invite_commit(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, remote = self.setup_bare_remote(Path(tmp))
+            workflow = Workflow(repository)
+            prepared = workflow.prepare(
+                "対象をQAする", ["最終依頼hashを固定する"], ["src/product.py"],
+                "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo",
+            )
+            invite = prepared["next"]["必要入力"]
+            remote_before = gitops.remote_tip(repository, "topic/qa")
+            real_commit_paths = gitops.commit_paths
+
+            def mutate_invite_before_commit(root, paths, expected, message):
+                if list(paths) == [invite]:
+                    (repository / invite).write_text((repository / invite).read_text() + "\nlate mutation\n")
+                return real_commit_paths(root, paths, expected, message)
+
+            gitops.commit_paths = mutate_invite_before_commit
+            try:
+                with self.assertRaisesRegex(QAError, "表示済み対象から内容が変わりました"):
+                    workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+            finally:
+                gitops.commit_paths = real_commit_paths
+            state = workflow.store.read(prepared["state_path"])
+            self.assertEqual(remote_before, gitops.remote_tip(repository, "topic/qa"))
+            self.assertIsNone(state["published"])
+            self.assertNotIn("invite_commit", state)
 
     def test_cloud_publish_requires_snapshot_bound_check_evidence_before_any_git_mutation(self):
         from qa_workflow.workflow import Workflow

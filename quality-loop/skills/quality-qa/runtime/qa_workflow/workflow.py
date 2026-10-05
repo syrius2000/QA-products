@@ -158,16 +158,45 @@ class Workflow:
             if checks is not None:
                 check_contract = checks
                 if old:
-                    if checks != old.get("checks", []):
-                        if not isinstance(check_contract_approval, str) or not re.search(r"(?:契約.{0,12}(?:変更|追加|更新|見直し)|(?:check|確認|検証).{0,24}契約.{0,12}(?:変更|追加|更新|見直し))", check_contract_approval, re.I):
-                            raise QAError("再QAで実行check契約が変わっています", "契約変更を承認する明示指示を記録してください")
+                    previous_checks = old.get("checks", [])
+                    previous_required = {c["id"]: c for c in previous_checks if c.get("required")}
+                    next_by_id = {c.get("id"): c for c in checks if isinstance(c, dict)}
+                    weakened = [check_id for check_id, check in previous_required.items() if next_by_id.get(check_id) != check]
+                    if weakened:
+                        raise QAError("再QAで既存の必須checkが削除または変更されています", "必須checkを完全に維持してください: " + ", ".join(sorted(weakened)))
+                    if checks != previous_checks:
+                        old_hash = fingerprint(previous_checks)
+                        new_hash = fingerprint(checks)
+                        approved = (
+                            isinstance(check_contract_approval, str)
+                            and bool(re.search(r"(?:契約.{0,12}(?:変更|追加|更新|見直し)|(?:check|確認|検証).{0,24}契約.{0,12}(?:変更|追加|更新|見直し))", check_contract_approval, re.I))
+                            and old_hash in check_contract_approval
+                            and new_hash in check_contract_approval
+                        )
+                        if not approved:
+                            raise QAError("再QAで実行check契約が変わっています", f"旧契約hash {old_hash} と新契約hash {new_hash} を含む明示承認が必要です")
             else:
                 check_contract = old.get("checks", []) if old else []
                 if old and old.get("required_tests") and not check_contract:
                     raise QAError("旧形式の自由文必須確認を安全に再QAへ移せません", "各確認をID・argv・必須性・cwd・env・timeout・期待結果の構造化checkへ直し、再QA依頼を作成してください")
             s = {"schema": "unified-qa-workflow-v1", "id": f"QA-{number}", "cycle": old["cycle"]+1 if old else 1, "revision": 1, "state_path": state_path, "repository": repo, "branch": branch, "initial_baseline": initial, "baseline": base, "reviewed": None if pending else target, "purpose": purpose, "criteria": criteria, "assumptions": assumptions, "requirements_hash": fingerprint([purpose, assumptions, criteria]), "reviewer_materials": reviewer_materials(self.root, target), "products": {p: "明示された製品対象" for p in products}, "operational": dict(old["operational"]) if old else {}, "excluded": excluded, "snapshot": gitops.snapshot(self.root, products) if pending else gitops.tree_snapshot(self.root, target, products), "phase": "draft" if pending else "prepared", "audience": audience, "implementer": implementer, "author": author, "invite": "", "review_path": "", "reviews": [], "active_review": None, "pending_correction": None, "unresolved": copy.deepcopy(old["unresolved"]) if old else {}, "events": [], "checks": check_contract, "required_tests": [], "previous": old["id"] if old else None, "published": None, "history_reviews": copy.deepcopy(old.get("history_reviews", []) + old["reviews"]) if old else [], "published_paths": list(old.get("published_paths", [])) if old else []}
             if old and checks is not None and checks != old.get("checks", []):
-                s["check_contract_approval"] = {"message": check_contract_approval, "previous": copy.deepcopy(old.get("checks", [])), "approved": copy.deepcopy(check_contract), "at": now()}
+                previous_checks = copy.deepcopy(old.get("checks", []))
+                previous_by_id = {c["id"]: c for c in previous_checks}
+                approved_by_id = {c["id"]: c for c in check_contract}
+                s["check_contract_approval"] = {
+                    "message": check_contract_approval,
+                    "previous": previous_checks,
+                    "approved": copy.deepcopy(check_contract),
+                    "previous_hash": fingerprint(previous_checks),
+                    "approved_hash": fingerprint(check_contract),
+                    "diff": {
+                        "added": sorted(set(approved_by_id) - set(previous_by_id)),
+                        "removed": sorted(set(previous_by_id) - set(approved_by_id)),
+                        "changed": sorted(k for k in set(previous_by_id) & set(approved_by_id) if previous_by_id[k] != approved_by_id[k]),
+                    },
+                    "at": now(),
+                }
             if old:
                 s["products"] = {**old["products"], **s["products"]}
                 s["excluded"] = {**old["excluded"], **excluded}
@@ -257,11 +286,34 @@ class Workflow:
                 self._finalize(s, target)
             if digest(safe_path(self.root, s["invite"]).read_bytes()) != s["invite_hash"]:
                 raise QAError("正式依頼本文が変更されています")
+            # finalize may rewrite the invitation with the fixed target SHA and material hashes.
+            # Scan and pin the final bytes that are about to be committed.
+            invite_bytes = safe_path(self.root, s["invite"]).read_bytes()
+            final_paths = set(s["products"]) | {s["invite"]}
+            final_snapshot = gitops.snapshot(self.root, final_paths)
+            expected_final_snapshot = dict(current_products)
+            expected_final_snapshot[s["invite"]] = {"mode": "100644", "hash": digest(invite_bytes)}
+            if final_snapshot != expected_final_snapshot:
+                raise QAError("最終QA依頼または製品対象が公開検査中に変更されました")
+            content_findings = gitops.publication_findings(self.root, final_paths)
+            if content_findings:
+                raise QAError("最終公開対象に機密情報または個人ローカルパスの疑いがあります", "検出: " + ", ".join(content_findings) + "。公開前に対象を修正してください")
+            s["publication_scan"] = {
+                "product_snapshot_hash": fingerprint(current_products),
+                "invite_hash": digest(invite_bytes),
+                "check_contract_hash": fingerprint(contracts),
+                "scan_result": "PASS",
+                "at": now(),
+            }
+            scanned_invite_snapshot = {s["invite"]: final_snapshot[s["invite"]]}
             # 対象commitや依頼commit後の失敗でも状態を残し、再試行で既存を再利用する。
             self.store.save(s, s["revision"], "公開準備・対象固定")
             s = self.store.read(s["state_path"])
             try:
-                invite_commit = gitops.commit_paths(self.root, [s["invite"]], gitops.snapshot(self.root, [s["invite"]]), f"QA invite {s['id']}")
+                invite_commit = gitops.commit_paths(self.root, [s["invite"]], scanned_invite_snapshot, f"QA invite {s['id']}")
+                committed_invite = gitops.tree_snapshot(self.root, invite_commit, [s["invite"]])[s["invite"]]
+                if not committed_invite or committed_invite["hash"] != s["publication_scan"]["invite_hash"]:
+                    raise QAError("公開走査済みQA依頼と依頼commit内の内容が一致しません")
                 s["invite_commit"] = invite_commit
                 self.store.save(s, s["revision"], "依頼commit確認")
                 s = self.store.read(s["state_path"])
@@ -271,6 +323,7 @@ class Workflow:
                 self.store.save(s, s["revision"], "公開未完了・再試行待ち")
                 raise QAError(str(e), f"{s['id']}の公開を再試行してください。QA実行は未完了です") from e
             s["published"] = {"tip": tip, "invite_commit": invite_commit, "reviewed": s["reviewed"], "at": now()}
+            s["publication_scan"]["invite_commit"] = invite_commit
             s["published_paths"] = sorted(history_allowed)
             if s["phase"] in {"prepared", "published"}:
                 s["phase"] = "published"

@@ -4,6 +4,8 @@
 
 実装担当とは異なるReviewerとして、依頼に固定されたrepository・Baseline SHA・Reviewed SHA・全受入基準・対象集合を確認する。実装担当AIの説明や過去のPASSを根拠の代わりにしない。まずReviewed SHA内の `quality-loop/skills/quality-qa/SKILL.md` と本契約を読み、依頼に記されたSHA-256を照合する。どちらかが読めない、対象SHAが取得できない、またはhashが一致しない場合はHOLDとして理由を記録する。
 
+SHA-256は対象commit内の各ファイルのraw bytesに対して計算する。改行変換、文字コード変換、Markdown正規化を挟まず、依頼記載値・commit tree内容・Reviewerが取得した内容を照合する。
+
 対象差分はBaselineからReviewedまでの全変更を調べ、初回基準からの要件と周辺影響も確認する。依頼に記された製品pathを個別に確認し、登録運用成果物と対象外判断を混同しない。ディレクトリ単位で製品文書を除外せず、renameは旧path・新pathの両方を確認する。変更仕様に関係する実行可能な確認は対象環境で実行する。Python、pytest等が既に利用可能で、リポジトリ規則が許せば使う。無許可の依存導入、ネットワーク利用、認証情報利用は行わない。
 
 ## 一つのMarkdownだけを提出する
