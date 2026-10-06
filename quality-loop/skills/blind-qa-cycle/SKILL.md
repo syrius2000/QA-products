@@ -1,10 +1,10 @@
 ---
 name: blind-qa-cycle
 description: >
-  Explicit-only independent blind QA invite and review for local peer agents or
-  GitHub/cloud agents. Supports checkpoint, cloud (Reviewed+invite+topic push+path),
-  cloud re-qa, local, invite, review (cloud may commit+push QA artifacts only),
-  and ingest (requester writes back review artifacts). Artifacts under
+  Explicit-only independent blind QA lifecycle for local peer agents or
+  GitHub/cloud agents. Supports prepare, checkpoint, cloud (Reviewed+invite+topic push+path),
+  cloud re-qa, local, invite, respond, review (cloud may commit+push QA artifacts only),
+  ingest (requester writes back review artifacts), and human note. Artifacts under
   docs/Artifacts/qa_cycles/<topic>/c<N>/. Use ONLY when explicitly invoked.
   Never auto-run after commits or OpenSpec apply. Does not Owner-decide, fix
   product code, or merge to main. Topic-only push only for cloud/cloud re-qa/
@@ -14,22 +14,47 @@ disable-model-invocation: true
 
 # blind-qa-cycle — Independent Blind QA Cycle
 
-このSkillは明示的に `blind-qa-cycle` を起動した従来の4成果物workflow向けです。通常のQA依頼・結果確認・修正・再QAは `quality-qa` の単一Markdown workflowを使います。その依頼を受けたCloud Reviewerは、固定SHAの依頼指示とReviewer指定Skillを読み、実行check契約があれば環境・リポジトリ規則を確認して可能なPython/pytest等を実行してください。管理用CLIやSkillを追加導入する必要はありません。実行環境が使えない場合はpassにせず、理由と未検証を残します。
+このSkillは、Yip commitと固定SHAを使い、監査ブランチ上で独立QAを開始から終結まで明示的に進める。
+
+## 適用範囲と他QA Skillとの使い分け
+
+- 監査ブランチ上の独立レビュー、固定SHA、Reviewer成果物DIR、Yip commitでのFinding対応・再QAには、この `blind-qa-cycle` を明示起動する。
+- 通常のQA依頼・結果確認・承認後のローカル修正・再QAには `quality-qa` を使う。同Skillの単一Markdown成果物を本Skillの4成果物契約へ移さない。
+- 正式Quality Loop caseのReviewer工程には `quality-review`、Implementer応答には `quality-response` を使う。case正本・CLI状態を本Skillへ取り込んだり変更したりしない。
+- Reviewerは実装担当とは独立した別担当でなければならない。実装した同じチャットで `review` を実行しない。
+- Reviewerは固定SHAの依頼指示とReviewer指定資料を読み、実行check契約があれば環境・リポジトリ規則の許す範囲で実行する。実行環境が使えない場合はPASSにせず、理由と未検証を残す。
 
 ## Modes
 
 | User intent | Mode |
 | :--- | :--- |
-| `/blind-qa-cycle checkpoint` | Pre-change **Baseline** local WIP commit (`Blind-QA-Checkpoint`) — name stays `checkpoint` (not renamed to setup) |
-| `/blind-qa-cycle cloud` | Post-change one-shot: Reviewed Yip → `00_invite.md` → invite commit → **topic-only push** → **path handoff** |
+| `/blind-qa-cycle prepare` | 実装前に受入基準を`00_plan.md`へ記録し、計画commitを後続レビューのBaselineにする |
+| `/blind-qa-cycle checkpoint` | 事前計画なしの実装前WIPを固定するBaseline commit (`Blind-QA-Checkpoint`) |
+| `/blind-qa-cycle cloud` | 実装後にReviewed Yip → 招待確定 → invite commit → **topic-only push** → **path handoff** |
 | `/blind-qa-cycle cloud re-qa` | Re-QA: Baseline = previous cycle Reviewed; skip new checkpoint requirement |
 | `/blind-qa-cycle local` | `invite` with Audience=`local` (no push; full invite body; do not paste to Cloud) |
 | `/blind-qa-cycle invite`, 「QAメタデータ」 | `invite` (ask Audience if omitted) |
 | `/blind-qa-cycle review`, 依頼ブロック／`00_invite.md`／相対パス | `review`（cloud は **QA 成果物のみ** commit+topic push 可） |
 | `/blind-qa-cycle ingest` | 依頼側: Cloud から受け取った4ファイルを Output dir へ書き、artifact commit+topic push |
+| `/blind-qa-cycle respond <cycle>` | Implementerが指定Findingへ対応し、Yip response commitを次cycleへ渡す |
+| `/blind-qa-cycle note` | QA cycleに紐づく人間記入のHuman Understanding Noteを作成する |
 | Ambiguous | Ask once; default **`invite`** |
 
-Never run `review` in the same chat that implemented the code under review.
+## サイクル全体の流れ
+
+**実装前準備ができる場合（推奨）**
+
+```text
+cleanなtopic branch → prepare (00_plan.mdをYip commit / Baseline確定)
+                   → 実装側が開発
+                   → cloud または local (Reviewed Yip / 招待確定)
+                   → 独立Reviewer → respond (Finding別Yip commit) → 再QA
+                   → note → 監査cycle終結
+```
+
+**実装が先に完了している場合**は、既存のcheckpointまたは前cycleのReviewedをBaselineとして、staged-onlyのReviewed Yip commitから開始する。招待には事後開始とBaseline選定理由を記録する。
+
+QA終結はOwner受入や`main`/`master`へのmergeを意味しない。merge・配備・外部Skill配置は別の判断・承認工程とする。
 
 ## Audience (local vs cloud)
 
@@ -47,22 +72,40 @@ Same skill, same Output dir contract. Channel differs only in **remote visibilit
 
 Details: [`references/audience_channels.md`](references/audience_channels.md)
 
-## Existing-branch WIP flow
+## Yip commitと作業領域の共通保護
 
 Read [`references/git_wip_flow.md`](references/git_wip_flow.md) for the full commit and recovery rules.
 
 ```text
+existing topic branch
+  → /blind-qa-cycle prepare    # optional: pre-implementation criteria + plan Baseline
+  → implement per plan (skill idle)
+  → /blind-qa-cycle cloud      # Reviewed Yip → finalized invite → push → path
+
+Without pre-implementation preparation:
 existing topic branch
   → /blind-qa-cycle checkpoint   # clean Baseline local commit (staged pre-change WIP)
   → implement per plan (skill idle); stage only the review set
   → /blind-qa-cycle cloud        # Reviewed Yip → invite → invite commit → topic push → path
 ```
 
-An explicit `checkpoint` or `cloud` invocation authorizes the skill to create only the described commits from the staged index (plus, for `cloud`, the invite-only follow-up commit and topic-only push). The skill must inspect and report the exact staged paths before committing product/WIP changes. If unstaged or untracked files exist, or the staged set is empty when a product WIP commit is required, stop before committing. Never use `git add -A` or stage product files on the user's behalf. After writing `00_invite.md`, the skill may stage **only** that invite path (and empty parents if required) for the invite follow-up commit.
+An explicit `prepare`, `checkpoint` or `cloud` invocation authorizes only the mode's named Yip commits; `cloud` also authorizes the invite-only follow-up commit and topic-only push. Inspect and report exact paths before any commit. Stop on unrelated staged/unstaged/untracked paths. Never use `git add -A` or stage product files on the user's behalf. Each generated QA artifact commit stages only its named artifact path.
+
+## Mode: prepare
+
+Create the QA plan and freeze acceptance criteria **before implementation**. This mode creates only a preparation artifact and its Yip commit; it does not implement product code, finalize a review invite, fetch, push, or start a review.
+
+1. Require an explicit topic, repository root, and a non-`main`/`master` branch. Confirm the worktree, index, and untracked set are clean before creating the cycle.
+2. Ask for or derive from the request the purpose, in-scope paths, all acceptance criteria, and required checks. Assign stable `AC-001`… IDs and preserve the exact criterion text.
+3. Select the next cycle `docs/Artifacts/qa_cycles/<topic>/c<N>/`; never reuse an existing cycle folder.
+4. Write `00_plan.md` with repository, branch, preparation HEAD, cycle, scope, purpose, criteria, required checks, and the statement that review has not started. Do not invent the plan commit's own SHA inside the file.
+5. Show the generated path and exact staged diff. Stage only `00_plan.md` and commit `Yip: QA plan <topic> c<N>` with trailer `Blind-QA-Plan: <topic>`. The resulting plan commit SHA is the Baseline for implementation and later review.
+6. If the checkout changes during preparation, if unexpected files appear, or if the one-file staged set cannot be guaranteed, stop before commit and preserve all existing work.
+7. Return the Baseline SHA and cycle path. Do not claim that QA was performed. The implementation-side `cloud` or `local` flow later creates the final `00_invite.md` from this frozen plan and the Reviewed SHA.
 
 ## Mode: checkpoint
 
-Create a **clean Baseline** local commit on the existing topic branch before the next implementation increment. Do **not** rename this mode to `setup`.
+Create a **clean Baseline** local commit on the existing topic branch before the next implementation increment when no `prepare` plan exists. Do **not** rename this mode to `setup`.
 
 1. Require a topic other than `main` / `master`, resolve the topic slug, and verify the current branch and repository root.
 2. Require at least one staged change and zero unstaged or untracked changes. Otherwise stop with exact status and stage/clean-up guidance; do not stage or discard anything.
@@ -77,10 +120,10 @@ Purpose: one command after implementation for **topic-branch cloud QA handoff** 
 1. Set Mode=`invite`, Audience=`cloud` (do not ask).
 2. `branch=$(git branch --show-current)`.
    - If `branch` is `main` or `master`: **fail-fast STOP**. Do not create Reviewed/invite commits and do not push. Tell the user to switch to a non-`main`/`master` topic branch first. Confirmation does **not** override this guard.
-3. Resolve topic. **Baseline** = newest matching `Blind-QA-Checkpoint: <topic>` in current branch first-parent history. If none exists, stop and direct the user to `/blind-qa-cycle checkpoint` (unless Mode `cloud re-qa` — see Re-QA). Never infer Baseline from `main`, merge-base, or an unrelated QA cycle.
+3. Resolve topic and inspect cycle plans. If exactly one unused `Blind-QA-Plan: <topic>` commit for the prepared cycle is an ancestor of HEAD, use that plan commit as **Baseline** and reuse its cycle directory. If a candidate is ambiguous, already has a final invite, or is not an ancestor, stop and ask the user to resolve the cycle; do not silently switch baselines. With no prepared plan, use the newest matching `Blind-QA-Checkpoint: <topic>` in current branch first-parent history and mark `start_mode=post-change`. If no checkpoint exists, a branch created in this same explicit `/blind-qa-cycle cloud` operation may use the exact pre-branch HEAD as Baseline only if that SHA was captured before switching branches, is the branch's starting commit, and no branch commit was made before the reviewed commit. Record the source branch and `branch_start` rationale in the invite. Otherwise stop and direct the user to `/blind-qa-cycle checkpoint`. Never infer Baseline from an unrelated tip or QA cycle.
 4. **Reviewed WIP commit:** If the index has staged changes and the worktree has no unstaged or untracked changes, report the staged paths and create one post-change commit with subject `Yip: WIP QA review <topic>` and trailer `Blind-QA-Reviewed: <topic>`. If a matching reviewed commit is already at `HEAD` (rerun after partial success), reuse it. If neither condition holds, stop without committing.
 5. Set Reviewed to that commit and verify Baseline and Reviewed SHAs locally. Collect subjects, `git diff --name-status`, and `git diff --stat` for the invite (orientation only; review inspects the real diff).
-6. Choose next cycle folder `docs/Artifacts/qa_cycles/<topic>/c<N>/` (max N+1). Write `00_invite.md` there (**after** Reviewed is fixed so invite files are **not** in Baseline..Reviewed).
+6. For a prepared cycle, read its tracked `00_plan.md` and carry forward the exact purpose, scope, acceptance criteria, and required checks; set `start_mode=prepared` and record plan path + commit SHA. Otherwise choose the next unused cycle folder `docs/Artifacts/qa_cycles/<topic>/c<N>/` and record `start_mode=post-change` plus the checkpoint or branch-start rationale. Write `00_invite.md` only after Reviewed is fixed, so invite and plan materials are not in Baseline..Reviewed.
 7. **Invite follow-up commit:** Stage only the new `00_invite.md` (and directory placeholders if needed). Commit with subject `Yip: QA invite <topic> c<N>` and trailer `Blind-QA-Invite: <topic>`. Do not amend Reviewed. Record Invite commit SHA separately from Reviewed.
 8. Prefer `git fetch origin` (warn if fetch fails; use existing `origin/<branch>` refs).
 9. **Topic-only push (authorized by this explicit `/blind-qa-cycle cloud` invocation):**
@@ -113,18 +156,20 @@ Required when closing findings from a frozen cycle (`HOLD` / `FAIL`).
 ## Mode: local (shortcut)
 
 1. Set Audience=`local`, `Remote visibility: local-only`.
-2. Run standard invite (skip origin ancestor check and push; optional warn if unpushed).
+2. If exactly one unused prepared plan exists on the current branch, reuse its Baseline and cycle directory; otherwise require the matching checkpoint for a post-change cycle. Run standard invite without origin ancestor check or push.
 3. Emit **full invite body** with explicit **Do not paste to GitHub Cloud.**
 
 ## Output directory (canonical)
 
 ```text
 docs/Artifacts/qa_cycles/<topic>/c<N>/
+  00_plan.md (prepared cycles only; implementation-side input, not Reviewer output)
   00_invite.md
   01_review.md
   02_tasks.md
   03_machine.json
   STATUS.md
+  04_human_understanding.md (optional; human-authored, not Reviewer output)
 ```
 
 - `<topic>`: OpenSpec change name, else short kebab-case slug
@@ -159,7 +204,7 @@ Used by `cloud` / `local` / plain invite. Plain invite does **not** create WIP c
 2. Resolve **Audience** (`local` | `cloud`). Ask once if missing (unless entered via shortcut).
 3. For bare `invite` with Audience=`cloud` **without** going through Mode cloud's commit/push pipeline: run remote visibility gate only; on FAIL print push help and do not claim path handoff; on SUCCESS may emit path if `00_invite.md` is already on `origin/<branch>`, else full body.
 4. For `audience=local`: set `Remote visibility: local-only`. Skip origin ancestor check (optional warn if unpushed).
-5. Choose `topic` and next cycle: list `docs/Artifacts/qa_cycles/<topic>/c*`, use max N+1 (start at `c1`).
+5. Choose `topic` and start mode. Reuse the matching prepared plan's cycle directory and preserve its exact criteria when one unambiguous unused plan exists; otherwise use the next unused cycle and require a valid checkpoint Baseline for `post-change`. Re-QA uses the previous cycle's Reviewed SHA and a new cycle. Never overwrite an existing invite or frozen cycle.
 6. Collect **Requester notes** (or `(none)`). Do not rewrite focus pack bodies.
 7. Select focus pack id(s).
 8. Read [`references/cloud_output_contract.md`](references/cloud_output_contract.md). For cloud path handoff, the reviewer loads `00_invite.md` from git; still keep the invite file self-contained (inline focus criteria and output templates inside `00_invite.md`).
@@ -172,6 +217,9 @@ Used by `cloud` / `local` / plain invite. Plain invite does **not** create WIP c
 
 - **Repository:** `syrius2000/agentic-evidence-analysis`
 - **Branch:** `<branch>`
+- **Start mode:** `prepared` | `post-change` | `re-qa`
+- **Preparation plan:** `<repo-relative path and full commit SHA, prepared only>`
+- **Baseline rationale:** `<plan commit / checkpoint commit / explicit new-branch start SHA / previous cycle Reviewed>`
 - **Baseline commit:** `<full-sha>`
 - **Reviewed commit:** `<full-sha>`
 - **Requirements fingerprint:** `<sha256>`
@@ -210,7 +258,7 @@ Used by `cloud` / `local` / plain invite. Plain invite does **not** create WIP c
 - If Baseline or Reviewed SHA is missing in this clone: do NOT review another tip; Gate HOLD with High provenance finding; still write the four artifacts (and attempt artifact commit/push or return bodies per above).
 ```
 
-Required fields (fail invite if any missing): Repository, Branch, both full SHAs, both commit subjects, requirements fingerprint, every acceptance criterion with stable ID and exact text, all three Reviewer Skill/contract paths and SHA-256 values, Diff, Focus pack, **Output dir**, Cycle, **Audience**, **Remote visibility**, changed paths, diff summary, Requester notes, Reviewer contract, complete inline output requirements and templates.
+Required fields (fail invite if any missing): Repository, Branch, Start mode, both full SHAs, both commit subjects, requirements fingerprint, every acceptance criterion with stable ID and exact text, all three Reviewer Skill/contract paths and SHA-256 values, Diff, Focus pack, **Output dir**, Cycle, **Audience**, **Remote visibility**, changed paths, diff summary, Requester notes, Reviewer contract, complete inline output requirements and templates. Prepared cycles also require the plan path and full plan commit SHA; post-change cycles require a checkpoint or eligible branch-start Baseline rationale; re-qa cycles require the previous cycle path and Finding IDs.
 
 1. Do not auto-run `gh pr comment` unless the user explicitly asks; then confirm before posting. Refuse posting when `Remote visibility: local-only`.
 2. **Push policy:**
@@ -269,6 +317,76 @@ Use when Cloud review returned four file bodies (or a patch) but could not push 
 ## Re-QA (`c{N+1}`)
 
 Prefer `/blind-qa-cycle cloud re-qa`. Required inputs: new Reviewed SHA (or staged repair), previous cycle path, Finding IDs to close, Audience=`cloud` for cloud path. Baseline default = previous cycle's Reviewed. Create new folder; do not mutate frozen `cN`. Checkpoint is **not** required for Re-QA when Baseline is taken from the previous cycle Reviewed SHA.
+
+## Mode: respond — Finding対応
+
+このmodeは、`blind-qa-cycle`のReviewerが返したFinding/taskを実装担当が処理するための入口です。正式Quality Loop caseの`quality-response`とは別フローで、case正本や他cycleのQA成果物には触れません。
+
+1. Require one frozen cycle path. Read its `00_invite.md`, `01_review.md`, `02_tasks.md`, `03_machine.json`, and `STATUS.md`. Cross-check topic/cycle, finding IDs, task-to-finding mapping, and Gate. If inputs disagree or a task ID is absent, stop and report the mismatch.
+2. Ask which task IDs/Finding IDs the user authorizes this implementation round to address. Work only within those selected tasks and the existing project approval boundary. Do not alter the frozen invite, review, tasks, machine data, or STATUS.
+3. Before implementation, show the selected Finding/task IDs, affected paths, and intended change boundary. If the repository requires a separate implementation plan/approval, follow it before editing. Do not treat `respond` as blanket approval for unlisted findings or unrelated cleanup.
+4. Implement the authorized corrections. Before commit, require a non-`main`/`master` topic branch, a clean status except for the selected response paths, and a staged-only index containing exactly the response paths. Never stage, stash, restore, reset, or discard user changes. If the preconditions fail, stop and report the exact paths.
+5. Create one Yip response commit from that existing index: subject `Yip: QA response <topic> c<N>`; trailers `Blind-QA-Response: <topic>` and `Blind-QA-Findings: <comma-separated Finding IDs>`. Report full commit SHA, paths, Finding IDs, and any task not addressed. The response commit does not close Findings.
+6. Re-submit through `/blind-qa-cycle cloud re-qa` or a local invite with the previous cycle path and selected Finding IDs. The previous cycle's Reviewed SHA is Baseline; the new Reviewed SHA is the response commit (or a later explicitly selected repair commit). Create a new `c{N+1}` and keep the prior cycle immutable.
+
+## Mode: note — Human Understanding Note
+
+Use after the cycle's latest review result is available. This mode supports a human-authored reflection; it does not review code, change Findings, or determine acceptance.
+
+1. Require the cycle directory (path or unique topic/cycle). Read `00_invite.md`, parse `03_machine.json`, and read `STATUS.md` as the reference source. Confirm topic/cycle and Baseline/Reviewed SHA match between invite and machine data; confirm machine `gate` matches the single Gate token in STATUS. Require Repository and Branch in the invite. If a required file/value is missing or inconsistent, do not create a Note; report the exact missing or conflicting fields.
+2. Resolve the values from those files only. Do not infer from chat context, current HEAD, another cycle, or implementer explanation. Include the source path and reference SHA values in the Note header.
+3. If `04_human_understanding.md` already exists, do not edit or replace it. Return its path and offer read-only viewing or a new QA cycle.
+4. Ask whether the person wants to answer in chat or receive an empty template to edit. Show all six prompts and mention **目安: 約5分**.
+5. When the person answers in chat, preserve their answer text verbatim under each matching question. Do not correct, summarize, infer, grade, or fill blanks. Keep empty responses blank or record the person's own `まだ理解していない` text.
+6. Create only the new `04_human_understanding.md` under that cycle directory. Do not write to `00_invite.md`, the four Reviewer outputs, or any other path; do not commit or push in note mode.
+7. The Note records human understanding only. Its presence/content does not change `STATUS.md`, JSON `gate`, Finding/task status, Owner adjudication, or merge/deployment state.
+
+### `04_human_understanding.md` template
+
+```markdown
+# Human Understanding Note
+
+- 記入者: 人（本人記入）
+- 作成日時: <JST日時または本人記入>
+- Cycle: <topic>/c<N>
+- Repository: <00_invite.mdから取得>
+- Branch: <00_invite.mdから取得>
+- Baseline SHA: <00_invite.mdから取得>
+- Reviewed SHA: <00_invite.mdから取得>
+- 最終QA Gate: <STATUS.mdと03_machine.jsonから取得>
+- 出典: <invite/review/machine/statusの相対パス>
+
+目安: 約5分。自分の言葉で記入する。空欄や未理解を残してよい。
+
+1. 今回変わったsystem boundary:
+   <本人の回答>
+
+2. 守るべきinvariant:
+   <本人の回答>
+
+3. 今回一番危険だったfailure mode:
+   <本人の回答>
+
+4. それを防ぐmechanism:
+   <本人の回答>
+
+5. AIなしで説明できる今回の設計:
+   <本人の回答>
+
+6. まだ理解していない点:
+   <本人の回答、または空欄>
+```
+
+## 監査cycleの終結
+
+Reviewerまたは実装担当は、終結前に最新cycleで次を対応づけて確認する。
+
+- cycle ID、Repository/branch、Baseline/Reviewed SHAと最終Gate
+- 各Findingの最新状態（再QA済み／未解決／未検証）と対応するtask
+- 未解決Finding、必須check未実施、その他の残余リスク
+- Human Understanding Noteの保存先（未作成の場合は未作成と明記）
+
+上記を終結応答に記録し、QA監査cycleがtopic branch上で終了したことを示す。HOLD/FAILや残余リスクがある場合も状態を偽らず記録したうえでcycleを閉じられる。Noteの未作成・空欄はQA Gateを変更しない。終結はOwner受入、`main`/`master`へのmerge、外部Skill配置、配備を実行・承認するものではなく、必要ならOwner判断へ明示的に引き継ぐ。
 
 ## Out of scope
 
