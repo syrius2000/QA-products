@@ -1,0 +1,150 @@
+{
+  "schema": "blind-qa-cycle-v1",
+  "topic": "unify-blind-qa-cycle",
+  "cycle": 1,
+  "start_mode": "post-change",
+  "baseline": "1d696f917ce03a1a6072fdafcb8c05c7259de54d",
+  "reviewed": "5112d59abf3a38850723b0599cc08f96385c06b5",
+  "audience": "cloud",
+  "remote_visibility": "pushed",
+  "requirements_fingerprint": "d08e1457ec6e25b00f18e0fd2b7ad0c3fa956b784dd78ec734da395ccf9d2f1c",
+  "gate": "FAIL",
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "text": "Reviewerは実装担当から独立し、招待で固定されたBaseline..Reviewedの差分と全受入基準を確認する。",
+      "result": "PASS",
+      "evidence": "Reviewer process: fixed Baseline..Reviewed was independently fetched/compared; merge-base=Baseline, ahead_by=1, 13 changed files; all 9 ACs are assessed here. Reviewer did not author Reviewed."
+    },
+    {
+      "id": "AC-002",
+      "text": "実装前は計画をYip commitへ固定し、実装後の新branch開始時は切替前HEAD、または既存checkpointをBaselineとし、branch・Baseline・Reviewedの完全SHAをinviteに記録する。",
+      "result": "FAIL",
+      "evidence": "quality-loop/skills/blind-qa-cycle/SKILL.md:123-126 permits eligible branch_start, but SKILL.md:207 still requires a valid checkpoint for post-change; references/audience_channels.md:3,11 and references/git_wip_flow.md:19,97 also describe checkpoint-only post-change, conflicting with spec.md:35-37."
+    },
+    {
+      "id": "AC-003",
+      "text": "LocalとCloudは同じAC・Finding・Gate契約を使い、Reviewerは指定SHA上のReviewer資料hashを照合し、指定された4成果物だけを作成する。",
+      "result": "PASS",
+      "evidence": "openspec/changes/unify-blind-qa-cycle/design.md:61-65 and quality-loop/skills/blind-qa-cycle/SKILL.md:275-303; all three pinned reviewer-material SHA-256 values matched Reviewed exactly. Artifact commit is constructed from exactly 01_review.md, 02_tasks.md, 03_machine.json, STATUS.md."
+    },
+    {
+      "id": "AC-004",
+      "text": "Cloud QAではReviewed commitとinvite commitだけをtopic branchへpushし、main/masterへのmergeやforce-pushを行わない。Local reviewはpushしない。",
+      "result": "PASS",
+      "evidence": "Remote DAG before reviewer artifact commit: master=1d696f9..., Reviewed 5112d59... is its direct child, invite 33523ef... is the direct child of Reviewed; compare Reviewed..invite contains only c1/00_invite.md. quality-loop/skills/blind-qa-cycle/SKILL.md:127-136 and :156-160 preserve topic-only cloud push / local no-push."
+    },
+    {
+      "id": "AC-005",
+      "text": "Implementerは利用者が指定したFindingだけに対応するYip response commitを作り、前cycleを変更せず、前回ReviewedをBaselineとする新cycleでReviewerに再確認を求める。",
+      "result": "PASS",
+      "evidence": "quality-loop/skills/blind-qa-cycle/SKILL.md:325-330 and references/git_wip_flow.md:63-71."
+    },
+    {
+      "id": "AC-006",
+      "text": "Note modeは一致を確認したcycle情報と最終Gateを参照し、6問への人の回答を逐語保存する。既存Noteを上書きせず、NoteでGate・Finding状態・Owner判断を変更しない。",
+      "result": "PASS",
+      "evidence": "quality-loop/skills/blind-qa-cycle/SKILL.md:336-342 and :344-378."
+    },
+    {
+      "id": "AC-007",
+      "text": "Cycle終結時にFinding状態、残余リスク、最終Gate、SHA、Note pathを記録し、Owner判断・merge・配備から分離する。",
+      "result": "PASS",
+      "evidence": "quality-loop/skills/blind-qa-cycle/SKILL.md:380-389."
+    },
+    {
+      "id": "AC-008",
+      "text": "quality-qa、quality-review、quality-responseの用途、データ、CLI契約を変更せず、blind-qa-cycleから用途に応じて案内する。",
+      "result": "PASS",
+      "evidence": "quality-loop/skills/blind-qa-cycle/SKILL.md:19-25 routes by purpose; Baseline..Reviewed changed-path list contains no quality-loop/skills/quality-qa/, quality-review/, or quality-response/ files."
+    },
+    {
+      "id": "AC-009",
+      "text": "ignoredな.agents配置はPlan 039の承認前に変更せず、配置未完了を明示する。",
+      "result": "UNVERIFIED",
+      "evidence": "openspec/changes/unify-blind-qa-cycle/tasks.md:12 leaves task 2.3 open; implementation-record.md:12-14,30,62,71 states .agents is ignored, unchanged, and approval-pending. Baseline..Reviewed contains no .agents path. However the actual ignored checkout contents are outside Git and cannot be independently reconstructed from Reviewed, so physical local non-modification is not fully verifiable."
+    }
+  ],
+  "reviewer_materials": [
+    {
+      "path": "quality-loop/skills/blind-qa-cycle/SKILL.md",
+      "expected_sha256": "186dc5d68efed35f365a19fda33ece05d5b2014aff77ae54ee5a86fe1f9d8feb",
+      "observed_sha256": "186dc5d68efed35f365a19fda33ece05d5b2014aff77ae54ee5a86fe1f9d8feb",
+      "read": true
+    },
+    {
+      "path": "quality-loop/skills/quality-qa/SKILL.md",
+      "expected_sha256": "57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261",
+      "observed_sha256": "57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261",
+      "read": true
+    },
+    {
+      "path": "quality-loop/skills/blind-qa-cycle/references/cloud_output_contract.md",
+      "expected_sha256": "98b82a70ef5976c149a18bda279970a3f2523214426f490667a7725c786d20f2",
+      "observed_sha256": "98b82a70ef5976c149a18bda279970a3f2523214426f490667a7725c786d20f2",
+      "read": true
+    }
+  ],
+  "focus_packs": [
+    "path-sanitization"
+  ],
+  "checks": [
+    {
+      "id": "openspec-validate-strict",
+      "required": true,
+      "argv": [
+        "openspec",
+        "validate",
+        "--strict",
+        "unify-blind-qa-cycle"
+      ],
+      "cwd": "Reviewed tree",
+      "status": "NOT_RUN",
+      "exit_code": null,
+      "reason": "openspec executable unavailable in reviewer runtime; install/dependency addition prohibited by invite. Implementer-recorded success was not substituted for independent execution."
+    }
+  ],
+  "path_sanitization": {
+    "scope": "13 files in Baseline..Reviewed",
+    "result": "PASS",
+    "patterns_checked": [
+      "/Users/...",
+      "/home/...",
+      "file:///",
+      "Windows drive path",
+      "UNC path"
+    ],
+    "note": "No real forbidden path matches observed; git author metadata excluded by invite scope."
+  },
+  "findings": [
+    {
+      "id": "QA-FLOW-M01",
+      "severity": "Medium",
+      "status": "OPEN",
+      "title": "branch_startとcheckpoint必須記述が矛盾",
+      "requirement": "AC-002",
+      "evidence": [
+        "quality-loop/skills/blind-qa-cycle/SKILL.md:123-126",
+        "quality-loop/skills/blind-qa-cycle/SKILL.md:207",
+        "quality-loop/skills/blind-qa-cycle/references/audience_channels.md:3,11",
+        "quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md:19,42,97",
+        "openspec/changes/unify-blind-qa-cycle/specs/blind-qa-cycle/spec.md:35-37"
+      ],
+      "expected": "Eligible branch_start established by the same explicit cloud operation must be accepted consistently by shared invite and reference flows; checkpoint remains required elsewhere.",
+      "impact": "A valid post-change cycle can be accepted by cloud mode but rejected by shared invite/reference guidance, reducing reproducibility.",
+      "action": "Align shared invite and references with the narrow eligible branch_start exception without relaxing its preconditions.",
+      "repair_surface": "docs"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-01",
+      "closes": "QA-FLOW-M01",
+      "done": false,
+      "path": "quality-loop/skills/blind-qa-cycle/SKILL.md; quality-loop/skills/blind-qa-cycle/references/audience_channels.md; quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md",
+      "action": "Unify post-change Baseline selection wording to allow only the eligible cloud branch_start exception alongside prepared/checkpoint/re-qa routes.",
+      "done_when": "All three documents apply one non-contradictory Baseline selection rule and a c1-equivalent branch_start invite is not rejected by Mode: invite.",
+      "verify": "Cross-check branch_start/checkpoint wording and run openspec validate --strict unify-blind-qa-cycle on the repaired Reviewed tree; expected exit code 0."
+    }
+  ]
+}

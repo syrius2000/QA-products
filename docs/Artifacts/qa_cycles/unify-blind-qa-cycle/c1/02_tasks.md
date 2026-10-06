@@ -1,0 +1,3 @@
+# 修復タスク
+
+- [ ] T-01 (closes: QA-FLOW-M01) severity=Medium; path=`quality-loop/skills/blind-qa-cycle/SKILL.md`, `quality-loop/skills/blind-qa-cycle/references/audience_channels.md`, `quality-loop/skills/blind-qa-cycle/references/git_wip_flow.md`; action=post-changeのBaseline選択記述を統一し、明示`cloud`操作でcloud step 3の厳格条件を満たす場合だけ`branch_start`をcheckpointの代替として許可する。plain/local経路や条件不成立時のcheckpoint要件は維持する; done_when=3文書の入口・shortcuts・一般フローが`prepared | checkpoint | eligible cloud branch_start | re-qa previous Reviewed`の選択規則で矛盾せず、今回のc1と同じbranch_start inviteが共有invite規則で拒否されない; verify=対象3文書のbranch_start/checkpoint記述を相互照合し、`openspec validate --strict unify-blind-qa-cycle`が修復後Reviewed treeでexit code 0となることを確認する。
