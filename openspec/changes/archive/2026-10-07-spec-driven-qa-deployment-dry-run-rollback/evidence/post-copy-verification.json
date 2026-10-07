@@ -1,0 +1,28 @@
+{
+  "destination_root": "/home/manabu/.agents/skills",
+  "skills": {
+    "quality-qa": {
+      "version": "0.2.2",
+      "tree_sha256": "605bb803b4dd1a7b8809c745d99806791b91e7793dfbc6abcf7495e0e466397b",
+      "entry_count": 25,
+      "file_count": 19,
+      "cli_help": "passed"
+    },
+    "quality-review": {
+      "version": "1.5.0",
+      "tree_sha256": "4c6bb8c040f6cfc480052a52001fb1162cdc6d4eb335729e7ca1c907d5a2f739",
+      "entry_count": 25,
+      "file_count": 20,
+      "cli_help": "passed"
+    },
+    "quality-response": {
+      "version": "1.4.0",
+      "tree_sha256": "9917803c8b28c401aa613fb7b436484e78fb0f47eb0528750e0c4c9a38e0090b",
+      "entry_count": 24,
+      "file_count": 19,
+      "cli_help": "passed"
+    }
+  },
+  "blind_qa_cycle_unchanged": true,
+  "other_skill_paths_touched": false
+}

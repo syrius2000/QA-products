@@ -1,17 +1,18 @@
 # Quality Loop Skill手動配置ガイド
 
-`quality-review`と`quality-response`を、グローバルまたは指定したリポジトリだけで利用するための手動コピー手順です。インストーラー、npm、PyPI、pipxは使用しません。実務者向けの利用成果物は別リポジトリのProductivity-Skillに置き、QA-products側の同期ツールから管理対象を更新します。
+`quality-qa`、`quality-review`、`quality-response`を、グローバルまたは指定したリポジトリだけで利用するための配置手順です。実務者向けの利用成果物は別リポジトリのProductivity-Skillに置き、QA-products側の同期ツールから管理対象を更新します。
 
 ## 1. このガイドで行うこと
 
-このガイドは、完成済みのSkillディレクトリをコピーして使う手順です。コピー元は、このリポジトリ内の次の2ディレクトリです。
+このガイドは、完成済みのSkillディレクトリをコピーして使う手順です。コピー元は、このリポジトリ内の次の3ディレクトリです。
 
 ```text
+quality-loop/skills/quality-qa/
 quality-loop/skills/quality-review/
 quality-loop/skills/quality-response/
 ```
 
-各ディレクトリには`SKILL.md`、`runtime/quality_loop/`、`bin/`、必要な`references/`が含まれます。コピー後に開発元リポジトリのPythonパッケージを参照する必要はありません。
+各ディレクトリには`SKILL.md`、`VERSION`、`bin/`、Skill固有の`runtime/`、必要な`references/`が含まれます。コピー後に開発元リポジトリのPythonパッケージを参照する必要はありません。
 
 実際のグローバル配置、他リポジトリへの配置、既存Skillの上書き、削除は、対象パスを特定した明示承認が必要です。このガイド自体は承認を代行しません。
 
@@ -32,7 +33,7 @@ quality-loop/skills/quality-response/
 SOURCE_SKILLS_DIR="$(pwd)/quality-loop/skills"
 DEPLOY_TARGET="$HOME/.agents/skills"
 
-for skill_name in quality-review quality-response; do
+for skill_name in quality-qa quality-review quality-response; do
   if [ -e "$DEPLOY_TARGET/$skill_name" ]; then
     echo "停止: 既存Skillあり: $DEPLOY_TARGET/$skill_name"
   else
@@ -41,7 +42,7 @@ for skill_name in quality-review quality-response; do
 done
 ```
 
-期待結果は、両方について`配置可能`です。`停止: 既存Skillあり`が1件でも表示された場合はコピーしません。既存内容とコピー元の差分を確認し、同一なら配置を省略し、差異があれば上書きせずに停止してください。
+期待結果は、3件について`配置可能`です。`停止: 既存Skillあり`が1件でも表示された場合はコピーしません。既存内容とコピー元の差分を確認し、同一なら配置を省略し、差異があれば上書きせずに停止してください。
 
 同一性を確認するには、対象Skillごとに次を実行します。
 
@@ -54,27 +55,29 @@ diff -qr "$SOURCE_SKILLS_DIR/quality-response" "$DEPLOY_TARGET/quality-response"
 
 ## 4. グローバルへ新規コピーする
 
-前節で両Skillが不存在であることを確認し、グローバル配置の明示承認を得た場合だけ、次を実行します。
+前節で3 Skillが不存在であることを確認し、グローバル配置の明示承認を得た場合だけ、次を実行します。
 
 ```bash
 SOURCE_SKILLS_DIR="$(pwd)/quality-loop/skills"
 GLOBAL_SKILLS_DIR="$HOME/.agents/skills"
 
 mkdir -p "$GLOBAL_SKILLS_DIR"
-cp -R "$SOURCE_SKILLS_DIR/quality-review" "$GLOBAL_SKILLS_DIR/quality-review"
-cp -R "$SOURCE_SKILLS_DIR/quality-response" "$GLOBAL_SKILLS_DIR/quality-response"
+cp -a "$SOURCE_SKILLS_DIR/quality-qa" "$GLOBAL_SKILLS_DIR/quality-qa"
+cp -a "$SOURCE_SKILLS_DIR/quality-review" "$GLOBAL_SKILLS_DIR/quality-review"
+cp -a "$SOURCE_SKILLS_DIR/quality-response" "$GLOBAL_SKILLS_DIR/quality-response"
 ```
 
-期待結果は、次の2ディレクトリが新規に作成されることです。
+期待結果は、次の3ディレクトリが新規に作成されることです。
 
 ```text
+~/.agents/skills/quality-qa/
 ~/.agents/skills/quality-review/
 ~/.agents/skills/quality-response/
 ```
 
 ## 5. 指定リポジトリへ新規コピーする
 
-前節で対象リポジトリと両Skillの不存在を確認し、ローカル配置の明示承認を得た場合だけ、`TARGET_REPO`を実パスへ置き換えて次を実行します。
+前節で対象リポジトリと3 Skillの不存在を確認し、ローカル配置の明示承認を得た場合だけ、`TARGET_REPO`を実パスへ置き換えて次を実行します。
 
 ```bash
 SOURCE_SKILLS_DIR="$(pwd)/quality-loop/skills"
@@ -82,37 +85,43 @@ TARGET_REPO="/absolute/path/to/target-repository"
 LOCAL_SKILLS_DIR="$TARGET_REPO/.agents/skills"
 
 mkdir -p "$LOCAL_SKILLS_DIR"
-cp -R "$SOURCE_SKILLS_DIR/quality-review" "$LOCAL_SKILLS_DIR/quality-review"
-cp -R "$SOURCE_SKILLS_DIR/quality-response" "$LOCAL_SKILLS_DIR/quality-response"
+cp -a "$SOURCE_SKILLS_DIR/quality-qa" "$LOCAL_SKILLS_DIR/quality-qa"
+cp -a "$SOURCE_SKILLS_DIR/quality-review" "$LOCAL_SKILLS_DIR/quality-review"
+cp -a "$SOURCE_SKILLS_DIR/quality-response" "$LOCAL_SKILLS_DIR/quality-response"
 ```
 
-期待結果は、次の2ディレクトリが対象リポジトリ内に新規に作成されることです。
+期待結果は、次の3ディレクトリが対象リポジトリ内に新規に作成されることです。
 
 ```text
+<対象リポジトリ>/.agents/skills/quality-qa/
 <対象リポジトリ>/.agents/skills/quality-review/
 <対象リポジトリ>/.agents/skills/quality-response/
 ```
 
 ## 6. コピー後の最小検査
 
-`SKILL_ROOT`を実際にコピーした`quality-review`または`quality-response`の絶対パスへ置き換えます。両Skillについて実行してください。
+次の確認を3 Skillそれぞれについて実行します。
 
 ```bash
-SKILL_ROOT="/absolute/path/to/quality-review"
-test -f "$SKILL_ROOT/SKILL.md"
-test -d "$SKILL_ROOT/runtime/quality_loop"
-test -x "$SKILL_ROOT/bin/quality-review-cli"
-"$SKILL_ROOT/bin/quality-review-cli" --help
+SKILLS_DIR="$HOME/.agents/skills"
+for skill_name in quality-qa quality-review quality-response; do
+  SKILL_ROOT="$SKILLS_DIR/$skill_name"
+  test -f "$SKILL_ROOT/SKILL.md"
+  test -f "$SKILL_ROOT/VERSION"
+  test -d "$SKILL_ROOT/runtime"
+  test -x "$SKILL_ROOT/bin/$skill_name-cli"
+  "$SKILL_ROOT/bin/$skill_name-cli" --help
+done
 ```
 
-`quality-response`では末尾を`quality-response-cli`へ置き換えます。期待結果は、各`test`が終了コード0となり、`--help`がQuality Loop CLIの使用方法を表示することです。
+期待結果は、各`test`が終了コード0となり、`--help`が該当CLIの使用方法を表示することです。
 
 さらに、同梱runtimeが開発正本と同一であることを確認します。
 
 ```bash
-SOURCE_RUNTIME="$(pwd)/quality-loop/quality_loop"
-COPIED_RUNTIME="/absolute/path/to/quality-review/runtime/quality_loop"
-diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' "$SOURCE_RUNTIME" "$COPIED_RUNTIME"
+diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' quality-loop/qa_workflow "$SKILLS_DIR/quality-qa/runtime/qa_workflow"
+diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' quality-loop/quality_loop "$SKILLS_DIR/quality-review/runtime/quality_loop"
+diff -qr -x '__pycache__' -x '*.pyc' -x '.pytest_cache' quality-loop/quality_loop "$SKILLS_DIR/quality-response/runtime/quality_loop"
 ```
 
 出力がない場合だけ、配布対象のPythonソースが同一です。`__pycache__/`、`*.pyc`、`.pytest_cache/`は比較対象から除外していますが、コピー先にこれらの生成物が含まれている場合は、配布可能と判定せずに停止してください。

@@ -1,10 +1,13 @@
-# Quality Loop Skill配置仕様
+# Spec Delta
 
-## Purpose
+## MODIFIED Requirements
 
-Quality LoopのReviewer／Implementer Skillを、Python共通基盤込みの自己完結した配布単位として安全にコピーし、グローバルまたは任意リポジトリで同一契約のまま利用できるようにする。
+### Requirement: 開発正本と同梱runtimeの一致
+システムは`quality-loop/qa_workflow/`を`quality-qa` runtimeの開発正本、`quality-loop/quality_loop/`を`quality-review`および`quality-response` runtimeの開発正本として扱い、各Skillに同梱するruntimeをそれぞれ対応する正本と一致させなければならない（SHALL）。同梱対象にはPythonソースを含め、`__pycache__`、`.pyc`その他の生成物を含めてはならない（MUST NOT）。
 
-## Requirements
+#### Scenario: 配布前のruntime比較
+- **WHEN** 配布可能性を確認する
+- **THEN** 各Skillの同梱runtimeに必要なPythonソースが存在し、対応する開発正本との差異と不要な生成物の有無を判定できる
 
 ### Requirement: 自己完結したSkill配布単位
 システムは`quality-qa`、`quality-review`、`quality-response`の各Skillについて、Skill定義、必要な参照資料、Skill固有のruntime全体、および配置場所に依存しないCLI実行入口を含む自己完結したディレクトリを提供しなければならない（SHALL）。各Skillは開発リポジトリの`quality-loop/`をPython import pathまたは作業ディレクトリとして要求してはならない（MUST NOT）。
@@ -16,13 +19,6 @@ Quality LoopのReviewer／Implementer Skillを、Python共通基盤込みの自�
 #### Scenario: リポジトリローカル配置後のCLI起動
 - **WHEN** 完全なSkillディレクトリを任意リポジトリの`.agents/skills/<skill-name>/`へコピーし、別の作業ディレクトリから同梱CLI実行入口を呼び出す
 - **THEN** 開発元リポジトリへの相対参照なしで各Skillの同梱runtimeからCLIを起動できる
-
-### Requirement: 開発正本と同梱runtimeの一致
-システムは`quality-loop/qa_workflow/`を`quality-qa` runtimeの開発正本、`quality-loop/quality_loop/`を`quality-review`および`quality-response` runtimeの開発正本として扱い、各Skillに同梱するruntimeをそれぞれ対応する正本と一致させなければならない（SHALL）。同梱対象にはPythonソースを含め、`__pycache__`、`.pyc`その他の生成物を含めてはならない（MUST NOT）。
-
-#### Scenario: 配布前のruntime比較
-- **WHEN** 配布可能性を確認する
-- **THEN** 各Skillの同梱runtimeに必要なPythonソースが存在し、開発正本との差異と不要な生成物の有無を判定できる
 
 ### Requirement: グローバル配置とローカル配置
 配置手順は、グローバル配置先を`~/.agents/skills/quality-qa/`、`~/.agents/skills/quality-review/`、`~/.agents/skills/quality-response/`、ローカル配置先を`<repo>/.agents/skills/`配下の同名3ディレクトリとして明示しなければならない（SHALL）。グローバルとローカルの両方に同名Skillがある場合、ローカルSkillを優先する運用契約を明示しなければならない（SHALL）。
@@ -38,40 +34,6 @@ Quality LoopのReviewer／Implementer Skillを、Python共通基盤込みの自�
 #### Scenario: ローカル配置先の選択
 - **WHEN** 利用者が指定したリポジトリだけで利用する配置を選択する
 - **THEN** 手順は3つのSkillをそのリポジトリの`.agents/skills/`配下へコピーする対象として示す
-
-### Requirement: 同名SkillのFail-Closed保護
-配置手順は、配置先に同名Skillが存在しない場合だけ新規コピーを許可しなければならない（SHALL）。既存内容が配布元と同一の場合は配置を省略し、差異がある場合は差分を提示して停止し、明示承認なしに上書きしてはならない（MUST NOT）。
-
-#### Scenario: 同名Skillが存在しない
-- **WHEN** 配置先に対象Skillディレクトリが存在しない
-- **THEN** 手順は新規コピー可能と判定する
-
-#### Scenario: 同一内容のSkillが存在する
-- **WHEN** 配置先の対象Skillが配布元と同一内容である
-- **THEN** 手順はコピーを省略し、変更不要であることを示す
-
-#### Scenario: 異なる内容のSkillが存在する
-- **WHEN** 配置先の対象Skillが配布元と異なる
-- **THEN** 手順は差異を示して停止し、既存Skillを変更しない
-
-### Requirement: Role限定による誤発火防止
-`quality-review`は明示されたQuality Loop案件のReviewer工程だけに、`quality-response`は明示されたQuality Loop案件のImplementer工程だけに発火条件を限定しなければならない（SHALL）。各Skillは、一般的なコードレビュー、一般的な回答作成、OpenSpec案件一般、他のQAワークフロー、およびRole外操作を非発火条件として明記しなければならない（SHALL）。
-
-#### Scenario: Reviewer工程の発火
-- **WHEN** 明示されたQuality Loop案件で`next_role=reviewer`かつ対応するReviewer操作が要求される
-- **THEN** `quality-review`だけが対象Skillとなる
-
-#### Scenario: Implementer工程の発火
-- **WHEN** 明示されたQuality Loop案件で`next_role=implementer`かつ`submit-plan`または`submit-response`が要求される
-- **THEN** `quality-response`だけが対象Skillとなる
-
-#### Scenario: 一般的なレビュー依頼
-- **WHEN** Quality Loop案件、case-root、またはhandoffを伴わない一般的なレビューが要求される
-- **THEN** 2つのSkillはQuality Loop操作を開始せず、他のレビューSkillと競合しない
-
-#### Scenario: Role外操作
-- **WHEN** Owner裁定、自己クローズ、Reviewerによる修正、Implementerによる独立検証その他のRole外操作が要求される
-- **THEN** 対応するSkillは操作を拒否し、正本を変更しない
 
 ### Requirement: 最小配置検査
 配布可能性の確認は、自動テストスイートを追加または必須化せず、各Skillのfrontmatter、必要ファイル、同梱runtimeのimport、CLI実行入口の安全な起動、および想定配置構成を検査しなければならない（SHALL）。検査できない事項を成功として扱ってはならない（MUST NOT）。
@@ -117,6 +79,8 @@ Quality LoopのReviewer／Implementer Skillを、Python共通基盤込みの自�
 #### Scenario: 外部配置の依頼
 - **WHEN** 利用者が実際のグローバル配置または他リポジトリへの配置を要求する
 - **THEN** 実装完了、独立QA、manifest、対象パス、および明示承認を確認し、条件を満たす指定先だけへ配置する
+
+## ADDED Requirements
 
 ### Requirement: 通常QA Skillの発火範囲
 `quality-qa`は通常のQA依頼、独立レビュー結果の確認、明示承認後の修正と再QA、状況確認を対象にし、Quality Loop formal case専用SkillのReviewer／Implementer roleを代行してはならない（MUST NOT）。

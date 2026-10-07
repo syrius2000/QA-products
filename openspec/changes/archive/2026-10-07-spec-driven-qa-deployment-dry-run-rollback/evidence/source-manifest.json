@@ -1,0 +1,509 @@
+{
+  "source_root": "/home/manabu/Programing/00ALL-repos/qa-products/quality-loop/skills",
+  "skills": {
+    "quality-qa": {
+      "version": "0.2.2",
+      "tree_sha256": "605bb803b4dd1a7b8809c745d99806791b91e7793dfbc6abcf7495e0e466397b",
+      "entries": [
+        {
+          "path": "CHANGELOG.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1324,
+          "sha256": "235c91ff47ac5d915e6912681ae16e3b7f4b2687440f965faec66955ffee9b19"
+        },
+        {
+          "path": "SKILL.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 5778,
+          "sha256": "57bb58973476cb503c35ea2981c55908c245d8c6e34972385e4c987740bdc261"
+        },
+        {
+          "path": "VERSION",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 6,
+          "sha256": "998f6b887ed7a6ef44e84210d0237b715bed42ea7254f48dc418afec0a484103"
+        },
+        {
+          "path": "bin",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "bin/quality-qa-cli",
+          "type": "file",
+          "mode": "0o775",
+          "bytes": 382,
+          "sha256": "e19b778f66f944236cfcf6dfe4f191693582357dfeeb975fe7913cb7c6c7a5df"
+        },
+        {
+          "path": "evals",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "evals/evals.json",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2357,
+          "sha256": "bb7a96c47289073644f25f771c9621bd261272d3661580d7ba7a211b8edc3804"
+        },
+        {
+          "path": "references",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "references/prepare.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3726,
+          "sha256": "0ca0d558fe4e89fbecff5cd8186f33c073a83ed8bc50fcf5c130032b98c6f061"
+        },
+        {
+          "path": "references/publish.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 4214,
+          "sha256": "1010bf03ca7faf92d04b1ab36b09e269ec180ac1242064d565b8048af79314a0"
+        },
+        {
+          "path": "references/repair.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3124,
+          "sha256": "e1fd19a625e348f93473f875d2b4ef2b3d116e2f12e387662c9314e894c8032d"
+        },
+        {
+          "path": "references/results.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2825,
+          "sha256": "c4267b70bedad99f12f30e47102ef3c1648a9a32dbedf8d9eabf3b25426f4d34"
+        },
+        {
+          "path": "references/reviewer_contract.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 5081,
+          "sha256": "0a0cf6793197fedd16bd365b8d1b8280a790d77c83c8f3b7d1eda0338c6dec42"
+        },
+        {
+          "path": "runtime",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/qa_workflow",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/qa_workflow/__init__.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 116,
+          "sha256": "d34c722ded7fb33593e3c861d54ffe14ca4e3146fce414a65f68d0aaea436ca5"
+        },
+        {
+          "path": "runtime/qa_workflow/cli.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 8701,
+          "sha256": "28fc1ba2ee8af27b3dd4b736a99b80cc354e086cb06c68ec5875e743f78991f3"
+        },
+        {
+          "path": "runtime/qa_workflow/github.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2900,
+          "sha256": "6acff302c31a33900b452b647c96886fa7045b8770e251cdf35b068ad0902c89"
+        },
+        {
+          "path": "runtime/qa_workflow/gitops.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 18112,
+          "sha256": "f70b957f69f1281a058a6cc4bb8dccb7f0a1327f17ba62e9e6ef5ee9a37ada2e"
+        },
+        {
+          "path": "runtime/qa_workflow/legacy.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 4774,
+          "sha256": "7d75ddb5528aafaa139a29841a3b6067df33dfafe2f2684849a446570ebb6f04"
+        },
+        {
+          "path": "runtime/qa_workflow/review.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 25866,
+          "sha256": "0d9e961186d204ef631afdaa1298b56b2e2d55f4315a0a2f455aa8c15dfcf3ad"
+        },
+        {
+          "path": "runtime/qa_workflow/store.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 10340,
+          "sha256": "d69ec90849f085a148dea8e4cda3dbe12c843a1384626b5b059050f4a4d3dd70"
+        },
+        {
+          "path": "runtime/qa_workflow/workflow.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 46910,
+          "sha256": "41083ddee01f6d2ae260d4e258eed9ac207c08c5405c50c4a6f485dab7c9b0fb"
+        },
+        {
+          "path": "templates",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "templates/qa_review.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2736,
+          "sha256": "2ac2e74c1ed51da74af2b010015c750aa805975d72d702a33ad41a0d2866e9cc"
+        }
+      ]
+    },
+    "quality-review": {
+      "version": "1.5.0",
+      "tree_sha256": "4c6bb8c040f6cfc480052a52001fb1162cdc6d4eb335729e7ca1c907d5a2f739",
+      "entries": [
+        {
+          "path": "CHANGELOG.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 830,
+          "sha256": "e8945e9e06d6dc317ee4f3535d1917ee2f99beb5f6c820370e9d9b2696964f0f"
+        },
+        {
+          "path": "SKILL.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 7972,
+          "sha256": "7fa4b56ce28f27bfb64c56af40f26e5f37b6e9c28f619a68743a57360f171a2e"
+        },
+        {
+          "path": "VERSION",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 6,
+          "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3"
+        },
+        {
+          "path": "bin",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "bin/quality-review-cli",
+          "type": "file",
+          "mode": "0o775",
+          "bytes": 308,
+          "sha256": "9c880fd5c7280a503fcfe028a9b88577ad1083a4c500f2cc88b2aa6ddfb81529"
+        },
+        {
+          "path": "evals",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "evals/evals.json",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1363,
+          "sha256": "7fdd9889766c6db1992a27e980264465d112747a27d8e343b1cd850abe1ca0cd"
+        },
+        {
+          "path": "references",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "references/finding-guidelines.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1199,
+          "sha256": "62bb07ccd3aabe3f111e3fe2451a24f01dc208d5ef4f4f0e7814d476711b3497"
+        },
+        {
+          "path": "references/qms-foundations.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2556,
+          "sha256": "c97d906cbeb8e92cb32357f2f2f537d976a7cecd3b03aca0adc4240319537460"
+        },
+        {
+          "path": "references/standalone-review-input.schema.json",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1786,
+          "sha256": "8f7a3ff6146aed70f52cc53fdb91038ccd64d9b702568fa7762c50c24dc82514"
+        },
+        {
+          "path": "runtime",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/quality_loop",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/quality_loop/__init__.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 426,
+          "sha256": "4e61c78060aaee97d3d543957db24da41ac7757f6615265106c76b8532275e39"
+        },
+        {
+          "path": "runtime/quality_loop/authorization.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 6219,
+          "sha256": "16be8c5c8648dc0b8904f522fd37b84464dd4f756ce956288644ba73220700a8"
+        },
+        {
+          "path": "runtime/quality_loop/case_store.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 8243,
+          "sha256": "e3e58bfa1eba7030f35c846bf2f6a20294580668e733f61edcf76b83ef01d4b7"
+        },
+        {
+          "path": "runtime/quality_loop/cli.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 7514,
+          "sha256": "0992934148570545b8f41f45aeb83adee78f6b02385b7550231d273ea272b270"
+        },
+        {
+          "path": "runtime/quality_loop/engine.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 81435,
+          "sha256": "ff0ac9c71600f9a44181e5cb8a4921af8f5c566f95a2e42f8ae143ac57bf2b61"
+        },
+        {
+          "path": "runtime/quality_loop/errors.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 955,
+          "sha256": "d0afe9548caf512f0fe1faf964f7c8444a754009e72e4f63afa07af1b1d67cda"
+        },
+        {
+          "path": "runtime/quality_loop/evidence.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3128,
+          "sha256": "68459c4732cea90e61639b3d3eb9f47c3a90f904d5a0b8f9100f6e5d6cf5d2a3"
+        },
+        {
+          "path": "runtime/quality_loop/handoff.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3269,
+          "sha256": "72176f50dae59be5cfcf9291e1a039091ed044aa4b171389a420b871b32b807f"
+        },
+        {
+          "path": "runtime/quality_loop/markdown_report.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 18249,
+          "sha256": "c5c5dace241c2fbb04a0509774a1c0a805710fa73ab479d6c91517a88e38caca"
+        },
+        {
+          "path": "runtime/quality_loop/model.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 4179,
+          "sha256": "07c52ac5a9872ff5a755ea4c67138526ee2ddb457c6958d8411309d5719c87cf"
+        },
+        {
+          "path": "runtime/quality_loop/observation.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 14657,
+          "sha256": "3a943f7ff2771ab6494e0318ab370c62a5bfed71dd5e410ba7fc4b1ad29710cf"
+        },
+        {
+          "path": "runtime/quality_loop/transitions.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1592,
+          "sha256": "6685ccc2cb60038a3e2deaeca6c807b03a9ae823ef9e77fbbff68a5d5c731c7c"
+        }
+      ]
+    },
+    "quality-response": {
+      "version": "1.4.0",
+      "tree_sha256": "9917803c8b28c401aa613fb7b436484e78fb0f47eb0528750e0c4c9a38e0090b",
+      "entries": [
+        {
+          "path": "CHANGELOG.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 213,
+          "sha256": "6ab8225782556c70d67bcc526f431b9df24d672be02f721f1f8986040eb7bef3"
+        },
+        {
+          "path": "SKILL.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 4972,
+          "sha256": "b598226b367f55bc9ce308103b624bc79fb97aef5d2b6631a2a06dc858a98095"
+        },
+        {
+          "path": "VERSION",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 6,
+          "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7"
+        },
+        {
+          "path": "bin",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "bin/quality-response-cli",
+          "type": "file",
+          "mode": "0o775",
+          "bytes": 308,
+          "sha256": "9c880fd5c7280a503fcfe028a9b88577ad1083a4c500f2cc88b2aa6ddfb81529"
+        },
+        {
+          "path": "evals",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "evals/evals.json",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1291,
+          "sha256": "5551d04358ef774e85b484a41d486379f9852a559a9b405413fb602086a6f471"
+        },
+        {
+          "path": "references",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "references/qms-foundations.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 2556,
+          "sha256": "c97d906cbeb8e92cb32357f2f2f537d976a7cecd3b03aca0adc4240319537460"
+        },
+        {
+          "path": "references/response-guidelines.md",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1132,
+          "sha256": "289f0b487abaa17e9d1d1193111fef42b1c449de8aaf171fd6092035b931f014"
+        },
+        {
+          "path": "runtime",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/quality_loop",
+          "type": "dir",
+          "mode": "0o775"
+        },
+        {
+          "path": "runtime/quality_loop/__init__.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 426,
+          "sha256": "4e61c78060aaee97d3d543957db24da41ac7757f6615265106c76b8532275e39"
+        },
+        {
+          "path": "runtime/quality_loop/authorization.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 6219,
+          "sha256": "16be8c5c8648dc0b8904f522fd37b84464dd4f756ce956288644ba73220700a8"
+        },
+        {
+          "path": "runtime/quality_loop/case_store.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 8243,
+          "sha256": "e3e58bfa1eba7030f35c846bf2f6a20294580668e733f61edcf76b83ef01d4b7"
+        },
+        {
+          "path": "runtime/quality_loop/cli.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 7514,
+          "sha256": "0992934148570545b8f41f45aeb83adee78f6b02385b7550231d273ea272b270"
+        },
+        {
+          "path": "runtime/quality_loop/engine.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 81435,
+          "sha256": "ff0ac9c71600f9a44181e5cb8a4921af8f5c566f95a2e42f8ae143ac57bf2b61"
+        },
+        {
+          "path": "runtime/quality_loop/errors.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 955,
+          "sha256": "d0afe9548caf512f0fe1faf964f7c8444a754009e72e4f63afa07af1b1d67cda"
+        },
+        {
+          "path": "runtime/quality_loop/evidence.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3128,
+          "sha256": "68459c4732cea90e61639b3d3eb9f47c3a90f904d5a0b8f9100f6e5d6cf5d2a3"
+        },
+        {
+          "path": "runtime/quality_loop/handoff.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 3269,
+          "sha256": "72176f50dae59be5cfcf9291e1a039091ed044aa4b171389a420b871b32b807f"
+        },
+        {
+          "path": "runtime/quality_loop/markdown_report.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 18249,
+          "sha256": "c5c5dace241c2fbb04a0509774a1c0a805710fa73ab479d6c91517a88e38caca"
+        },
+        {
+          "path": "runtime/quality_loop/model.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 4179,
+          "sha256": "07c52ac5a9872ff5a755ea4c67138526ee2ddb457c6958d8411309d5719c87cf"
+        },
+        {
+          "path": "runtime/quality_loop/observation.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 14657,
+          "sha256": "3a943f7ff2771ab6494e0318ab370c62a5bfed71dd5e410ba7fc4b1ad29710cf"
+        },
+        {
+          "path": "runtime/quality_loop/transitions.py",
+          "type": "file",
+          "mode": "0o664",
+          "bytes": 1592,
+          "sha256": "6685ccc2cb60038a3e2deaeca6c807b03a9ae823ef9e77fbbff68a5d5c731c7c"
+        }
+      ]
+    }
+  }
+}

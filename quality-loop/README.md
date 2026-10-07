@@ -4,7 +4,7 @@
 
 ## 配置可能なSkill
 
-`skills/quality-review/`と`skills/quality-response/`は、それぞれ単独で`.agents/skills/`へコピーできます。各ディレクトリには`SKILL.md`、CLIラッパー、`runtime/quality_loop/`、必要なreferencesを含め、開発元リポジトリ外でも動作する構造を保ちます。各Skillの版は同梱の`VERSION`で確認してください。
+`skills/quality-qa/`、`skills/quality-review/`、`skills/quality-response/`は、それぞれ単独で`.agents/skills/`へコピーできます。各ディレクトリには`SKILL.md`、CLIラッパー、Skill固有runtime、必要なreferencesを含め、開発元リポジトリ外でも動作する構造を保ちます。各Skillの版は同梱の`VERSION`で確認してください。
 
 RuntimeはPython 3.10以上の標準ライブラリだけで動作し、外部pipパッケージを要求しません。対応方針はPython 3.10および現行Python環境で検証します。
 
@@ -84,4 +84,4 @@ Python標準ライブラリだけを使用します。外部ライブラリへ�
 - `skills/quality-response/`: Response Plan提出、修正提出とEvidence添付
 - `skills/quality-qa/`: 独立QA依頼、結果検査、承認済み修正と再QAを扱う別workflow
 
-どちらも最初に`status`を確認し、CLIが返した次Roleとhandoffを次工程へ渡します。Skillは案件正本`case.json`を直接編集しません。
+Quality Loop caseを扱う`quality-review`と`quality-response`は最初に`status`を確認し、CLIが返した次Roleとhandoffを次工程へ渡します。Skillは案件正本`case.json`を直接編集しません。

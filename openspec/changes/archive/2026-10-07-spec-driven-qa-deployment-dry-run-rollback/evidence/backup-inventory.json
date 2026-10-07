@@ -1,0 +1,86 @@
+{
+  "destination_root": "/home/manabu/.agents/skills",
+  "targets": {
+    "quality-qa": {
+      "exists": false
+    },
+    "quality-review": {
+      "exists": false
+    },
+    "quality-response": {
+      "exists": false
+    }
+  },
+  "preserved_skill": "blind-qa-cycle",
+  "preserved_skill_tree_sha256": "a426be283bacc345b81fe994e9304a9ed47e4be81462f0b3148e753ed9f2abd2",
+  "preserved_skill_entries": [
+    {
+      "path": "SKILL.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 19610,
+      "sha256": "dfad89b76a8e773334ee92679793220a39f75b5b82d49da37cf3facf6cebe2d1"
+    },
+    {
+      "path": "references",
+      "type": "dir",
+      "mode": "0o775"
+    },
+    {
+      "path": "references/audience_channels.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 3492,
+      "sha256": "3ec0ab9144a36f3278e370af59ae3700058bd1b2cfc379377175c21852b7ee43"
+    },
+    {
+      "path": "references/cloud_output_contract.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 4413,
+      "sha256": "b225a7aa3a8c5ff5bd704a43739f475ad24a00013ac37e471166263c69b5e30e"
+    },
+    {
+      "path": "references/focus_math_definitions.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 2946,
+      "sha256": "f99f8959434089a0c73002a4a354e2c18594fd9ab348b96bca6b7da475d0c905"
+    },
+    {
+      "path": "references/focus_openspec_coherence.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 944,
+      "sha256": "df929ddb903b76d9410620302e9f5b2d8309cec9b63e89cb6ca2e1a9356fe0af"
+    },
+    {
+      "path": "references/focus_path_sanitization.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 936,
+      "sha256": "ee95b7a09af3d8596aef16a51f763b2275dec08ff682e2c64307465a1c897304"
+    },
+    {
+      "path": "references/focus_provenance_plans.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 880,
+      "sha256": "947d708eeb9e724bf17ad7f8b5dc594a50533b28cf688a4b83cca96f04f414ed"
+    },
+    {
+      "path": "references/git_wip_flow.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 6304,
+      "sha256": "bd8143358c3359468eacac2ab7f583b1cb0057fedac7d6644f218f1a0eb048f0"
+    },
+    {
+      "path": "references/machine_schema.md",
+      "type": "file",
+      "mode": "0o664",
+      "bytes": 1225,
+      "sha256": "033692c891d7476206e59ac77849678b3368da75d0b425cec87ac8cd6cb716ac"
+    }
+  ]
+}
