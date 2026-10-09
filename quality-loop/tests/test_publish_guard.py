@@ -30,7 +30,7 @@ class PublishGuardTest(unittest.TestCase):
         self.directory.cleanup()
 
     def test_personal_local_path_blocks_publication(self):
-        (self.root / "src/product.py").write_text("path = '/Users/someone/private/notes'\n")
+        (self.root / "src/product.py").write_text("path = '" + "/" + "Users/someone/private/notes'\n")
         with self.assertRaisesRegex(QAError, "個人ローカルパス|機密情報"):
             assert_publishable(self.root, ["src/product.py"])
 

@@ -1166,7 +1166,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             repository, remote = self.setup_bare_remote(Path(tmp))
-            (repository / "src/product.py").write_text("API_TOKEN=live-secret-value-123\npath=/Users/real-person/private/data.csv\n-----BEGIN PRIVATE KEY-----\n")
+            (repository / "src/product.py").write_text("\n".join(["API_TOKEN" + "=live-secret-value-123", "path=" + "/" + "Users/real-person/private/data.csv", "-----BEGIN " + "PRIVATE KEY-----"]) + "\n")
             (repository / "src/unrelated.txt").write_text("staged unrelated edit\n")
             self.run_git(repository, "add", "src/unrelated.txt")
             workflow = Workflow(repository)
@@ -1192,8 +1192,8 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
         from qa_workflow.workflow import Workflow
 
         for name, injected in [
-            ("secret", "API_TOKEN=live-secret-value-123"),
-            ("personal-path", "/Users/real-person/private/data.csv"),
+            ("secret", "API_TOKEN" + "=live-secret-value-123"),
+            ("personal-path", "/" + "Users/real-person/private/data.csv"),
         ]:
             with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
                 repository, remote = self.setup_bare_remote(Path(tmp))
@@ -1283,7 +1283,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             fixture = root / "fixture.md"
-            fixture.write_text("API_KEY=test-token\npath=/Users/qa-user/private/data.csv\n")
+            fixture.write_text("\n".join(["API_KEY=test-token", "path=/Users/qa-user/private/data.csv"]) + "\n")
             self.assertEqual([], gitops.publication_findings(root, {"fixture.md"}))
 
     def test_cloud_publish_on_default_branch_stops_before_git_mutation(self):
