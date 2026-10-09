@@ -59,6 +59,12 @@ class PublishGuardTest(unittest.TestCase):
         git(self.root, "commit", "-am", "delete")
         self.assertEqual([], gitops.outgoing_findings(self.root, self.base, "HEAD"))
 
+    def test_the_scanner_source_does_not_flag_itself(self):
+        runtime = Path(gitops.__file__).parent.parent / "skills/quality-qa/runtime/qa_workflow/gitops.py"
+        for path in (Path(gitops.__file__), runtime):
+            with self.subTest(path=str(path)):
+                self.assertEqual([], gitops._scan_text(path.name, path.read_text(encoding="utf-8")))
+
     def test_commit_not_on_origin_blocks_re_qa_request(self):
         git(self.root, "update-ref", "refs/remotes/origin/topic/qa", self.base)
         (self.root / "src/product.py").write_text("print('fixed')\n")

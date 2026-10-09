@@ -170,7 +170,8 @@ def tree_snapshot(root: Path, commit: str, paths) -> dict:
 
 _SECRET_ASSIGNMENT = re.compile(r"(?i)\b(?:[a-z0-9_]*(?:token|secret|password|passwd)|api[_-]?key)\s*[:=]\s*['\"]?([^\s'\"]{4,})")
 _PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
-_PERSONAL_PATH = re.compile(r"(?:/Users/|/home/)([^/\s]+)(?:/|$)")
+# 検査自身のソースが検出されないよう、パスの接頭辞は連結して書く。
+_PERSONAL_PATH = re.compile(r"(?:/Us" r"ers/|/ho" r"me/)([^/\s]+)(?:/|$)")
 _SAFE_FIXTURE_VALUES = {"example", "dummy", "placeholder", "redacted", "test-token", "qa-user", "your-token"}
 
 
