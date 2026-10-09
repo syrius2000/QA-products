@@ -635,11 +635,7 @@ class Workflow:
             if not re.search(r"クラウド.*(?:出して|公開)|cloud.*(?:publish|QA)", message, re.I):
                 raise QAError("クラウド公開の実際のユーザー指示が必要です")
             flight = gitops.preflight(self.root, s, set(s["products"]) | set(s.get("published_paths", [])))
-            outgoing_base = gitops.remote_tip(self.root, s["branch"]) or s["initial_baseline"]
-            findings = gitops.outgoing_findings(self.root, outgoing_base, "HEAD")
-            if findings:
-                raise QAError("送出するコミットに機密情報または個人ローカルパスの疑いがあります: " + "、".join(findings), "原因を除いたコミットを作ってから再実行してください。pushはしていません")
-            gitops.git(self.root, "push", "origin", f"HEAD:refs/heads/{s['branch']}")
+            gitops.guarded_push(self.root, s)
             tip = gitops.remote_tip(self.root, s["branch"])
             if not tip or not gitops.ancestor(self.root, s["reviewed"], tip):
                 raise QAError("pushした対象commitをremoteで確認できません", "pushの結果を確認してから再実行してください")

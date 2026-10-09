@@ -71,3 +71,4 @@
 - [x] 12.1 QA-F01: 送出前検査を、最終差分ではなく送出範囲の各コミットごとに行う（`gitops.outgoing_findings`）。途中のコミットで追加して後で戻した機密情報を検出し、pushしないことを `tests/test_publish_guard.py` と `tests/test_loop_integration.py` で確認。同一内容は重複して報告しない
 - [x] 12.2 QA-F02: loopの返却に `left_out` を追加。commit段階の記録から取るので、再開後も同じ値を返す。空のときは空の配列。`tests/test_loop_integration.py` で確認
 - [x] 12.3 QA-F03: `authorize-continue` は「続行」を必須とし（「継続」は不可）、loopが反復を理由に停止した記録（`repeat_stop`）があるときだけ、停止したIDに限って受理する。停止前の先回りは拒否。`tests/test_loop_integration.py` で確認
+- [x] 12.4 QA-F04: 各コミットごとの送出前検査を、検査つきのpush（`gitops.guarded_push`）に一本化。`gitops.push`（publish・publish-correction・loopの最終publish）と `push_topic` の両方がこれを使い、`git push` の直接呼び出しは1か所だけ。`tests/test_publish_guard.py` と `tests/test_qa_workflow_contract.py` で、機密を足して戻した履歴を通常publishとpushが拒否しremote先端が変わらないこと、`git push` の呼び出しが1か所であることを確認

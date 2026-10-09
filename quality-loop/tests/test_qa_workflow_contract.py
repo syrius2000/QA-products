@@ -1093,6 +1093,31 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             remote_tip = gitops.remote_tip(repository, "topic/qa")
             self.assertEqual(state["published"]["tip"], remote_tip)
 
+    def test_publish_refuses_a_leak_added_and_removed_in_the_outgoing_history(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, remote = self.setup_bare_remote(Path(tmp))
+            product = repository / "src/product.py"
+            safe = product.read_text()
+            product.write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+            self.run_git(repository, "commit", "-am", "temporary leak")
+            product.write_text(safe)
+            self.run_git(repository, "commit", "-am", "restore")
+            workflow = Workflow(repository)
+            prepared = workflow.prepare(
+                "対象製品をQAする", ["対象製品を読むこと"], ["src/product.py"],
+                "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo",
+            )
+            invite = prepared["next"]["必要入力"]
+            remote_before = gitops.remote_tip(repository, "topic/qa")
+            with self.assertRaisesRegex(QAError, "機密情報"):
+                workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+            self.assertEqual(remote_before, gitops.remote_tip(repository, "topic/qa"))
+            self.assertIsNone(workflow.store.read(prepared["state_path"])["published"])
+
     def test_publish_rejects_invite_mutation_after_final_scan_before_invite_commit(self):
         from qa_workflow.workflow import Workflow
         from qa_workflow import gitops

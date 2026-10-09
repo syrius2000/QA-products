@@ -383,8 +383,20 @@ def preflight(root: Path, state: dict, allowed: set[str]) -> dict:
     return {"remote": start, "commits": commits, "allowed": sorted(allowed)}
 
 
-def push(root: Path, state: dict, invite_commit: str) -> str:
+def guarded_push(root: Path, state: dict) -> None:
+    """Every push to origin goes through here: scan each outgoing commit first, and never push on a finding."""
+    base = remote_tip(root, state["branch"]) or state["initial_baseline"]
+    findings = outgoing_findings(root, base, "HEAD")
+    if findings:
+        raise QAError(
+            "送出するコミットに機密情報または個人ローカルパスの疑いがあります: " + "、".join(findings),
+            "原因を除いたコミットを作ってから再実行してください。pushはしていません",
+        )
     git(root, "push", "origin", f"HEAD:refs/heads/{state['branch']}")
+
+
+def push(root: Path, state: dict, invite_commit: str) -> str:
+    guarded_push(root, state)
     tip = remote_tip(root, state["branch"])
     if not tip or not ancestor(root, state["reviewed"], tip) or not ancestor(root, invite_commit, tip):
         raise QAError("公開後の対象／依頼の到達可能性を確認できません")
