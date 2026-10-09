@@ -65,6 +65,29 @@ class PublishGuardTest(unittest.TestCase):
             with self.subTest(path=str(path)):
                 self.assertEqual([], gitops._scan_text(path.name, path.read_text(encoding="utf-8")))
 
+    def test_outgoing_scan_flags_a_secret_added_and_removed_in_later_commits(self):
+        safe = (self.root / "src/product.py").read_text()
+        (self.root / "src/product.py").write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+        git(self.root, "commit", "-am", "add secret")
+        (self.root / "src/product.py").write_text(safe)
+        git(self.root, "commit", "-am", "restore")
+        self.assertEqual("", git(self.root, "diff", "--name-only", self.base, "HEAD"))
+        self.assertEqual(["src/product.py:secret-like-assignment"], gitops.outgoing_findings(self.root, self.base, "HEAD"))
+
+    def test_outgoing_scan_reports_each_finding_once(self):
+        leaked = "api_" + "token" + " = " + "'" + "real-value-1234" + "'\n"
+        safe = (self.root / "src/product.py").read_text()
+        for message, content in (("add", leaked), ("restore", safe), ("add again", leaked)):
+            (self.root / "src/product.py").write_text(content)
+            git(self.root, "commit", "-am", message)
+        self.assertEqual(["src/product.py:secret-like-assignment"], gitops.outgoing_findings(self.root, self.base, "HEAD"))
+
+    def test_outgoing_scan_ignores_a_secret_that_only_exists_in_the_base(self):
+        (self.root / "src/other.py").write_text("print('ok')\n")
+        git(self.root, "add", "src/other.py")
+        git(self.root, "commit", "-m", "other")
+        self.assertEqual([], gitops.outgoing_findings(self.root, self.base, "HEAD"))
+
     def test_commit_not_on_origin_blocks_re_qa_request(self):
         git(self.root, "update-ref", "refs/remotes/origin/topic/qa", self.base)
         (self.root / "src/product.py").write_text("print('fixed')\n")

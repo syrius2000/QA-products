@@ -682,20 +682,26 @@ class Workflow:
             s["publish_authorization"] = {"message": message, "head": gitops.sha(self.root, "HEAD"), "at": now()}
             return self._save(s, "公開を現在の対象commitへ承認")
 
+    def _record_repeat_stop(self, request, ids: list[str]) -> None:
+        with self.store.transaction():
+            s = self._load(request)
+            s["repeat_stop"] = {"ids": list(ids), "at": now()}
+            self._save(s, "同一指摘の反復による停止を記録")
+
     def authorize_continue(self, request, message: str, revision=None):
         with self.store.transaction():
             s = self._load(request, revision)
             if not s.get("approval"):
                 raise QAError("修正計画の承認後にだけ続行を承認できます")
-            if not re.search(r"続行|継続", message):
-                raise QAError("続行を示す実際のユーザー発言が必要です")
+            if "続行" not in message:
+                raise QAError("「続行」を含む実際のユーザー発言が必要です")
             if not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, message):
                 raise QAError("続行の承認文が利用者の発言として確認できません", "利用者が続行の言葉を発言してから承認してください")
-            previous = s.get("loop_history", [])
-            repeated = sorted(set(previous[-1]) & set(s.get("unresolved", {}))) if previous else []
-            if not repeated:
-                raise QAError("反復している指摘がありません", "続行の承認は、同一指摘の反復で停止したときだけ使います")
-            s["continue_authorization"] = {"message": message, "ids": repeated, "at": now()}
+            stop = s.get("repeat_stop") or {}
+            if not stop.get("ids"):
+                raise QAError("反復で停止した記録がありません", "続行の承認は、loopが同一指摘の反復で停止した後にだけ使います")
+            ids = sorted(set((s.get("continue_authorization") or {}).get("ids", [])) | set(stop["ids"]))
+            s["continue_authorization"] = {"message": message, "ids": ids, "at": now()}
             return self._save(s, "反復した指摘の続行を承認")
 
     def _existing_fix_commit(self, request, approval):
@@ -731,6 +737,7 @@ class Workflow:
             self._record_loop(request, dict(current), failed)
 
         left_out = list(minor.outside_paths) if minor else []
+        acknowledged = frozenset((s.get("continue_authorization") or {}).get("ids", []))
 
         def run_commit():
             existing = self._existing_fix_commit(request, approval)
@@ -788,15 +795,20 @@ class Workflow:
             history,
             minor=minor,
             cloud_authorized=cloud_authorized,
-            acknowledged=frozenset((s.get("continue_authorization") or {}).get("ids", [])),
+            acknowledged=acknowledged,
         )
-        return self._loop_reply(result.status, result.reason, result.done, plan)
+        if result.status == "stopped" and result.reason.startswith("同一指摘"):
+            repeated = sorted((history[-1] & history[-2]) - acknowledged)
+            self._record_repeat_stop(request, repeated)
+        committed = result.done.get("commit") or {}
+        return self._loop_reply(result.status, result.reason, result.done, plan, committed.get("left_out", left_out))
 
-    def _loop_reply(self, status, reason, completed, plan=None):
+    def _loop_reply(self, status, reason, completed, plan=None, left_out=None):
         reply = {
             "status": status,
             "reason": reason,
             "completed": list(completed),
+            "left_out": list(left_out or []),
             "next": {"担当": "ユーザーまたはローカル担当", "操作": reason, "理由": reason},
         }
         if status == "waiting_approval" and plan:

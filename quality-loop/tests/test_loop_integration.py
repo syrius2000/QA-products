@@ -150,10 +150,40 @@ class LoopIntegrationTest(unittest.TestCase):
         self.assertEqual("completed", result["status"], result)
         recorded = self.workflow.store.select(self.prepared["id"])["loop"]["done"]["commit"]
         self.assertEqual(["src/other.py"], recorded["left_out"])
+        self.assertEqual(["src/other.py"], result["left_out"])
         committed = run_git(self.repository, "log", "--name-only", "--format=", f"{head_before}..HEAD")
         self.assertIn("src/product.py", committed)
         self.assertNotIn("src/other.py", committed)
         self.assertIn("src/other.py", run_git(self.repository, "status", "--porcelain"))
+
+    def test_reply_has_an_empty_left_out_when_nothing_was_left_out(self):
+        self.approve(APPROVAL)
+        self.fix_product()
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("completed", result["status"], result)
+        self.assertEqual([], result["left_out"])
+
+    def test_left_out_is_kept_when_the_loop_is_resumed(self):
+        from unittest import mock
+        original = Workflow._record_loop
+        failed_once = {"done": False}
+
+        def flaky(workflow, request, progress, failed):
+            if "push" in progress and not failed_once["done"]:
+                failed_once["done"] = True
+                raise QAError("progress save failed")
+            return original(workflow, request, progress, failed)
+
+        self.approve(APPROVAL)
+        self.fix_product()
+        (self.repository / "src/other.py").write_text("unrelated\n")
+        with mock.patch.object(Workflow, "_record_loop", flaky):
+            first = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("failed", first["status"], first)
+        self.assertEqual(["src/other.py"], first["left_out"])
+        second = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("completed", second["status"], second)
+        self.assertEqual(["src/other.py"], second["left_out"])
 
     def test_changed_contract_stops_before_commit(self):
         self.approve(APPROVAL)
@@ -262,6 +292,21 @@ class LoopIntegrationTest(unittest.TestCase):
         self.assertIsNone(gitops.remote_tip(self.repository, "topic/qa"))
         self.assertEqual(1, len(self.workflow.store.states()))
 
+    def test_secret_added_then_removed_in_outgoing_history_stops_the_push(self):
+        self.approve(APPROVAL)
+        target = self.repository / "src/product.py"
+        safe = target.read_text()
+        target.write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+        run_git(self.repository, "commit", "-am", "temporary secret")
+        target.write_text(safe)
+        run_git(self.repository, "commit", "-am", "restore")
+        self.fix_product()
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("failed", result["status"], result)
+        self.assertIn("機密情報", result["reason"])
+        self.assertIsNone(gitops.remote_tip(self.repository, "topic/qa"))
+        self.assertEqual(1, len(self.workflow.store.states()))
+
     def test_clean_outgoing_commit_is_still_pushed(self):
         self.approve(APPROVAL)
         self.fix_product()
@@ -337,9 +382,27 @@ class LoopIntegrationTest(unittest.TestCase):
     def test_continue_authorization_is_refused_when_nothing_repeats(self):
         self.approve(APPROVAL)
         self.workflow._carry_loop_history(self.prepared["id"], [["QA-F99"]])
+        self.fix_product()
+        self.workflow.loop(self.prepared["id"], "空入力fixture成功")
         record_user_prompt(self.repository, "反復を承知で続行する")
-        with self.assertRaisesRegex(QAError, "反復している指摘がありません"):
+        with self.assertRaisesRegex(QAError, "反復で停止した記録がありません"):
             self.workflow.authorize_continue(self.prepared["id"], "反復を承知で続行する")
+
+    def test_continue_authorization_is_refused_before_the_loop_stops_for_a_repetition(self):
+        self.approve(APPROVAL)
+        self.workflow._carry_loop_history(self.prepared["id"], [["QA-F01"]])
+        record_user_prompt(self.repository, "反復を承知で続行する")
+        with self.assertRaisesRegex(QAError, "反復で停止した記録がありません"):
+            self.workflow.authorize_continue(self.prepared["id"], "反復を承知で続行する")
+
+    def test_continue_authorization_does_not_accept_the_word_keizoku(self):
+        self.approve(APPROVAL)
+        self.fix_product()
+        self.workflow._carry_loop_history(self.prepared["id"], [["QA-F01"]])
+        self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        record_user_prompt(self.repository, "このまま継続して")
+        with self.assertRaisesRegex(QAError, "続行"):
+            self.workflow.authorize_continue(self.prepared["id"], "このまま継続して")
 
     def test_continue_authorization_is_refused_before_plan_approval(self):
         record_user_prompt(self.repository, "反復を承知で続行する")

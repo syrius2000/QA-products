@@ -65,3 +65,9 @@
 - [x] 11.5 クラウド連携の流れ（クラウドが保存先に1ファイル、ローカルがacquire、公開後に短い指示書を表示）と、公開前に受入基準と現行仕様を照合する手順を、skill文書へ反映
 - [x] 11.6 2サイクル目のloopで、引き継いだ履歴（JSONのリスト）を集合として扱えず落ちる不具合を修正。履歴は読み込み時に集合へ、次の依頼へ引き継ぐときはリストへ変換する。前サイクルと同じ指摘で停止すること、別の指摘なら進むこと、履歴がリストで保存されることを `tests/test_loop_integration.py` で確認（未検証だったF04の2サイクル連続の統合テストを含む）
 - [x] 11.7 反復で停止したloopを利用者の発言で個別に続行する正式な操作 `authorize-continue` を追加（`Workflow.authorize_continue`、`loop_guard.decide_stop` の `acknowledged`、CLI）。発言ログにない発言・続行を含まない発言・反復なし・承認前は拒否し、上限と記録にない反復は免除しないことを `tests/test_loop_guard.py`・`tests/test_loop.py`・`tests/test_loop_integration.py` で確認。`repair.md` のloopの段階（7段階）と停止条件も現行に更新
+
+## 12. QA-001（v2基準）の指摘への対応
+
+- [x] 12.1 QA-F01: 送出前検査を、最終差分ではなく送出範囲の各コミットごとに行う（`gitops.outgoing_findings`）。途中のコミットで追加して後で戻した機密情報を検出し、pushしないことを `tests/test_publish_guard.py` と `tests/test_loop_integration.py` で確認。同一内容は重複して報告しない
+- [x] 12.2 QA-F02: loopの返却に `left_out` を追加。commit段階の記録から取るので、再開後も同じ値を返す。空のときは空の配列。`tests/test_loop_integration.py` で確認
+- [x] 12.3 QA-F03: `authorize-continue` は「続行」を必須とし（「継続」は不可）、loopが反復を理由に停止した記録（`repeat_stop`）があるときだけ、停止したIDに限って受理する。停止前の先回りは拒否。`tests/test_loop_integration.py` で確認

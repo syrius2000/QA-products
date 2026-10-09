@@ -207,15 +207,27 @@ def publication_findings(root: Path, paths: set[str]) -> list[str]:
     return findings
 
 
+_EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+
 def outgoing_findings(root: Path, base: str, head: str = "HEAD") -> list[str]:
-    """Scan the committed bytes of every file that changed between base and head, before they leave the machine."""
-    findings = []
-    for name in sorted(changed(root, base, head)):
-        if tree_snapshot(root, head, [name])[name] is None:
-            continue
-        content = git_bytes(root, "cat-file", "blob", f"{head}:{name}")
-        findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
-    return findings
+    """Scan, commit by commit, the bytes each outgoing commit adds or changes.
+
+    The net diff of base..head hides a secret that a middle commit adds and a later commit removes,
+    yet the secret still travels in the pushed history.
+    """
+    findings: list[str] = []
+    scanned: set[tuple[str, str]] = set()
+    for commit in git(root, "rev-list", "--reverse", f"{base}..{head}").splitlines():
+        parents = git(root, "rev-list", "--parents", "-n", "1", commit).split()[1:]
+        for name in sorted(changed(root, parents[0] if parents else _EMPTY_TREE, commit)):
+            blob = tree_snapshot(root, commit, [name])[name]
+            if blob is None or (name, blob["hash"]) in scanned:
+                continue
+            scanned.add((name, blob["hash"]))
+            content = git_bytes(root, "cat-file", "blob", f"{commit}:{name}")
+            findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
+    return list(dict.fromkeys(findings))
 
 
 def execute_checks(root: Path, checks: list[dict]) -> list[dict]:
