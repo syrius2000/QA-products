@@ -8,7 +8,14 @@ from pathlib import Path
 
 from . import gitops, review
 from .github import GitHub
+from .loop import run_loop
+from .minor_change import ApprovedScope, ChangeSet, MINOR_LINE_LIMIT, judge_minor_change
+from .prompt_log import verbatim_in_log
+from .publish_guard import assert_reachable_from_origin
+from .repair_commit import commit_approved_paths
 from .store import Store, QAError, atomic, digest, fingerprint, header, now, relative, safe_path
+
+PROMPT_LOG_NAME = "qa-user-prompts.jsonl"
 
 REVIEWER_MATERIAL_PATHS = [
     "quality-loop/skills/quality-qa/SKILL.md",
@@ -556,6 +563,8 @@ class Workflow:
             plan = s.get("plan")
             if not plan or s["phase"] != "planned" or not re.search(r"修正して|実装して|承認", message):
                 raise QAError("対象計画に対する実際のユーザー承認が必要です")
+            if not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, message):
+                raise QAError("承認文が利用者の発言として確認できません", "利用者が承認の言葉を発言してから承認してください")
             if plan_hash != plan["hash"] or digest(safe_path(self.root, plan["path"]).read_bytes()) != plan["hash"] or set(paths) != set(plan["paths"]) or r["hash"] != plan["review_hash"] or gitops.snapshot(self.root, plan["paths"]) != plan["before"]:
                 raise QAError("計画・対象・レビューが承認時点と一致しません", "計画を更新して再承認を受けてください")
             s["approval"] = {"message": message, "plan_hash": plan_hash, "paths": sorted(paths), "at": now(), "head": gitops.sha(self.root, "HEAD")}
@@ -619,3 +628,96 @@ class Workflow:
             self.store.preserve(p, text.encode())
             s["decision"] = {"message": message, "residual": residual, "path": p}; s["phase"] = "decision"
             return self._save(s, "ユーザーの終了判断（Git操作なし）")
+
+    def _record_loop(self, request, progress: dict, failed) -> None:
+        with self.store.transaction():
+            s = self._load(request)
+            s["loop"] = {"done": progress, "failed": failed}
+            self._save(s, "loop段階を記録")
+
+    def _carry_loop_history(self, request, history: list) -> None:
+        with self.store.transaction():
+            s = self._load(request)
+            s["loop_history"] = history
+            self._save(s, "loop履歴を次の再QA依頼へ引き継ぎ")
+
+    def _minor_decision(self, s, approval, plan):
+        candidates = (gitops.changed(self.root, approval["head"], "HEAD") | gitops.dirty(self.root)) - set(s["operational"])
+        changed = {
+            name for name in candidates
+            if gitops.snapshot(self.root, [name])[name] != plan["dirty_before"].get(name, gitops.tree_snapshot(self.root, approval["head"], [name])[name])
+        }
+        added = {name for name in changed if gitops.tree_snapshot(self.root, approval["head"], [name])[name] is None}
+        lines = self._changed_lines(approval["head"], sorted(changed), added)
+        approved = ApprovedScope(paths=frozenset(approval["paths"]), contract_hash=approval["plan_hash"])
+        change = ChangeSet(paths=frozenset(changed), added_paths=frozenset(added), contract_hash=plan["hash"], changed_lines=lines)
+        return judge_minor_change(approved, change, MINOR_LINE_LIMIT)
+
+    def _changed_lines(self, base: str, names: list[str], added: set[str]) -> int:
+        total = 0
+        tracked = [name for name in names if name not in added]
+        if tracked:
+            for line in gitops.git(self.root, "diff", "--numstat", base, "--", *tracked).splitlines():
+                added_count, deleted_count, _ = line.split("\t", 2)
+                total += sum(int(count) for count in (added_count, deleted_count) if count.isdigit())
+        for name in added:
+            total += len((self.root / name).read_text(encoding="utf-8", errors="ignore").splitlines())
+        return total
+
+    def loop(self, request, evidence: str, unverified: list[str] | None = None, revision=None):
+        s = self._load(request, revision)
+        approval = s.get("approval")
+        plan = s.get("plan") or {}
+        done = dict(s.get("loop", {}).get("done", {}))
+        ids = [item["id"] for item in plan.get("items", [])]
+        history = [*s.get("loop_history", []), ids]
+        minor = self._minor_decision(s, approval, plan) if approval and "commit" not in done else None
+        method = "\n".join(f"{item['id']}: {item['方針']}" for item in plan.get("items", []))
+        progress = {"done": done}
+
+        def save(current: dict, failed=None) -> None:
+            progress["done"] = dict(current)
+            self._record_loop(request, dict(current), failed)
+
+        def run_commit():
+            sha = commit_approved_paths(self.root, approval["paths"], f"Yip: {request} 修正", approval["message"])
+            return {"sha": sha}
+
+        def run_submit():
+            self.submit(request, list(approval["paths"]), evidence, list(unverified or []), method)
+            return {"id": request}
+
+        def run_requa():
+            nxt = self.requa(request, "cloud")
+            self._carry_loop_history(nxt["id"], history)
+            return {"id": nxt["id"]}
+
+        def run_finalize():
+            nid = progress["done"]["requa-request"]["id"]
+            self.finalize(nid, target="HEAD")
+            return {"id": nid}
+
+        def run_publish():
+            nid = progress["done"]["requa-request"]["id"]
+            state = self.store.select(nid)
+            self.publish(nid, approval["message"], sorted(set(state["products"]) | {state["invite"]}))
+            published = self.store.select(nid)
+            assert_reachable_from_origin(self.root, published["branch"], [gitops.sha(self.root, published["reviewed"])])
+            return {"id": nid}
+
+        actions = {"commit": run_commit, "submit": run_submit, "requa-request": run_requa, "finalize": run_finalize, "publish": run_publish}
+        result = run_loop(
+            "approved" if approval else "planned",
+            approval["message"] if approval else "",
+            done,
+            actions,
+            save,
+            history,
+            minor=minor,
+        )
+        return {
+            "status": result.status,
+            "reason": result.reason,
+            "completed": list(result.done),
+            "next": {"担当": "ユーザーまたはローカル担当", "操作": result.reason, "理由": result.reason},
+        }

@@ -14,6 +14,11 @@ from qa_workflow.store import QAError
 from qa_workflow.workflow import verify_submission_snapshot
 
 
+def record_user_prompt(repository: Path, prompt: str) -> None:
+    with (repository / ".git" / "qa-user-prompts.jsonl").open("a", encoding="utf-8") as log:
+        log.write(json.dumps({"prompt": prompt}, ensure_ascii=False) + "\n")
+
+
 def review_state() -> dict:
     return {
         "id": "QA-001",
@@ -887,6 +892,9 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
                 "対象": ["src/product.py"], "影響": "入力処理",
                 "完了条件": "空入力に理由付きエラー", "確認方法": "fixtureで空入力を送る",
             }])
+            with self.assertRaisesRegex(QAError, "利用者の発言として確認できません"):
+                workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product.py"])
+            record_user_prompt(repository, "この計画で修正して")
             workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product.py"])
             (repository / "src/product.py").write_text("reject empty input with reason\n")
             workflow.submit(prepared["id"], ["src/product.py"], "空入力fixture成功", [], "QA-F01: 入力境界で検証")
@@ -1036,6 +1044,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertEqual(product_before_plan, (root / "src/product-a.py").read_bytes())
             with self.assertRaisesRegex(QAError, "修正承認がありません"):
                 workflow.submit(prepared["id"], ["src/product-a.py"], "検証した", [])
+            record_user_prompt(root, "この計画で修正して")
             with self.assertRaisesRegex(QAError, "計画・対象・レビューが承認時点と一致"):
                 workflow.approve(prepared["id"], "この計画で修正して", "0" * 64, ["src/product-a.py"])
             approved = workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product-a.py"])
