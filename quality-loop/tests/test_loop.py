@@ -76,6 +76,17 @@ class LoopTest(unittest.TestCase):
         self.assertIn("完了条件・受入基準・確認方法の変更", result.reason)
         self.assertEqual([], harness.calls)
 
+    def test_acknowledged_repetition_lets_the_loop_run(self):
+        harness = Harness()
+        result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [{"QA-F01"}, {"QA-F01"}], acknowledged=frozenset({"QA-F01"}))
+        self.assertEqual("completed", result.status)
+
+    def test_unacknowledged_repetition_still_stops_before_any_stage(self):
+        harness = Harness()
+        result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [{"QA-F01"}, {"QA-F01"}], acknowledged=frozenset({"QA-F02"}))
+        self.assertEqual("stopped", result.status)
+        self.assertEqual([], harness.calls)
+
     def test_failed_stage_is_reported_and_completed_stages_are_kept(self):
         harness = Harness(fail_at="finalize")
         result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [])

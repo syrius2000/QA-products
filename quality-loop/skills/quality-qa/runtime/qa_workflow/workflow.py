@@ -635,6 +635,10 @@ class Workflow:
             if not re.search(r"クラウド.*(?:出して|公開)|cloud.*(?:publish|QA)", message, re.I):
                 raise QAError("クラウド公開の実際のユーザー指示が必要です")
             flight = gitops.preflight(self.root, s, set(s["products"]) | set(s.get("published_paths", [])))
+            outgoing_base = gitops.remote_tip(self.root, s["branch"]) or s["initial_baseline"]
+            findings = gitops.outgoing_findings(self.root, outgoing_base, "HEAD")
+            if findings:
+                raise QAError("送出するコミットに機密情報または個人ローカルパスの疑いがあります: " + "、".join(findings), "原因を除いたコミットを作ってから再実行してください。pushはしていません")
             gitops.git(self.root, "push", "origin", f"HEAD:refs/heads/{s['branch']}")
             tip = gitops.remote_tip(self.root, s["branch"])
             if not tip or not gitops.ancestor(self.root, s["reviewed"], tip):
@@ -678,6 +682,22 @@ class Workflow:
             s["publish_authorization"] = {"message": message, "head": gitops.sha(self.root, "HEAD"), "at": now()}
             return self._save(s, "公開を現在の対象commitへ承認")
 
+    def authorize_continue(self, request, message: str, revision=None):
+        with self.store.transaction():
+            s = self._load(request, revision)
+            if not s.get("approval"):
+                raise QAError("修正計画の承認後にだけ続行を承認できます")
+            if not re.search(r"続行|継続", message):
+                raise QAError("続行を示す実際のユーザー発言が必要です")
+            if not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, message):
+                raise QAError("続行の承認文が利用者の発言として確認できません", "利用者が続行の言葉を発言してから承認してください")
+            previous = s.get("loop_history", [])
+            repeated = sorted(set(previous[-1]) & set(s.get("unresolved", {}))) if previous else []
+            if not repeated:
+                raise QAError("反復している指摘がありません", "続行の承認は、同一指摘の反復で停止したときだけ使います")
+            s["continue_authorization"] = {"message": message, "ids": repeated, "at": now()}
+            return self._save(s, "反復した指摘の続行を承認")
+
     def _existing_fix_commit(self, request, approval):
         for line in gitops.git(self.root, "log", "--format=%H %s", f"{approval['head']}..HEAD").splitlines():
             sha, _, subject = line.partition(" ")
@@ -701,7 +721,7 @@ class Workflow:
         else:
             cloud_message, cloud_authorized = (approval or {}).get("message", ""), False
         ids = sorted(s.get("unresolved", {}))
-        history = [*s.get("loop_history", []), ids]
+        history = [{*previous} for previous in s.get("loop_history", [])] + [set(ids)]
         minor = self._minor_decision(s, approval, plan) if approval and "commit" not in done else None
         method = "\n".join(f"{item['id']}: {item['方針']}" for item in plan.get("items", []))
         progress = {"done": done}
@@ -743,7 +763,7 @@ class Workflow:
             current_head = gitops.sha(self.root, "HEAD")
             existing = [st for st in self.store.states() if st.get("previous") == request and st.get("reviewed") == current_head]
             next_id = existing[0]["id"] if existing else self.requa(request, "cloud")["id"]
-            self._carry_loop_history(next_id, history)
+            self._carry_loop_history(next_id, [sorted(cycle) for cycle in history])
             return {"id": next_id}
 
         def run_finalize():
@@ -768,6 +788,7 @@ class Workflow:
             history,
             minor=minor,
             cloud_authorized=cloud_authorized,
+            acknowledged=frozenset((s.get("continue_authorization") or {}).get("ids", [])),
         )
         return self._loop_reply(result.status, result.reason, result.done, plan)
 

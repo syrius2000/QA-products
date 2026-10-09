@@ -174,6 +174,22 @@ _PERSONAL_PATH = re.compile(r"(?:/Users/|/home/)([^/\s]+)(?:/|$)")
 _SAFE_FIXTURE_VALUES = {"example", "dummy", "placeholder", "redacted", "test-token", "qa-user", "your-token"}
 
 
+def _scan_text(name: str, text: str) -> list[str]:
+    findings = []
+    if _PRIVATE_KEY.search(text):
+        findings.append(f"{name}:private-key")
+    for match in _SECRET_ASSIGNMENT.finditer(text):
+        value = match.group(1).strip(" ,;)")
+        if value.lower() not in _SAFE_FIXTURE_VALUES and not (value.startswith("<") and value.endswith(">")):
+            findings.append(f"{name}:secret-like-assignment")
+            break
+    for match in _PERSONAL_PATH.finditer(text):
+        if match.group(1).lower() not in {"example", "test", "qa-user", "username"}:
+            findings.append(f"{name}:personal-local-path")
+            break
+    return findings
+
+
 def publication_findings(root: Path, paths: set[str]) -> list[str]:
     """Scan only bytes that are about to be published; synthetic test identities are explicit exceptions."""
     findings = []
@@ -186,18 +202,18 @@ def publication_findings(root: Path, paths: set[str]) -> list[str]:
             content = os.readlink(path).encode()
         else:
             content = path.read_bytes()
-        text = content.decode("utf-8", errors="ignore")
-        if _PRIVATE_KEY.search(text):
-            findings.append(f"{name}:private-key")
-        for match in _SECRET_ASSIGNMENT.finditer(text):
-            value = match.group(1).strip(" ,;)")
-            if value.lower() not in _SAFE_FIXTURE_VALUES and not (value.startswith("<") and value.endswith(">")):
-                findings.append(f"{name}:secret-like-assignment")
-                break
-        for match in _PERSONAL_PATH.finditer(text):
-            if match.group(1).lower() not in {"example", "test", "qa-user", "username"}:
-                findings.append(f"{name}:personal-local-path")
-                break
+        findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
+    return findings
+
+
+def outgoing_findings(root: Path, base: str, head: str = "HEAD") -> list[str]:
+    """Scan the committed bytes of every file that changed between base and head, before they leave the machine."""
+    findings = []
+    for name in sorted(changed(root, base, head)):
+        if tree_snapshot(root, head, [name])[name] is None:
+            continue
+        content = git_bytes(root, "cat-file", "blob", f"{head}:{name}")
+        findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
     return findings
 
 

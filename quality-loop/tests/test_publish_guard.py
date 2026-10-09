@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from qa_workflow import gitops
 from qa_workflow.publish_guard import assert_publishable, assert_reachable_from_origin
 from qa_workflow.store import QAError
 
@@ -36,6 +37,27 @@ class PublishGuardTest(unittest.TestCase):
 
     def test_clean_content_is_publishable(self):
         assert_publishable(self.root, ["src/product.py"])
+
+    def test_outgoing_scan_flags_a_secret_in_a_committed_blob(self):
+        (self.root / "src/product.py").write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+        git(self.root, "commit", "-am", "add secret")
+        findings = gitops.outgoing_findings(self.root, self.base, "HEAD")
+        self.assertEqual(["src/product.py:secret-like-assignment"], findings)
+
+    def test_outgoing_scan_flags_a_personal_path_in_a_committed_blob(self):
+        (self.root / "src/product.py").write_text("path = '" + "/" + "Users/someone/private'\n")
+        git(self.root, "commit", "-am", "add path")
+        self.assertEqual(["src/product.py:personal-local-path"], gitops.outgoing_findings(self.root, self.base, "HEAD"))
+
+    def test_outgoing_scan_reads_commits_not_the_working_tree(self):
+        git(self.root, "commit", "--allow-empty", "-m", "empty")
+        (self.root / "src/product.py").write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+        self.assertEqual([], gitops.outgoing_findings(self.root, self.base, "HEAD"))
+
+    def test_outgoing_scan_ignores_deleted_files(self):
+        (self.root / "src/product.py").unlink()
+        git(self.root, "commit", "-am", "delete")
+        self.assertEqual([], gitops.outgoing_findings(self.root, self.base, "HEAD"))
 
     def test_commit_not_on_origin_blocks_re_qa_request(self):
         git(self.root, "update-ref", "refs/remotes/origin/topic/qa", self.base)

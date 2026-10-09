@@ -31,4 +31,5 @@ def stage_status(done: dict, failed: dict | None) -> dict:
         "completed": completed,
         "failed": failed,
         "next": pending[0] if pending else None,
+        "resume": f"同じloopを再実行すると、完了済みの段階を繰り返さず {pending[0]} から再開します" if pending else None,
     }

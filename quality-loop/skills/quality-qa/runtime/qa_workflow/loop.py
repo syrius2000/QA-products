@@ -29,10 +29,11 @@ def run_loop(
     unresolved_history: list[set[str]],
     minor: MinorDecision | None = None,
     cloud_authorized: bool | None = None,
+    acknowledged: frozenset[str] = frozenset(),
 ) -> LoopResult:
     if phase != "approved":
         return LoopResult("waiting_approval", "承認前のため修正を行いません。計画を確認して承認してください", done)
-    stop = decide_stop(unresolved_history)
+    stop = decide_stop(unresolved_history, acknowledged=acknowledged)
     if stop.stop:
         return LoopResult("stopped", stop.reason, done)
     if minor is not None and not minor.minor:

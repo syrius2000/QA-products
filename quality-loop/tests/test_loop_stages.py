@@ -58,6 +58,15 @@ class StageStatusTest(unittest.TestCase):
         self.assertEqual("requa-request", status["failed"]["stage"])
         self.assertEqual("requa-request", status["next"])
 
+    def test_status_explains_how_to_resume_from_the_next_stage(self):
+        status = stage_status({"commit": {}}, failed=None)
+        self.assertIn("同じloop", status["resume"])
+        self.assertIn("submit", status["resume"])
+
+    def test_status_has_no_resume_text_when_every_stage_is_done(self):
+        status = stage_status({name: {} for name in STAGES}, failed=None)
+        self.assertIsNone(status["resume"])
+
     def test_status_without_failure_points_to_first_pending_stage(self):
         status = stage_status({}, failed=None)
         self.assertEqual([], status["completed"])

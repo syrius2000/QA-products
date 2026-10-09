@@ -55,3 +55,13 @@
 
 - [x] 10.1 全テスト（219件）が通る。標準ライブラリの `trace` で計測（pytest-cov は未使用）: 新規モジュール（loop_guard・loop_stages・minor_change・prompt_log・publish_guard・repair_commit）100%、loop 82%、workflow 88%（全体 92%）。計測は複数行シグネチャを未実行と数えるため、やや保守的
 - [x] 10.2 `openspec validate improve-quality-qa-loop --strict` が通ることを確認する
+
+## 11. QA-004 の指摘への対応（決定表に基づく）
+
+- [x] 11.1 QA-F12: pushの直前に送出コミットの機密情報・個人ローカルパスを検査し、検出時はpushしない（`gitops.outgoing_findings`、`workflow.push_topic`）。`tests/test_publish_guard.py` と `tests/test_loop_integration.py` で、検出時にpushされずremote先端と依頼数が変わらないこと、問題なければ従来どおり公開されることを確認
+- [x] 11.2 QA-F07: statusのloop進捗に再開方法（`resume`）を追加（`loop_stages.stage_status`）。`tests/test_loop_stages.py` で確認
+- [x] 11.3 QA-F03: commit後・push後・publish後の進捗保存失敗を注入する統合テストを追加し、再実行でcommit・push・依頼が増えないことを確認（不具合は見つからなかった）
+- [x] 11.4 QA-F09・F10・F11: 受入基準の正本 `acceptance.md` を新設し、AC-002・006・009・010・012を決定に合わせて差し替え、AC-017・018を追加。承認文の照合はloopの副作用の前に行い、approveの動作は変えない
+- [x] 11.5 クラウド連携の流れ（クラウドが保存先に1ファイル、ローカルがacquire、公開後に短い指示書を表示）と、公開前に受入基準と現行仕様を照合する手順を、skill文書へ反映
+- [x] 11.6 2サイクル目のloopで、引き継いだ履歴（JSONのリスト）を集合として扱えず落ちる不具合を修正。履歴は読み込み時に集合へ、次の依頼へ引き継ぐときはリストへ変換する。前サイクルと同じ指摘で停止すること、別の指摘なら進むこと、履歴がリストで保存されることを `tests/test_loop_integration.py` で確認（未検証だったF04の2サイクル連続の統合テストを含む）
+- [x] 11.7 反復で停止したloopを利用者の発言で個別に続行する正式な操作 `authorize-continue` を追加（`Workflow.authorize_continue`、`loop_guard.decide_stop` の `acknowledged`、CLI）。発言ログにない発言・続行を含まない発言・反復なし・承認前は拒否し、上限と記録にない反復は免除しないことを `tests/test_loop_guard.py`・`tests/test_loop.py`・`tests/test_loop_integration.py` で確認。`repair.md` のloopの段階（7段階）と停止条件も現行に更新
