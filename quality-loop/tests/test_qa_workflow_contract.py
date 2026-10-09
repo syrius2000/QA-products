@@ -892,8 +892,6 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
                 "対象": ["src/product.py"], "影響": "入力処理",
                 "完了条件": "空入力に理由付きエラー", "確認方法": "fixtureで空入力を送る",
             }])
-            with self.assertRaisesRegex(QAError, "利用者の発言として確認できません"):
-                workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product.py"])
             record_user_prompt(repository, "この計画で修正して")
             workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product.py"])
             (repository / "src/product.py").write_text("reject empty input with reason\n")

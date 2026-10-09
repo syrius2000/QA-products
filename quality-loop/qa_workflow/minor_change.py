@@ -1,9 +1,11 @@
-"""承認範囲内の軽微な変更を機械的に判定する。"""
+"""承認範囲内の軽微な変更を機械的に判定する。
+
+AGENTS.md §3 に従い、対象パスの追加と行数では止めない。止めるのは完了条件・受入基準・確認方法の変更だけ。
+対象パス外の変更はコミットに含めず、結果に一覧として残す。
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
-
-MINOR_LINE_LIMIT = 50
 
 
 @dataclass(frozen=True)
@@ -17,23 +19,18 @@ class ChangeSet:
     paths: frozenset[str]
     added_paths: frozenset[str]
     contract_hash: str
-    changed_lines: int
 
 
 @dataclass(frozen=True)
 class MinorDecision:
     minor: bool
     reasons: tuple[str, ...]
+    outside_paths: tuple[str, ...] = ()
 
 
-def judge_minor_change(approved: ApprovedScope, change: ChangeSet, line_limit: int) -> MinorDecision:
-    reasons = []
-    if not change.paths <= approved.paths:
-        reasons.append("承認済み対象パス外の変更")
-    if change.added_paths:
-        reasons.append("新規パスの追加")
+def judge_minor_change(approved: ApprovedScope, change: ChangeSet) -> MinorDecision:
+    outside = tuple(sorted((change.paths | change.added_paths) - approved.paths))
+    reasons = ()
     if change.contract_hash != approved.contract_hash:
-        reasons.append("完了条件・受入基準・確認方法の変更")
-    if change.changed_lines > line_limit:
-        reasons.append("変更行数が上限を超える")
-    return MinorDecision(minor=not reasons, reasons=tuple(reasons))
+        reasons = ("完了条件・受入基準・確認方法の変更",)
+    return MinorDecision(minor=not reasons, reasons=reasons, outside_paths=outside)

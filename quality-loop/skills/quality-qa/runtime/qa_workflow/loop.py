@@ -28,6 +28,7 @@ def run_loop(
     save: Callable[..., None],
     unresolved_history: list[set[str]],
     minor: MinorDecision | None = None,
+    cloud_authorized: bool | None = None,
 ) -> LoopResult:
     if phase != "approved":
         return LoopResult("waiting_approval", "承認前のため修正を行いません。計画を確認して承認してください", done)
@@ -38,7 +39,8 @@ def run_loop(
         return LoopResult("stopped", "承認範囲外の変更: " + "、".join(minor.reasons), done)
     if COMMIT_PHRASE not in approval_text:
         return LoopResult("stopped", f"承認文に「{COMMIT_PHRASE}」が必要です", done)
-    stop_before = None if CLOUD_PHRASE in approval_text else "requa-request"
+    cloud = CLOUD_PHRASE in approval_text if cloud_authorized is None else cloud_authorized
+    stop_before = None if cloud else "push"
     latest = {"done": dict(done)}
 
     def track(progress: dict, failed: dict | None = None) -> None:

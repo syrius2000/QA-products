@@ -5,7 +5,7 @@ from typing import Callable
 
 from .store import QAError
 
-STAGES = ("commit", "submit", "requa-request", "finalize", "publish")
+STAGES = ("commit", "submit", "push", "ancestry", "requa-request", "finalize", "publish")
 
 
 def run_stages(done: dict, actions: dict[str, Callable[[], dict]], save: Callable[..., None], stop_before: str | None = None) -> dict:

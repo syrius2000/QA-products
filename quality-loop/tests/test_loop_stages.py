@@ -31,7 +31,7 @@ class ResumeAfterFailureTest(unittest.TestCase):
         calls: list[str] = []
         with self.assertRaises(QAError):
             run_stages({}, actions(calls, fail_at="finalize"), recorder.save)
-        self.assertEqual(["commit", "submit", "requa-request", "finalize"], calls)
+        self.assertEqual(["commit", "submit", "push", "ancestry", "requa-request", "finalize"], calls)
 
         retry_calls: list[str] = []
         done = recorder.saved[-1][0]
@@ -54,7 +54,7 @@ class StageStatusTest(unittest.TestCase):
             run_stages({}, actions([], fail_at="requa-request"), recorder.save)
         done, _ = recorder.saved[-1]
         status = stage_status(done, failed={"stage": "requa-request", "reason": "再QA依頼に失敗しました"})
-        self.assertEqual(["commit", "submit"], status["completed"])
+        self.assertEqual(["commit", "submit", "push", "ancestry"], status["completed"])
         self.assertEqual("requa-request", status["failed"]["stage"])
         self.assertEqual("requa-request", status["next"])
 

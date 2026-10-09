@@ -58,6 +58,17 @@ class RepairCommitTest(unittest.TestCase):
         self.assertEqual(["src/product.py"], git(self.root, "show", "--name-only", "--format=", "HEAD").splitlines())
         self.assertIn("src/other.py", git(self.root, "diff", "--cached", "--name-only"))
 
+    def test_same_path_staged_by_someone_else_is_not_overwritten(self):
+        (self.root / "src/product.py").write_text("someone else staged\n")
+        git(self.root, "add", "src/product.py")
+        staged_before = git(self.root, "ls-files", "-s", "src/product.py")
+        head_before = git(self.root, "rev-parse", "HEAD")
+        (self.root / "src/product.py").write_text("approved fix\n")
+        with self.assertRaisesRegex(QAError, "承認パスに他者のステージ済み変更"):
+            commit_approved_paths(self.root, ["src/product.py"], "Yip: fix product", f"この計画で修正して。{COMMIT_PHRASE}")
+        self.assertEqual(head_before, git(self.root, "rev-parse", "HEAD"))
+        self.assertEqual(staged_before, git(self.root, "ls-files", "-s", "src/product.py"))
+
 
 if __name__ == "__main__":
     unittest.main()

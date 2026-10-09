@@ -8,6 +8,7 @@ from pathlib import Path
 
 from qa_workflow import gitops, review
 from qa_workflow.repair_commit import COMMIT_PHRASE
+from qa_workflow.store import QAError
 from qa_workflow.workflow import Workflow
 
 CLOUD = "クラウドQAに出して"
@@ -115,7 +116,7 @@ class LoopIntegrationTest(unittest.TestCase):
         self.fix_product()
         result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
         self.assertEqual("completed", result["status"], result)
-        self.assertEqual(["commit", "submit", "requa-request", "finalize", "publish"], result["completed"])
+        self.assertEqual(["commit", "submit", "push", "ancestry", "requa-request", "finalize", "publish"], result["completed"])
         states = {state["id"]: state for state in self.workflow.store.states()}
         request_id = next(i for i in states if i != self.prepared["id"])
         self.assertEqual("published", states[request_id]["phase"])
@@ -131,24 +132,130 @@ class LoopIntegrationTest(unittest.TestCase):
         self.assertEqual(["commit", "submit"], result["completed"])
         self.assertEqual(1, len(self.workflow.store.states()))
 
-    def test_change_over_line_limit_stops_before_commit(self):
+    def test_approved_fix_over_line_limit_is_still_committed(self):
         self.approve(APPROVAL)
         (self.repository / "src/product.py").write_text("".join(f"line {i}\n" for i in range(60)))
         head_before = gitops.sha(self.repository, "HEAD")
         result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
-        self.assertEqual("stopped", result["status"])
-        self.assertIn("変更行数が上限を超える", result["reason"])
-        self.assertEqual([], result["completed"])
-        self.assertEqual(head_before, gitops.sha(self.repository, "HEAD"))
+        self.assertEqual("completed", result["status"], result)
+        self.assertEqual("commit", result["completed"][0])
+        self.assertIn("src/product.py", run_git(self.repository, "log", "--name-only", "--format=", f"{head_before}..HEAD"))
 
-    def test_change_outside_approved_paths_stops_before_commit(self):
+    def test_change_outside_approved_paths_is_left_out_of_commit_and_recorded(self):
         self.approve(APPROVAL)
         self.fix_product()
         (self.repository / "src/other.py").write_text("unrelated\n")
+        head_before = gitops.sha(self.repository, "HEAD")
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("completed", result["status"], result)
+        recorded = self.workflow.store.select(self.prepared["id"])["loop"]["done"]["commit"]
+        self.assertEqual(["src/other.py"], recorded["left_out"])
+        committed = run_git(self.repository, "log", "--name-only", "--format=", f"{head_before}..HEAD")
+        self.assertIn("src/product.py", committed)
+        self.assertNotIn("src/other.py", committed)
+        self.assertIn("src/other.py", run_git(self.repository, "status", "--porcelain"))
+
+    def test_changed_contract_stops_before_commit(self):
+        self.approve(APPROVAL)
+        self.fix_product()
+        plan_path = self.repository / self.workflow.store.select(self.prepared["id"])["plan"]["path"]
+        plan_path.write_text(plan_path.read_text(encoding="utf-8") + "\n追記\n", encoding="utf-8")
         result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
         self.assertEqual("stopped", result["status"])
-        self.assertIn("承認済み対象パス外の変更", result["reason"])
+        self.assertIn("完了条件・受入基準・確認方法の変更", result["reason"])
         self.assertEqual([], result["completed"])
+
+    def test_loop_refuses_approval_that_is_not_in_the_user_prompt_log(self):
+        self.workflow.approve(self.prepared["id"], APPROVAL, self.planned["plan_hash"], ["src/product.py"])
+        self.fix_product()
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("stopped", result["status"])
+        self.assertIn("利用者の発言として確認できません", result["reason"])
+        self.assertEqual([], result["completed"])
+
+    def test_waiting_approval_returns_the_plan_reference_and_body(self):
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("waiting_approval", result["status"])
+        self.assertEqual(self.planned["plan_hash"], result["plan"]["hash"])
+        self.assertIn("QA-F01", result["plan"]["body"])
+
+    def test_status_reports_loop_progress_after_a_stop(self):
+        self.approve(f"この計画で修正して。{COMMIT_PHRASE}")
+        self.fix_product()
+        self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        status = self.workflow.status(self.prepared["id"])
+        self.assertEqual(["commit", "submit"], status["loop"]["completed"])
+        self.assertEqual("push", status["loop"]["next"])
+
+    def test_rejected_push_stops_before_any_re_qa_request(self):
+        hook = self.remote / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        hook.chmod(0o755)
+        self.approve(APPROVAL)
+        self.fix_product()
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("failed", result["status"])
+        self.assertEqual(["commit", "submit"], result["completed"])
+        self.assertEqual(1, len(self.workflow.store.states()))
+
+    def test_publication_can_be_authorized_after_a_commit_only_stop(self):
+        self.approve(f"この計画で修正して。{COMMIT_PHRASE}")
+        self.fix_product()
+        stopped = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("stopped", stopped["status"])
+        record_user_prompt(self.repository, CLOUD)
+        self.workflow.authorize_publish(self.prepared["id"], CLOUD)
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("completed", result["status"], result)
+        self.assertEqual(["commit", "submit", "push", "ancestry", "requa-request", "finalize", "publish"], result["completed"])
+
+    def test_authorization_is_refused_when_the_head_has_changed(self):
+        self.approve(f"この計画で修正して。{COMMIT_PHRASE}")
+        self.fix_product()
+        self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        record_user_prompt(self.repository, CLOUD)
+        self.workflow.authorize_publish(self.prepared["id"], CLOUD)
+        (self.repository / "notes.txt").write_text("later change\n")
+        run_git(self.repository, "add", "notes.txt")
+        run_git(self.repository, "commit", "-m", "later change")
+        result = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("stopped", result["status"])
+        self.assertEqual(1, len(self.workflow.store.states()))
+
+    def test_publication_authorization_must_be_an_utterance_in_the_log(self):
+        self.approve(f"この計画で修正して。{COMMIT_PHRASE}")
+        with self.assertRaisesRegex(QAError, "発言として確認できません"):
+            self.workflow.authorize_publish(self.prepared["id"], CLOUD)
+
+    def test_retry_after_a_failed_progress_save_does_not_duplicate_the_re_qa_request(self):
+        from unittest import mock
+        from qa_workflow.store import QAError as StoreQAError
+        original = Workflow._record_loop
+        failed_once = {"done": False}
+
+        def flaky(workflow, request, progress, failed):
+            if "requa-request" in progress and not failed_once["done"]:
+                failed_once["done"] = True
+                raise StoreQAError("progress save failed")
+            return original(workflow, request, progress, failed)
+
+        self.approve(APPROVAL)
+        self.fix_product()
+        with mock.patch.object(Workflow, "_record_loop", flaky):
+            first = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("failed", first["status"])
+        second = self.workflow.loop(self.prepared["id"], "空入力fixture成功")
+        self.assertEqual("completed", second["status"], second)
+        children = [st for st in self.workflow.store.states() if st.get("previous") == self.prepared["id"]]
+        self.assertEqual(1, len(children))
+        approval_head = self.workflow.store.select(self.prepared["id"])["approval"]["head"]
+        fix_commits = run_git(self.repository, "log", "--format=%s", f"{approval_head}..HEAD").splitlines()
+        self.assertEqual(1, fix_commits.count(f"Yip: {self.prepared['id']} 修正"))
+
+    def test_approval_can_be_updated_to_include_the_commit_scope_before_submission(self):
+        self.approve("この計画で修正して。")
+        self.approve(f"この計画で修正して。{COMMIT_PHRASE}")
+        self.assertEqual(f"この計画で修正して。{COMMIT_PHRASE}", self.workflow.store.select(self.prepared["id"])["approval"]["message"])
 
 
 if __name__ == "__main__":

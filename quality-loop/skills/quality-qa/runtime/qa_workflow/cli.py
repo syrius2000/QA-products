@@ -20,7 +20,7 @@ def parser():
     a.add_argument('--target',action='append',required=True);a.add_argument('--implementer',required=True);a.add_argument('--author',required=True)
     a.add_argument('--audience',choices=['local','cloud'],default='cloud');a.add_argument('--assumptions',default='未指定')
     a.add_argument('--baseline');a.add_argument('--reviewed');a.add_argument('--repository');a.add_argument('--exclude',action='append',default=[],metavar='PATH=理由');a.add_argument('--required-test',action='append',default=[]);a.add_argument('--check-json',action='append',default=[],help='構造化check JSON（argv配列、cwd、timeout等）');a.add_argument('--check-contract-approval',help='既存check契約を変更・追加する実際の人の明示承認')
-    for name,help_text in [('status','読取りだけの状況確認'),('verify','固定argvで必須checkを実行しEvidenceを記録'),('finalize','表示対象をローカルで確定'),('publish','明示指示のtopic公開'),('handoff','手渡し記録'),('acquire','Markdownだけを取得'),('confirm-content','内容確認を記録'),('correction','原文を保持して訂正依頼'),('publish-correction','訂正依頼だけ公開'),('plan','修正計画を保存'),('approve','人の計画承認を記録'),('submit','修正提出（独立検証前）'),('requa','元要求・前回指摘を保ち再QA'),('assess-residual','未検証事項のユーザー判断を記録'),('decide','終了判断（Git操作なし）'),('loop','承認後にcommit・提出・再QA依頼・公開まで進める')]:
+    for name,help_text in [('status','読取りだけの状況確認'),('verify','固定argvで必須checkを実行しEvidenceを記録'),('finalize','表示対象をローカルで確定'),('publish','明示指示のtopic公開'),('handoff','手渡し記録'),('acquire','Markdownだけを取得'),('confirm-content','内容確認を記録'),('correction','原文を保持して訂正依頼'),('publish-correction','訂正依頼だけ公開'),('plan','修正計画を保存'),('approve','人の計画承認を記録'),('submit','修正提出（独立検証前）'),('requa','元要求・前回指摘を保ち再QA'),('assess-residual','未検証事項のユーザー判断を記録'),('decide','終了判断（Git操作なし）'),('loop','承認後にcommit・提出・再QA依頼・公開まで進める'),('authorize-publish','commit後に、現在の対象commitの公開を利用者の発言で承認する')]:
         a=sub.add_parser(name,help=help_text);a.add_argument('--request');a.add_argument('--revision',type=int)
         if name=='finalize':a.add_argument('--commit');a.add_argument('--message');a.add_argument('--approved-path',action='append',default=[])
         if name in ['publish','publish-correction','approve']:a.add_argument('--message',required=True);a.add_argument('--approved-path',action='append',required=True)
@@ -35,6 +35,7 @@ def parser():
         if name=='assess-residual':a.add_argument('--message',required=True);a.add_argument('--reason',required=True)
         if name=='decide':a.add_argument('--message',required=True);a.add_argument('--residual',required=True)
         if name=='loop':a.add_argument('--evidence',required=True,help='実際に行った検証の方法と結果');a.add_argument('--unverified',action='append',default=[])
+        if name=='authorize-publish':a.add_argument('--message',required=True,help='利用者の実際の発言')
     a=sub.add_parser('legacy',help='旧4成果物と原依頼を読取り照合');a.add_argument('--directory',type=Path,required=True);a.add_argument('--invite',type=Path,required=True)
     return p
 
@@ -64,6 +65,7 @@ def execute(a):
         return w.prepare(a.purpose,a.criterion,a.target,a.implementer,a.author,a.audience,a.assumptions,a.baseline,a.reviewed,a.repository,exclusions(a.exclude),checks=checks,check_contract_approval=a.check_contract_approval)
     if op=='status':return w.status(a.request)
     if op=='loop':return w.loop(a.request,a.evidence,a.unverified,revision=a.revision)
+    if op=='authorize-publish':return w.authorize_publish(a.request,a.message,revision=a.revision)
     revision=a.revision if a.revision is not None else w.store.select(a.request)['revision'];k={'revision':revision}
     if op=='verify':return w.verify(a.request,**k)
     if op=='finalize':return w.finalize(a.request,a.commit,a.message,a.approved_path,**k)

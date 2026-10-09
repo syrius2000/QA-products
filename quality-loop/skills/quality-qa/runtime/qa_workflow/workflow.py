@@ -8,8 +8,9 @@ from pathlib import Path
 
 from . import gitops, review
 from .github import GitHub
-from .loop import run_loop
-from .minor_change import ApprovedScope, ChangeSet, MINOR_LINE_LIMIT, judge_minor_change
+from .loop import CLOUD_PHRASE, run_loop
+from .loop_stages import stage_status
+from .minor_change import ApprovedScope, ChangeSet, judge_minor_change
 from .prompt_log import verbatim_in_log
 from .publish_guard import assert_reachable_from_origin
 from .repair_commit import commit_approved_paths
@@ -140,7 +141,8 @@ class Workflow:
             actor, action, reason = "ユーザー→別のレビュー担当", "依頼文を渡し、指定先へレビューを提出してもらってください", "レビューを待っています"
             artifact = s["invite"]
         invitation = safe_path(self.root, artifact).read_text() if not hide_artifact_content and artifact and safe_path(self.root, artifact).is_file() else None
-        return {"id": s["id"], "cycle": s["cycle"], "revision": s["revision"], "phase": phase, "reviewed": s["reviewed"], "next": {"担当": actor, "操作": action, "理由": reason, "必要入力": artifact or s["id"], "依頼文": invitation}, "issues": s["reviews"][-1]["issues"] if s["reviews"] else [], "plan_hash": s.get("plan", {}).get("hash"), "plan_paths": s.get("plan", {}).get("paths", []), "review_path": self._expected(s)["review_path"], "products": sorted(s["products"]), "state_path": s["state_path"], "checks": {"構造検査": "確認済み" if s["active_review"] else "未完了", "独立性": "担当・経路の記録。完全な証明ではない", "実クラウドQA": "結果の実行Evidenceを別途確認", "外部配置": "この操作では実施しない"}}
+        loop = s.get("loop")
+        return {"loop": stage_status(loop["done"], loop.get("failed")) if loop else None, "id": s["id"], "cycle": s["cycle"], "revision": s["revision"], "phase": phase, "reviewed": s["reviewed"], "next": {"担当": actor, "操作": action, "理由": reason, "必要入力": artifact or s["id"], "依頼文": invitation}, "issues": s["reviews"][-1]["issues"] if s["reviews"] else [], "plan_hash": s.get("plan", {}).get("hash"), "plan_paths": s.get("plan", {}).get("paths", []), "review_path": self._expected(s)["review_path"], "products": sorted(s["products"]), "state_path": s["state_path"], "checks": {"構造検査": "確認済み" if s["active_review"] else "未完了", "独立性": "担当・経路の記録。完全な証明ではない", "実クラウドQA": "結果の実行Evidenceを別途確認", "外部配置": "この操作では実施しない"}}
 
     def prepare(self, purpose: str, criteria: list[str], products: list[str], implementer: str, author: str, audience="cloud", assumptions="未指定", baseline=None, reviewed=None, repository=None, excluded=None, previous=None, required_tests=None, checks=None, check_contract_approval=None):
         if not purpose.strip() or not criteria or not all(isinstance(x, str) and x.strip() for x in criteria) or not products or not implementer.strip() or audience not in {"local", "cloud"}:
@@ -530,7 +532,8 @@ class Workflow:
     def plan(self, request, items: list[dict], revision=None):
         with self.store.transaction():
             s = self._load(request, revision); r = self._active(s)
-            if s["phase"] not in {"reviewed", "planned"}:
+            replannable = s["phase"] == "approved" and not s.get("submission") and not (s.get("loop") or {}).get("done", {}).get("commit")
+            if s["phase"] not in {"reviewed", "planned"} and not replannable:
                 raise QAError("確認済みレビューから修正計画を作成してください")
             fields = ["id", "理解", "方針", "対象", "影響", "完了条件", "確認方法"]
             ids = set()
@@ -561,11 +564,10 @@ class Workflow:
         with self.store.transaction():
             s = self._load(request, revision); r = self._active(s)
             plan = s.get("plan")
-            if not plan or s["phase"] != "planned" or not re.search(r"修正して|実装して|承認", message):
+            updatable = s["phase"] == "approved" and not s.get("submission") and not (s.get("loop") or {}).get("done", {}).get("commit")
+            if not plan or (s["phase"] != "planned" and not updatable) or not re.search(r"修正して|実装して|承認", message):
                 raise QAError("対象計画に対する実際のユーザー承認が必要です")
-            if not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, message):
-                raise QAError("承認文が利用者の発言として確認できません", "利用者が承認の言葉を発言してから承認してください")
-            if plan_hash != plan["hash"] or digest(safe_path(self.root, plan["path"]).read_bytes()) != plan["hash"] or set(paths) != set(plan["paths"]) or r["hash"] != plan["review_hash"] or gitops.snapshot(self.root, plan["paths"]) != plan["before"]:
+            if plan_hash != plan["hash"] or digest(safe_path(self.root, plan["path"]).read_bytes()) != plan["hash"] or set(paths) != set(plan["paths"]) or r["hash"] != plan["review_hash"] or (s["phase"] == "planned" and gitops.snapshot(self.root, plan["paths"]) != plan["before"]):
                 raise QAError("計画・対象・レビューが承認時点と一致しません", "計画を更新して再承認を受けてください")
             s["approval"] = {"message": message, "plan_hash": plan_hash, "paths": sorted(paths), "at": now(), "head": gitops.sha(self.root, "HEAD")}
             s["phase"] = "approved"
@@ -583,11 +585,9 @@ class Workflow:
                 raise QAError("計画または実装方式が変わっています", "計画更新と再承認が必要です")
             head = gitops.sha(self.root, "HEAD")
             committed = gitops.changed(self.root, a["head"], head)
-            current_dirty = gitops.dirty(self.root)
-            outside = (committed | current_dirty | set(p["dirty_before"])) - set(a["paths"]) - set(s["operational"])
-            for name in outside:
-                if gitops.snapshot(self.root, [name])[name] != p["dirty_before"].get(name, gitops.tree_snapshot(self.root, a["head"], [name])[name]):
-                    raise QAError(f"承認外の変更が検出されました: {name}", "変更範囲を確認し、計画更新と再承認へ戻ってください")
+            outside = committed - set(a["paths"]) - set(s["operational"])
+            if outside:
+                raise QAError(f"承認外の変更がコミットに含まれています: {'、'.join(sorted(outside))}", "コミットを確認し、計画更新と再承認へ戻ってください")
             changed_allowed = {name for name in a["paths"] if gitops.snapshot(self.root, [name])[name] != p["before"][name]}
             if changed_allowed - set(paths):
                 raise QAError("実際の変更対象が修正提出に不足しています")
@@ -629,6 +629,19 @@ class Workflow:
             s["decision"] = {"message": message, "residual": residual, "path": p}; s["phase"] = "decision"
             return self._save(s, "ユーザーの終了判断（Git操作なし）")
 
+    def push_topic(self, request, message: str, revision=None):
+        with self.store.transaction():
+            s = self._load(request, revision)
+            if not re.search(r"クラウド.*(?:出して|公開)|cloud.*(?:publish|QA)", message, re.I):
+                raise QAError("クラウド公開の実際のユーザー指示が必要です")
+            flight = gitops.preflight(self.root, s, set(s["products"]) | set(s.get("published_paths", [])))
+            gitops.git(self.root, "push", "origin", f"HEAD:refs/heads/{s['branch']}")
+            tip = gitops.remote_tip(self.root, s["branch"])
+            if not tip or not gitops.ancestor(self.root, s["reviewed"], tip):
+                raise QAError("pushした対象commitをremoteで確認できません", "pushの結果を確認してから再実行してください")
+            s["topic_push"] = {"tip": tip, "head": gitops.sha(self.root, "HEAD"), "message": message, "preflight": flight, "at": now()}
+            return self._save(s, "対象commitをtopic branchへ送信")
+
     def _record_loop(self, request, progress: dict, failed) -> None:
         with self.store.transaction():
             s = self._load(request)
@@ -648,28 +661,46 @@ class Workflow:
             if gitops.snapshot(self.root, [name])[name] != plan["dirty_before"].get(name, gitops.tree_snapshot(self.root, approval["head"], [name])[name])
         }
         added = {name for name in changed if gitops.tree_snapshot(self.root, approval["head"], [name])[name] is None}
-        lines = self._changed_lines(approval["head"], sorted(changed), added)
         approved = ApprovedScope(paths=frozenset(approval["paths"]), contract_hash=approval["plan_hash"])
-        change = ChangeSet(paths=frozenset(changed), added_paths=frozenset(added), contract_hash=plan["hash"], changed_lines=lines)
-        return judge_minor_change(approved, change, MINOR_LINE_LIMIT)
+        current_contract = digest(safe_path(self.root, plan["path"]).read_bytes())
+        change = ChangeSet(paths=frozenset(changed), added_paths=frozenset(added), contract_hash=current_contract)
+        return judge_minor_change(approved, change)
 
-    def _changed_lines(self, base: str, names: list[str], added: set[str]) -> int:
-        total = 0
-        tracked = [name for name in names if name not in added]
-        if tracked:
-            for line in gitops.git(self.root, "diff", "--numstat", base, "--", *tracked).splitlines():
-                added_count, deleted_count, _ = line.split("\t", 2)
-                total += sum(int(count) for count in (added_count, deleted_count) if count.isdigit())
-        for name in added:
-            total += len((self.root / name).read_text(encoding="utf-8", errors="ignore").splitlines())
-        return total
+    def authorize_publish(self, request, message: str, revision=None):
+        with self.store.transaction():
+            s = self._load(request, revision)
+            if not s.get("approval"):
+                raise QAError("修正計画の承認後にだけ公開を承認できます")
+            if not re.search(r"クラウド.*(?:出して|公開)|cloud.*(?:publish|QA)", message, re.I):
+                raise QAError("クラウド公開の実際のユーザー発言が必要です")
+            if not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, message):
+                raise QAError("公開の承認文が利用者の発言として確認できません", "利用者が公開の言葉を発言してから承認してください")
+            s["publish_authorization"] = {"message": message, "head": gitops.sha(self.root, "HEAD"), "at": now()}
+            return self._save(s, "公開を現在の対象commitへ承認")
+
+    def _existing_fix_commit(self, request, approval):
+        for line in gitops.git(self.root, "log", "--format=%H %s", f"{approval['head']}..HEAD").splitlines():
+            sha, _, subject = line.partition(" ")
+            if subject == f"Yip: {request} 修正":
+                return sha
+        return None
 
     def loop(self, request, evidence: str, unverified: list[str] | None = None, revision=None):
         s = self._load(request, revision)
         approval = s.get("approval")
         plan = s.get("plan") or {}
         done = dict(s.get("loop", {}).get("done", {}))
-        ids = [item["id"] for item in plan.get("items", [])]
+        if approval and not verbatim_in_log(gitops.git_directory(self.root) / PROMPT_LOG_NAME, approval["message"]):
+            return self._loop_reply("stopped", "承認文が利用者の発言として確認できません。利用者が承認の言葉を発言してから再実行してください", done)
+        head = gitops.sha(self.root, "HEAD")
+        authorization = s.get("publish_authorization") or {}
+        if approval and CLOUD_PHRASE in approval["message"]:
+            cloud_message, cloud_authorized = approval["message"], True
+        elif authorization and authorization["head"] == head:
+            cloud_message, cloud_authorized = authorization["message"], True
+        else:
+            cloud_message, cloud_authorized = (approval or {}).get("message", ""), False
+        ids = sorted(s.get("unresolved", {}))
         history = [*s.get("loop_history", []), ids]
         minor = self._minor_decision(s, approval, plan) if approval and "commit" not in done else None
         method = "\n".join(f"{item['id']}: {item['方針']}" for item in plan.get("items", []))
@@ -679,18 +710,41 @@ class Workflow:
             progress["done"] = dict(current)
             self._record_loop(request, dict(current), failed)
 
+        left_out = list(minor.outside_paths) if minor else []
+
         def run_commit():
+            existing = self._existing_fix_commit(request, approval)
+            if existing:
+                return {"sha": existing, "left_out": left_out}
             sha = commit_approved_paths(self.root, approval["paths"], f"Yip: {request} 修正", approval["message"])
-            return {"sha": sha}
+            return {"sha": sha, "left_out": left_out}
 
         def run_submit():
+            if (self.store.select(request).get("submission") or {}).get("head") == gitops.sha(self.root, "HEAD"):
+                return {"id": request}
             self.submit(request, list(approval["paths"]), evidence, list(unverified or []), method)
             return {"id": request}
 
+        def run_push():
+            current = self.store.select(request)
+            tip = gitops.remote_tip(self.root, current["branch"])
+            if tip and gitops.ancestor(self.root, gitops.sha(self.root, "HEAD"), tip):
+                return {"tip": tip}
+            self.push_topic(request, cloud_message)
+            return {"tip": self.store.select(request)["topic_push"]["tip"]}
+
+        def run_ancestry():
+            current = self.store.select(request)
+            current_head = gitops.sha(self.root, "HEAD")
+            assert_reachable_from_origin(self.root, current["branch"], [current["reviewed"], current_head])
+            return {"head": current_head}
+
         def run_requa():
-            nxt = self.requa(request, "cloud")
-            self._carry_loop_history(nxt["id"], history)
-            return {"id": nxt["id"]}
+            current_head = gitops.sha(self.root, "HEAD")
+            existing = [st for st in self.store.states() if st.get("previous") == request and st.get("reviewed") == current_head]
+            next_id = existing[0]["id"] if existing else self.requa(request, "cloud")["id"]
+            self._carry_loop_history(next_id, history)
+            return {"id": next_id}
 
         def run_finalize():
             nid = progress["done"]["requa-request"]["id"]
@@ -700,12 +754,11 @@ class Workflow:
         def run_publish():
             nid = progress["done"]["requa-request"]["id"]
             state = self.store.select(nid)
-            self.publish(nid, approval["message"], sorted(set(state["products"]) | {state["invite"]}))
-            published = self.store.select(nid)
-            assert_reachable_from_origin(self.root, published["branch"], [gitops.sha(self.root, published["reviewed"])])
+            if not state.get("published"):
+                self.publish(nid, cloud_message, sorted(set(state["products"]) | {state["invite"]}))
             return {"id": nid}
 
-        actions = {"commit": run_commit, "submit": run_submit, "requa-request": run_requa, "finalize": run_finalize, "publish": run_publish}
+        actions = {"commit": run_commit, "submit": run_submit, "push": run_push, "ancestry": run_ancestry, "requa-request": run_requa, "finalize": run_finalize, "publish": run_publish}
         result = run_loop(
             "approved" if approval else "planned",
             approval["message"] if approval else "",
@@ -714,10 +767,17 @@ class Workflow:
             save,
             history,
             minor=minor,
+            cloud_authorized=cloud_authorized,
         )
-        return {
-            "status": result.status,
-            "reason": result.reason,
-            "completed": list(result.done),
-            "next": {"担当": "ユーザーまたはローカル担当", "操作": result.reason, "理由": result.reason},
+        return self._loop_reply(result.status, result.reason, result.done, plan)
+
+    def _loop_reply(self, status, reason, completed, plan=None):
+        reply = {
+            "status": status,
+            "reason": reason,
+            "completed": list(completed),
+            "next": {"担当": "ユーザーまたはローカル担当", "操作": reason, "理由": reason},
         }
+        if status == "waiting_approval" and plan:
+            reply["plan"] = {"path": plan["path"], "hash": plan["hash"], "body": safe_path(self.root, plan["path"]).read_text(encoding="utf-8")}
+        return reply

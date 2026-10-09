@@ -48,7 +48,7 @@
 ## 9. リプレイ検証と行数上限の決定
 
 - [x] 9.1 リプレイ検証（案B）: 既存 `unify-blind-qa-cycle` は旧4ファイル形式のため、統合テストの失敗レビュー（`unified-qa-review-v1`）をリプレイの入力とした。`tests/test_loop_integration.py` で、判定→承認→commit→提出→再QA依頼→公開までを確認。旧cycleの実データでの再生は行っていない（残余リスク）
-- [x] 9.2 行数上限を50行に決定し、`qa_workflow/minor_change.py` の `MINOR_LINE_LIMIT` として記録。`Workflow.loop` の軽微判定に接続済み（行数超過・承認範囲外の停止を統合テストで確認）
+- [x] 9.2 行数上限は廃止（AGENTS.md §3 に合わせる）。`MINOR_LINE_LIMIT` と行数計算を削除し、止めるのは完了条件の変更だけとする。対象パス外の変更は停止せず `left_out` に記録し、コミットには含めない。`tests/test_minor_change.py` と `tests/test_loop_integration.py` で、行数超過の承認済み修正がコミットされること、対象パス外の変更が除外・記録されること、完了条件の変更で停止することを確認する
 - [x] 9.3 進行中の `unify-blind-qa-cycle` の手順とファイルが変更されていないことを、`git diff` で確認する
 
 ## 10. 全体確認

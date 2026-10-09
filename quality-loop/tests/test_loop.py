@@ -45,7 +45,7 @@ class LoopTest(unittest.TestCase):
         harness = Harness()
         result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [])
         self.assertEqual("completed", result.status)
-        self.assertEqual(["commit", "submit", "requa-request", "finalize", "publish"], harness.calls)
+        self.assertEqual(["commit", "submit", "push", "ancestry", "requa-request", "finalize", "publish"], harness.calls)
 
     def test_approval_without_cloud_instruction_stops_before_publish(self):
         harness = Harness()
@@ -70,24 +70,24 @@ class LoopTest(unittest.TestCase):
 
     def test_out_of_scope_change_stops_before_any_stage(self):
         harness = Harness()
-        minor = MinorDecision(minor=False, reasons=("承認済み対象パス外の変更",))
+        minor = MinorDecision(minor=False, reasons=("完了条件・受入基準・確認方法の変更",))
         result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [], minor=minor)
         self.assertEqual("stopped", result.status)
-        self.assertIn("承認済み対象パス外の変更", result.reason)
+        self.assertIn("完了条件・受入基準・確認方法の変更", result.reason)
         self.assertEqual([], harness.calls)
 
     def test_failed_stage_is_reported_and_completed_stages_are_kept(self):
         harness = Harness(fail_at="finalize")
         result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [])
         self.assertEqual("failed", result.status)
-        self.assertEqual(sorted(["commit", "submit", "requa-request"]), sorted(result.done))
+        self.assertEqual(sorted(["commit", "submit", "push", "ancestry", "requa-request"]), sorted(result.done))
 
     def test_loop_never_records_a_verdict_of_its_own_fix(self):
         harness = Harness()
         result = run_loop("approved", BOTH, {}, harness.actions(), harness.save, [])
         self.assertNotIn("review", STAGES)
         self.assertFalse(hasattr(result, "verdict"))
-        self.assertTrue(set(harness.calls) <= {"commit", "submit", "requa-request", "finalize", "publish"})
+        self.assertTrue(set(harness.calls) <= set(["commit", "submit", "push", "ancestry", "requa-request", "finalize", "publish"]))
 
 
 if __name__ == "__main__":
