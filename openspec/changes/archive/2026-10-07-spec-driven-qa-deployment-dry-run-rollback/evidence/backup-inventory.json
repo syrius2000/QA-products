@@ -1,5 +1,5 @@
 {
-  "destination_root": "/home/manabu/.agents/skills",
+  "destination_root": "<home>/.agents/skills",
   "targets": {
     "quality-qa": {
       "exists": false

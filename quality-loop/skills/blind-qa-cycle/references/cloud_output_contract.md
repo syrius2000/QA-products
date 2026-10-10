@@ -2,7 +2,7 @@
 
 ## 適用範囲
 
-この文書の4成果物契約は、明示的に `blind-qa-cycle` を起動した従来workflow専用です。`quality-qa` の統合workflowでは、このファイルはReviewer向け参照資材とし、許可される出力は依頼に示す単一のQA Markdownだけです。統合workflowのレビュー本文は、全受入基準の照合、実行checkのEvidence、Findingと実施側タスクリスト、未検証事項、最終Gateを一つに含めます。4ファイルを作らず、依頼に示された保存先だけを書き換えます。
+この文書の4成果物契約は、明示的に `blind-qa-cycle` を起動した監査cycle専用です。`quality-qa` の通常QAでは、このファイルはReviewer向け参照資材とし、許可される出力は依頼に示す単一のQA Markdownだけです。通常QAのレビュー本文は、全受入基準の照合、実行checkのEvidence、Findingと実施側タスクリスト、未検証事項、最終Gateを一つに含めます。4ファイルを作らず、依頼に示された保存先だけを書き換えます。
 
 統合workflowのクラウドReviewerは、対象SHAからQA Skillとこの契約を読み、hashを確認します。Python/pytest等の製品検証ツールは、対象環境にありリポジトリの規則が実行を許す場合に使います。Quality QA管理CLIやSkillの追加導入は不要です。依頼固定の各checkをargv配列で実行し、runtime、argv、cwd、env、timeout、status、exit code、所要時間、stdout/stderr excerpt、完全出力のSHA-256、excerpt切詰め有無を単一Markdownに記録します。任意checkは未実施理由を記録し、必須FAILはGate=FAIL、必須NOT_RUN/ERRORはPASS不可とします。未許可install・network・credentialアクセスは行いません。
 
@@ -23,7 +23,9 @@ Git操作を伴う監査依頼のPhase 0では、まずread-only preflightでbra
 | push / preflight 失敗、または invite 未 push | `00_invite.md` と同等の**本文**を fenced で貼付（フォールバック） |
 | Audience=`local` | 本文のみ。GitHub Cloud へ貼らない |
 
-cloudレビュアーは、パス手渡しの場合は git 上の `00_invite.md` を読み、本文手渡しの場合は貼付ブロックを単独で読める前提とします。指定された `docs/Artifacts/qa_cycles/<topic>/c<N>/` に次の4ファイルを作成します。既存の `00_invite.md` は変更しません。
+cloudレビュアーは、パス手渡しの場合はgit上の`00_invite.md`を読み、本文手渡しの場合は貼付ブロックを単独で読める前提とします。事前準備cycleの`00_plan.md`は招待作成側が参照する計画・Baseline根拠であり、Reviewerは編集しません。指定された`docs/Artifacts/qa_cycles/<topic>/c<N>/`に次の4ファイルだけをReviewer成果物として作成します。既存の`00_plan.md`と`00_invite.md`は変更しません。`04_human_understanding.md`は人が記入するcycle終結記録でありReviewer出力契約の対象外です。
+
+`04_human_understanding.md`は独立した人間側記録です。blind QAのNote modeだけが新規作成を支援し、既存ファイルを上書きせず、内容を要約・採点しません。Reviewerの4ファイル、Finding/task状態、Gateとは別に管理します。
 
 1. `01_review.md` — 日本語の結論と根拠付きFindings。
 2. `02_tasks.md` — 修復担当者が着手・完了確認できるタスク。
@@ -37,6 +39,8 @@ cloudレビュアーは、パス手渡しの場合は git 上の `00_invite.md` 
 
 - Repository: `<repo>`
 - Branch: `<branch>`
+- Start mode: `prepared` | `post-change` | `re-qa`
+- Preparation plan: `<repo-relative path and full commit SHA, prepared only>`
 - Baseline: `<full-sha>`
 - Reviewed: `<full-sha>`
 - Cycle: `<N>`
@@ -82,7 +86,7 @@ Findingは差分または必要な一次情報で確認した不一致に限り�
 ## `03_machine.json` と `STATUS.md`
 
 - JSONの必須キー、enum、ID対応は [`machine_schema.md`](machine_schema.md) を正本とします。
-- 新規cycleでは`acceptance_criteria`へinviteの全AC-NNNを同じ順序・原文で記録し、各々に判定とEvidenceを付けます。`requirements_fingerprint`はinviteと一致させます。
+- 新規cycleでは`acceptance_criteria`へinviteの全AC-NNNを同じ順序・原文で記録し、各々に判定とEvidenceを付けます。`requirements_fingerprint`と開始方式・prepared plan参照（該当時）はinviteと一致させます。
 - `reviewer_materials`には3つのSkill/契約ファイルのpath、期待hash、観測hash、読取状態を記録します。読取不能・不一致ならGateは`HOLD`です。
 - `findings[]` と `tasks[]` のID・severity・closesを相互照合します。High findingに未対応taskがあれば成果物完成として扱いません。
 - `STATUS.md` の内容は `PASS`、`HOLD`、`FAIL`、`INCONCLUSIVE` のいずれか1語だけです。JSONの `gate` と一致させます。
