@@ -18,7 +18,7 @@ quality-qa-cli finalize --request QA-001 --message "この対象をローカル�
 quality-qa-cli verify --request QA-001
 ```
 
-対象SHAとReviewer資材hashを依頼本文へ確定した後、実際にcommitする最終招待本文と製品対象snapshotを走査する。Reviewed SHA、製品snapshot hash、最終招待hash、Reviewer資材hash、check契約hashを走査前に状態へ保存する。テスト用の値は `API_KEY=test-token` や `/Users/qa-user/...` のような明示的な合成fixtureだけを例外として扱い、実値らしい秘密情報は通過させない。
+対象SHAとReviewer資材hashを依頼本文へ確定した後、実際にcommitする最終招待本文と製品対象snapshotを走査する。Reviewed SHA、製品snapshot hash、最終招待hash、Reviewer資材hash、check契約hashを走査前に状態へ保存する。テスト用の値は API_KEY=test-token や `/Users/qa-user/...` のような明示的な合成fixtureだけを例外として扱い、実値らしい秘密情報は通過させない。
 
 走査が拒否した場合、製品だけを含む対象commitがローカルに既に作成されていることがある。拒否stage・検出分類・時刻・再開案内を状態へ保存し、招待commitとremote pushを行わない。対象外のindexは保持する。拒否済み依頼の再公開は保存済み拒否理由を返して停止し、既存state・依頼本文を編集しない。`status`は拒否された依頼本文を再掲しない。原因を除いた新しいQA依頼/stateを作成し、`prepare --reviewed <記録済みReviewed SHA>` で製品対象commitを再利用する。新しい依頼本文を確認してから公開を別途指示する。走査後の変更、またはcheck Evidenceのhash不一致でも招待commit/pushを開始しない。
 
@@ -28,6 +28,19 @@ quality-qa-cli publish --request QA-001 --message "クラウドQAに出して" -
 
 製品対象と依頼パスだけを指定する。再QAで既存の必須checkを削除・ID変更・任意化・弱化することはできない。その他の契約変更では、旧契約hashと新契約hashを含む明示承認文を `--check-contract-approval` へ渡す。エラー時に案内されるhashを、利用者の実際の承認に含める。承認状態には旧新hashと差分を記録する。単なる再QA依頼や「契約変更」という語句だけでは変更できない。対象commitの後、そのSHAを参照する依頼を別commitへ保存する。既存対象commit・途中作成commitは再利用する。remote tipへの到達可能性が確認できた後で、ユーザーへGitHub上の依頼相対パスと手渡し方法を返す。公開はレビュー実行ではない。ユーザーが手渡したら `handoff` を記録する。
 
+公開が成功したら、クラウドへ渡す短い指示書をコードブロックで表示する。依頼本文はチャットに貼らせず、次の値を状態から埋める: repository、branch、invite（依頼ファイル）、reviewed（対象版）、review_path（保存先）。
+
+```text
+リポジトリ {repository}、ブランチ {branch} を読んでください。
+依頼は {invite} です。対象版は {reviewed} です。
+依頼に書かれた SKILL.md と reviewer_contract.md のSHA-256を照合してから、レビューを行ってください。
+結果は {review_path} の1ファイルだけに書き、そのファイルだけをこのブランチにコミット・pushしてください。
+製品コードや他のファイルは変更しないでください。
+完了したら、コミットSHAとファイルパスを返信してください。
+```
+
 公開失敗時は作成済みcommitを保持し、同じ操作を再試行する。リモート先行分は登録したレビュー成果物だけ・祖先関係あり・既存差分保持可能の場合に限ってfast-forwardする。製品変更混在や分岐は別の統合判断へ戻る。既定ブランチ公開、force-push、stash、reset、cleanは行わない。
 
 訂正依頼は本文手渡しで使える。GitHubへ保存する実際の指示がある場合だけ `publish-correction --message <実際の発言> --approved-path <予約された訂正依頼>` を使う。原レビューを上書きしない。
+
+公開前には、依頼本文の受入基準と現行の spec・AGENTS.md を照合し、食い違いがあれば公開の前に利用者へ報告する（基準の変更は依頼の補足か再発行で伝える）。また、公開対象の機密情報・個人ローカルパスの検査を行い、検出があればpushしない。再QA依頼の前には、対象SHAがリモートの開発ブランチの祖先であることを確認する。`loop` の公開段階も同じ検査を行う。

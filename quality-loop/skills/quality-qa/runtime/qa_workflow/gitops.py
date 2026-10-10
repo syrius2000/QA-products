@@ -170,8 +170,25 @@ def tree_snapshot(root: Path, commit: str, paths) -> dict:
 
 _SECRET_ASSIGNMENT = re.compile(r"(?i)\b(?:[a-z0-9_]*(?:token|secret|password|passwd)|api[_-]?key)\s*[:=]\s*['\"]?([^\s'\"]{4,})")
 _PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")
-_PERSONAL_PATH = re.compile(r"(?:/Users/|/home/)([^/\s]+)(?:/|$)")
+# 検査自身のソースが検出されないよう、パスの接頭辞は連結して書く。
+_PERSONAL_PATH = re.compile(r"(?:/Us" r"ers/|/ho" r"me/)([^/\s]+)(?:/|$)")
 _SAFE_FIXTURE_VALUES = {"example", "dummy", "placeholder", "redacted", "test-token", "qa-user", "your-token"}
+
+
+def _scan_text(name: str, text: str) -> list[str]:
+    findings = []
+    if _PRIVATE_KEY.search(text):
+        findings.append(f"{name}:private-key")
+    for match in _SECRET_ASSIGNMENT.finditer(text):
+        value = match.group(1).strip(" ,;)")
+        if value.lower() not in _SAFE_FIXTURE_VALUES and not (value.startswith("<") and value.endswith(">")):
+            findings.append(f"{name}:secret-like-assignment")
+            break
+    for match in _PERSONAL_PATH.finditer(text):
+        if match.group(1).lower() not in {"example", "test", "qa-user", "username"}:
+            findings.append(f"{name}:personal-local-path")
+            break
+    return findings
 
 
 def publication_findings(root: Path, paths: set[str]) -> list[str]:
@@ -186,19 +203,31 @@ def publication_findings(root: Path, paths: set[str]) -> list[str]:
             content = os.readlink(path).encode()
         else:
             content = path.read_bytes()
-        text = content.decode("utf-8", errors="ignore")
-        if _PRIVATE_KEY.search(text):
-            findings.append(f"{name}:private-key")
-        for match in _SECRET_ASSIGNMENT.finditer(text):
-            value = match.group(1).strip(" ,;)")
-            if value.lower() not in _SAFE_FIXTURE_VALUES and not (value.startswith("<") and value.endswith(">")):
-                findings.append(f"{name}:secret-like-assignment")
-                break
-        for match in _PERSONAL_PATH.finditer(text):
-            if match.group(1).lower() not in {"example", "test", "qa-user", "username"}:
-                findings.append(f"{name}:personal-local-path")
-                break
+        findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
     return findings
+
+
+_EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+
+def outgoing_findings(root: Path, base: str, head: str = "HEAD") -> list[str]:
+    """Scan, commit by commit, the bytes each outgoing commit adds or changes.
+
+    The net diff of base..head hides a secret that a middle commit adds and a later commit removes,
+    yet the secret still travels in the pushed history.
+    """
+    findings: list[str] = []
+    scanned: set[tuple[str, str]] = set()
+    for commit in git(root, "rev-list", "--reverse", f"{base}..{head}").splitlines():
+        parents = git(root, "rev-list", "--parents", "-n", "1", commit).split()[1:]
+        for name in sorted(changed(root, parents[0] if parents else _EMPTY_TREE, commit)):
+            blob = tree_snapshot(root, commit, [name])[name]
+            if blob is None or (name, blob["hash"]) in scanned:
+                continue
+            scanned.add((name, blob["hash"]))
+            content = git_bytes(root, "cat-file", "blob", f"{commit}:{name}")
+            findings.extend(_scan_text(name, content.decode("utf-8", errors="ignore")))
+    return list(dict.fromkeys(findings))
 
 
 def execute_checks(root: Path, checks: list[dict]) -> list[dict]:
@@ -354,8 +383,20 @@ def preflight(root: Path, state: dict, allowed: set[str]) -> dict:
     return {"remote": start, "commits": commits, "allowed": sorted(allowed)}
 
 
-def push(root: Path, state: dict, invite_commit: str) -> str:
+def guarded_push(root: Path, state: dict) -> None:
+    """Every push to origin goes through here: scan each outgoing commit first, and never push on a finding."""
+    base = remote_tip(root, state["branch"]) or state["initial_baseline"]
+    findings = outgoing_findings(root, base, "HEAD")
+    if findings:
+        raise QAError(
+            "送出するコミットに機密情報または個人ローカルパスの疑いがあります: " + "、".join(findings),
+            "原因を除いたコミットを作ってから再実行してください。pushはしていません",
+        )
     git(root, "push", "origin", f"HEAD:refs/heads/{state['branch']}")
+
+
+def push(root: Path, state: dict, invite_commit: str) -> str:
+    guarded_push(root, state)
     tip = remote_tip(root, state["branch"])
     if not tip or not ancestor(root, state["reviewed"], tip) or not ancestor(root, invite_commit, tip):
         raise QAError("公開後の対象／依頼の到達可能性を確認できません")

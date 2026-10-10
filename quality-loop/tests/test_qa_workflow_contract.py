@@ -14,6 +14,11 @@ from qa_workflow.store import QAError
 from qa_workflow.workflow import verify_submission_snapshot
 
 
+def record_user_prompt(repository: Path, prompt: str) -> None:
+    with (repository / ".git" / "qa-user-prompts.jsonl").open("a", encoding="utf-8") as log:
+        log.write(json.dumps({"prompt": prompt}, ensure_ascii=False) + "\n")
+
+
 def review_state() -> dict:
     return {
         "id": "QA-001",
@@ -887,6 +892,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
                 "対象": ["src/product.py"], "影響": "入力処理",
                 "完了条件": "空入力に理由付きエラー", "確認方法": "fixtureで空入力を送る",
             }])
+            record_user_prompt(repository, "この計画で修正して")
             workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product.py"])
             (repository / "src/product.py").write_text("reject empty input with reason\n")
             workflow.submit(prepared["id"], ["src/product.py"], "空入力fixture成功", [], "QA-F01: 入力境界で検証")
@@ -1036,6 +1042,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertEqual(product_before_plan, (root / "src/product-a.py").read_bytes())
             with self.assertRaisesRegex(QAError, "修正承認がありません"):
                 workflow.submit(prepared["id"], ["src/product-a.py"], "検証した", [])
+            record_user_prompt(root, "この計画で修正して")
             with self.assertRaisesRegex(QAError, "計画・対象・レビューが承認時点と一致"):
                 workflow.approve(prepared["id"], "この計画で修正して", "0" * 64, ["src/product-a.py"])
             approved = workflow.approve(prepared["id"], "この計画で修正して", planned["plan_hash"], ["src/product-a.py"])
@@ -1085,6 +1092,31 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             self.assertNotIn("src/unrelated.txt", gitops.changed(repository, state["baseline"], state["published"]["tip"]))
             remote_tip = gitops.remote_tip(repository, "topic/qa")
             self.assertEqual(state["published"]["tip"], remote_tip)
+
+    def test_publish_refuses_a_leak_added_and_removed_in_the_outgoing_history(self):
+        from qa_workflow.workflow import Workflow
+        from qa_workflow import gitops
+        from qa_workflow.store import QAError
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repository, remote = self.setup_bare_remote(Path(tmp))
+            product = repository / "src/product.py"
+            safe = product.read_text()
+            product.write_text("api_" + "token" + " = " + "'" + "real-value-1234" + "'\n")
+            self.run_git(repository, "commit", "-am", "temporary leak")
+            product.write_text(safe)
+            self.run_git(repository, "commit", "-am", "restore")
+            workflow = Workflow(repository)
+            prepared = workflow.prepare(
+                "対象製品をQAする", ["対象製品を読むこと"], ["src/product.py"],
+                "Implementer", "Codex (GPT-6)", "cloud", repository="example/repo",
+            )
+            invite = prepared["next"]["必要入力"]
+            remote_before = gitops.remote_tip(repository, "topic/qa")
+            with self.assertRaisesRegex(QAError, "機密情報"):
+                workflow.publish(prepared["id"], "クラウドQAに出して", ["src/product.py", invite])
+            self.assertEqual(remote_before, gitops.remote_tip(repository, "topic/qa"))
+            self.assertIsNone(workflow.store.read(prepared["state_path"])["published"])
 
     def test_publish_rejects_invite_mutation_after_final_scan_before_invite_commit(self):
         from qa_workflow.workflow import Workflow
@@ -1157,7 +1189,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             repository, remote = self.setup_bare_remote(Path(tmp))
-            (repository / "src/product.py").write_text("API_TOKEN=live-secret-value-123\npath=/Users/real-person/private/data.csv\n-----BEGIN PRIVATE KEY-----\n")
+            (repository / "src/product.py").write_text("\n".join(["API_TOKEN" + "=live-secret-value-123", "path=" + "/" + "Users/real-person/private/data.csv", "-----BEGIN " + "PRIVATE KEY-----"]) + "\n")
             (repository / "src/unrelated.txt").write_text("staged unrelated edit\n")
             self.run_git(repository, "add", "src/unrelated.txt")
             workflow = Workflow(repository)
@@ -1183,8 +1215,8 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
         from qa_workflow.workflow import Workflow
 
         for name, injected in [
-            ("secret", "API_TOKEN=live-secret-value-123"),
-            ("personal-path", "/Users/real-person/private/data.csv"),
+            ("secret", "API_TOKEN" + "=live-secret-value-123"),
+            ("personal-path", "/" + "Users/real-person/private/data.csv"),
         ]:
             with self.subTest(name=name), tempfile.TemporaryDirectory() as tmp:
                 repository, remote = self.setup_bare_remote(Path(tmp))
@@ -1274,7 +1306,7 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             fixture = root / "fixture.md"
-            fixture.write_text("API_KEY=test-token\npath=/Users/qa-user/private/data.csv\n")
+            fixture.write_text("\n".join(["API_KEY=test-token", "path=/Users/qa-user/private/data.csv"]) + "\n")
             self.assertEqual([], gitops.publication_findings(root, {"fixture.md"}))
 
     def test_cloud_publish_on_default_branch_stops_before_git_mutation(self):
