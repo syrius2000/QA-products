@@ -23,5 +23,31 @@
         "Owner裁定を代行せず受入や不受入を宣言しない"
       ]
     }
+  ],
+  "activation_cases": [
+    {
+      "id": "review-explicit-case",
+      "prompt": "QMS案件QMS-123をreviewしてください。statusはnext_role=reviewer、next_action=reviewです。",
+      "expected_trigger": true,
+      "reason": "Reviewer操作と有効な案件状態を明示している。"
+    },
+    {
+      "id": "review-explicit-standalone",
+      "prompt": "このファイルを対象に単発QAレビューをしてください: docs/change.md",
+      "expected_trigger": true,
+      "reason": "対象を指定して単発QAレビューを明示依頼している。"
+    },
+    {
+      "id": "review-generic-code-review",
+      "prompt": "このコードを一般的な観点でレビューしてください。",
+      "expected_trigger": false,
+      "reason": "Quality LoopのQAレビュー依頼ではなく一般的なコードレビュー。"
+    },
+    {
+      "id": "review-result-report-only",
+      "prompt": "QMS案件QMS-123のレビュー結果はPASSでした。",
+      "expected_trigger": false,
+      "reason": "結果共有だけでReviewer操作を依頼していない。"
+    }
   ]
 }

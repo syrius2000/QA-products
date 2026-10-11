@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .engine import QualityLoop
 from .errors import QualityLoopError
+from .status_display import render_case_status
 
 
 class JsonArgumentParser(argparse.ArgumentParser):
@@ -60,6 +61,8 @@ def build_parser() -> argparse.ArgumentParser:
     status = subparsers.add_parser("status")
     status.add_argument("--case-id", required=False, default=None)
     status.add_argument("--resume-format", choices=("markdown",))
+    status.add_argument("--format", choices=("json", "text"), default="json")
+    status.add_argument("--lang", choices=("ja", "en"), default="ja")
     return parser
 
 
@@ -164,6 +167,24 @@ def run(argv: list[str] | None = None) -> int:
             result = loop.assess_risk(case_id, read_payload(args.input))
         elif args.command == "adjudicate":
             result = loop.adjudicate(case_id, read_payload(args.input))
+        elif args.command == "status" and args.format == "text":
+            if args.resume_format is not None:
+                raise QualityLoopError(
+                    "incompatible-status-options",
+                    "読み取り専用のtext表示とresume-format作成は同時に実行できません。",
+                    remediation="status --format text と status --resume-format markdown を別々に実行してください。",
+                )
+            result = loop.status(case_id)
+            case = loop.store.load(case_id)
+            case_revision = case.get("case_metadata", {}).get("revision")
+            if case_revision != result.get("case_revision"):
+                raise QualityLoopError(
+                    "revision-conflict",
+                    "状況表示中に案件revisionが更新されました。",
+                    remediation="statusを再実行して最新の案件状態を表示してください。",
+                )
+            print(render_case_status(result, case=case, lang=args.lang))
+            return 0
         else:
             result = loop.status(case_id, resume_format=args.resume_format)
         print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -1,0 +1,30 @@
+{
+  "skill_name": "blind-qa-cycle",
+  "evals": [],
+  "activation_cases": [
+    {
+      "id": "blind-explicit-local-review",
+      "prompt": "blind-qa-cycleのlocalモードでtopic explicit-gate の独立QAを実行してください。",
+      "expected_trigger": true,
+      "reason": "特定モードと対象topicを示して独立QAを明示依頼している。"
+    },
+    {
+      "id": "blind-explicit-prepare",
+      "prompt": "topic explicit-gate のblind QAをprepareしてください。",
+      "expected_trigger": true,
+      "reason": "prepareモードを明示依頼している。"
+    },
+    {
+      "id": "blind-report-only",
+      "prompt": "blind QAの結果はPASSで、Findingはありませんでした。",
+      "expected_trigger": false,
+      "reason": "結果共有だけで次のモードを依頼していない。"
+    },
+    {
+      "id": "blind-openspec-apply-only",
+      "prompt": "OpenSpecのapplyを実行してください。",
+      "expected_trigger": false,
+      "reason": "OpenSpec実装依頼でありblind QAの明示依頼ではない。"
+    }
+  ]
+}

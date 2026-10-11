@@ -1,5 +1,9 @@
 # Reviewer Finding 作成ガイドライン
 
+statusやhandoffで検証状況を説明するときは、case revision、`baseline.target_revision`（評価対象版）、cycleを区別して記録に沿って示す。Finding単位の`verified`／`not-verified`等を案件全体の受入や総合QA Gateへ読み替えず、Owner裁定待ちを独立した状態として保つ。
+
+Final Risk AssessmentのReviewer評価勧告は`accept`＝受入推奨、`accept-with-conditions`＝条件付き受入推奨、`require-remediation`＝修正要求推奨、`defer`＝判断延期推奨として区別し、元コードを保持する。これらはOwner裁定ではない。受入基準別の`PASS`／`FAIL`／`UNVERIFIED`および実行checkの`PASS`／`FAIL`／`NOT_RUN`／`ERROR`を参照する場合も、各対象revision/cycleに結び付け、勧告・Finding結果・Owner判断と混同しない。テキスト表示の既定は日本語、英語の選択は`--lang en`とし、表示だけを切り替える。
+
 ## 1. Findingの必須5要素
 Findingを作成する際は、主観や動機を排除し、以下の5要素を必ず揃えて記述します。
 

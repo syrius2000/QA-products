@@ -15,6 +15,7 @@ from .prompt_log import verbatim_in_log
 from .publish_guard import assert_reachable_from_origin
 from .repair_commit import commit_approved_paths
 from .store import Store, QAError, atomic, digest, fingerprint, header, now, relative, safe_path
+from .status_display import render_status as render_status_text, resolve_assessments
 
 PROMPT_LOG_NAME = "qa-user-prompts.jsonl"
 
@@ -91,6 +92,19 @@ class Workflow:
 
     def status(self, request=None):
         return self.describe(self.store.select(request))
+
+    def status_text(self, request=None, *, lang="ja"):
+        """状態・現サイクル判定・直近の過去判定を読み取り専用で表示する。"""
+        state = self.store.select(request)
+        status = self.describe(state)
+        current, previous = resolve_assessments(state, self.store.select)
+        return render_status_text(
+            status,
+            lang=lang,
+            current_assessment=current,
+            previous_assessment=previous,
+            pending_correction=bool(state.get("pending_correction")),
+        )
 
     def describe(self, s):
         phase = s["phase"]

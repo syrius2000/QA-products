@@ -51,5 +51,37 @@
       "prompt": "クラウドQAではpytestを実行して。pip追加は不要",
       "expected": "固定SHAとcheck契約を確認し、利用可能かつ許可された環境でPython/pytestを実行。runtime・argv・cwd・env・exit code・ログhashを記録し、必須check失敗/未実施をGateへ反映"
     }
+  ],
+  "activation_cases": [
+    {
+      "id": "qa-explicit-request",
+      "prompt": "この変更をQAしてください。対象は現在の作業ツリーです。",
+      "expected_trigger": true,
+      "reason": "QA操作を現在のメッセージで明示依頼している。"
+    },
+    {
+      "id": "qa-status-request",
+      "prompt": "依頼ID QA-123 のQA状況を確認してください。",
+      "expected_trigger": true,
+      "reason": "特定依頼の状況確認を明示依頼している。"
+    },
+    {
+      "id": "qa-explanation-only",
+      "prompt": "QAはどのように進めればよいですか。",
+      "expected_trigger": false,
+      "reason": "手順の説明相談でありQA操作を依頼していない。"
+    },
+    {
+      "id": "qa-result-report-only",
+      "prompt": "独立QAの結果はAC-001から010まで合格でした。",
+      "expected_trigger": false,
+      "reason": "結果共有のみで確認・対応を依頼していない。"
+    },
+    {
+      "id": "qa-openspec-only",
+      "prompt": "OpenSpec change require-explicit-qa-request をverifyしてください。",
+      "expected_trigger": false,
+      "reason": "OpenSpec検証の依頼でありQA Skillの操作依頼ではない。"
+    }
   ]
 }

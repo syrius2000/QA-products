@@ -8,11 +8,13 @@ from .store import QAError
 from . import gitops
 from .workflow import Workflow
 from .legacy import read_legacy
+from .status_display import render_preflight
 
 
 def parser():
     p=argparse.ArgumentParser(description="QA依頼→結果確認→承認後の修正→再QAを案内します")
     p.add_argument('--root',type=Path,default=Path.cwd());p.add_argument('--json',action='store_true',help='Skill内部向けJSON出力')
+    p.add_argument('--lang',choices=('ja','en'),default='ja',help='人向け状況表示の言語（既定: ja）')
     sub=p.add_subparsers(dest='operation',required=True)
     sub.add_parser('preflight',help='Git状態を読み取り専用で確認。変更しない')
     a=sub.add_parser('prepare',help='依頼を準備。commit・pushはしない')
@@ -87,19 +89,25 @@ def execute(a):
 
 def main(argv=None):
     a=parser().parse_args(argv)
+    if a.operation=='status' and not a.json:
+        try:
+            print(Workflow(a.root).status_text(a.request,lang=a.lang))
+            return 0
+        except (QAError,OSError,ValueError,KeyError,TypeError) as e:
+            result={'error':str(e),'next':{'担当':'ユーザーまたはローカル担当','操作':e.action if isinstance(e,QAError) else '入力・環境を確認して再実行してください','理由':str(e),'必要入力':'対象・承認・取得元の不足事項','依頼文':None}};code=2
+            print(f"確認待ち: {result['error']}")
+            n=result['next']
+            for label in ['担当','操作','理由','必要入力']:
+                if n.get(label):print(f"{label}: {n[label]}")
+            return code
     try:result=execute(a);code=0
     except (QAError,OSError,ValueError,KeyError,TypeError) as e:
         result={'error':str(e),'next':{'担当':'ユーザーまたはローカル担当','操作':e.action if isinstance(e,QAError) else '入力・環境を確認して再実行してください','理由':str(e),'必要入力':'対象・承認・取得元の不足事項','依頼文':None}};code=2
     if a.json:print(json.dumps(result,ensure_ascii=False,indent=2))
+    elif 'id' in result:print(Workflow(a.root).status_text(result['id'],lang=a.lang))
+    elif a.operation=='preflight' and 'error' not in result:print(render_preflight(result,lang=a.lang))
     else:
         if 'error' in result:print(f"確認待ち: {result['error']}")
-        if a.operation=='preflight' and 'error' not in result:
-            print(f"Git preflight: {'clean' if result['clean'] else 'dirty'} ／ 実装可能: {'はい' if result['safe_to_implement'] else 'いいえ'}")
-            for key, label in [('repository_root','repo'),('branch','branch'),('head','HEAD'),('upstream','upstream'),('default_branch','既定branch')]:
-                print(f"{label}: {result[key] or '不明'}")
-            for key, label in [('staged','staged'),('unstaged','unstaged'),('untracked','untracked')]:
-                print(f"{label}: {', '.join(result[key]) if result[key] else 'なし'}")
-            print(result['next'])
         if 'id' in result:print(f"依頼 {result['id']} ／ サイクル {result['cycle']} ／ 状況 {result['phase']}")
         n=result.get('next',{})
         if isinstance(n,dict):

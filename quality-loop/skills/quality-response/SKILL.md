@@ -1,6 +1,7 @@
 ---
 name: quality-response
-description: 明示されたQuality Loop案件で、statusがnext_role=implementerかつnext_action=submit-planまたはsubmit-responseを示す場合だけ使用する。一般的な回答作成、一般的なQA、OpenSpec案件一般、レビュー、独立検証、Owner裁定、自己クローズには使用しない。closed変更は情報の有無にかかわらずRole外として拒否する。
+description: >
+  ユーザーが現在のメッセージで、特定のQuality Loop案件の実装計画またはFinding応答の提出を明示的に依頼した場合だけ使用する。正例: 「QMS案件のsubmit-planを進めて」「このFindingへのresponseを提出して」。一般的な回答・QA相談、QA結果の共有だけ、OpenSpec案件一般、レビュー・独立検証では使用しない。statusがnext_role=implementerかつnext_action=submit-planまたはsubmit-responseの場合だけ操作し、Owner裁定・自己クローズを拒否する。
 version: "1.4.0"
 ---
 
@@ -17,11 +18,15 @@ Findingを改変せず、許可境界内で改善を前進させ、Reviewerが�
 
 ## 最優先のRole境界
 
+状態説明では工程・次のRoleとFindingごとのDispositionを分ける。提出内容は対象revisionとcycleに結び付けて説明する。`accepted`は指摘への合意、`fix-submitted`は修正とEvidenceの提出を表すだけで、QA GateのPASSや案件受入を意味しない。
+
 - `closed`、受入、却下、Reviewer検証を求められても、案件情報の有無にかかわらずRole外操作として拒否する。
 - 「情報が揃えばImplementerがクローズできる」と案内しない。クローズ可否は常にOwnerへ戻す。
 - Evidence付き反論は`disagreed-with-evidence`（Planでは`disagree-with-evidence`）として提出し、次工程をReviewerの`verify`または`review-plan`にする。
 
 ## 手順
+
+人向け状態説明は日本語を既定とする。正式案件CLIのテキスト表示では`status --format text --lang en`を選択でき、既定JSONと保存状態は変わらない。case revision、`baseline.target_revision`（評価対象版）、cycleを区別して読み、再開用Markdownの工程・担当・操作ラベルと元の状態コードを併せて確認する。Reviewerの評価勧告、ImplementerのDisposition、Owner裁定は別の記録であり、`accepted`、`accepted-with-risk`、`rejected`、`held`を同じ完了状態として扱わない。
 
 1. `status`を実行し、案件ID、revision、`next_role`、`next_action`、handoff ID、実装許可を確認する。
 2. `next_role`が`implementer`でなければ変更せず停止し、表示された次Roleを案内する。

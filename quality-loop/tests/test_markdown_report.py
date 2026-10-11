@@ -304,7 +304,9 @@ class MarkdownReportTest(unittest.TestCase):
             has_reviewed=True,
         )
         self.assertIn("🟢", color)
-        self.assertIn("受入完了", color)
+        self.assertIn("Owner受入確定", color)
+        self.assertNotIn("安全", color)
+        self.assertIn("安全性の追加保証を意味しません", reason)
         self.assertNotIn("🔴", color)
 
     def test_terminal_accepted_with_risk_is_yellow_not_red(self) -> None:
@@ -318,15 +320,150 @@ class MarkdownReportTest(unittest.TestCase):
             has_reviewed=True,
         )
         self.assertIn("🟡", color)
-        self.assertIn("条件付き受入承認済み", color)
+        self.assertIn("残余リスク付き受入確定", color)
+        self.assertIn("残余リスクを受容しました", reason)
         self.assertNotIn("🔴", color)
+
+    def test_resume_markdown_localizes_stage_handoff_and_reviewer_recommendation(self) -> None:
+        case = {
+            "case_metadata": {
+                "case_id": "QMS-RESUME-01",
+                "revision": 5,
+                "status": "reviewer-final-assessment",
+                "owner": "owner-001",
+                "cycle_count": 3,
+                "cycle_limit": 3,
+                "last_operation": "verify",
+            },
+            "baseline": {
+                "purpose": "残余課題の評価",
+                "targets": ["src/app.py"],
+                "target_revision": "reviewed-v5",
+            },
+            "implementation_authorization": {"allowed": False, "allowed_targets": []},
+            "findings": [
+                {
+                    "finding_id": "F-GAP-01",
+                    "classification": "evidence-gap",
+                    "severity": "medium",
+                    "observed_fact": "実機確認が未実施",
+                    "required_evidence": "実機ログ",
+                    "status": "unverified",
+                }
+            ],
+            "verifications": [
+                {"finding_id": "F-GAP-01", "result": "unverified", "verification_revision": 5}
+            ],
+            "final_risk_assessments": [
+                {"revision": 5, "overall_recommendation": "defer", "rationale": "実機確認が必要", "residual_risks": []}
+            ],
+            "events": [{"operation": "review"}],
+            "handoff": {
+                "handoff_id": "hnd-resume-01",
+                "next_role": "reviewer",
+                "next_action": "assess-risk",
+            },
+        }
+        report = generate_resume_markdown(case)
+        self.assertIn("現在の状態**: reviewer-final-assessment（QA・確認）", report)
+        self.assertIn("評価対象版 (baseline.target_revision)**: `reviewed-v5`", report)
+        self.assertIn("次の担当**: レビュー担当（reviewer）", report)
+        self.assertIn("次の操作**: 残余リスクの最終評価（assess-risk）", report)
+        self.assertIn("Reviewer評価勧告**: 判断延期推奨（defer）", report)
+        self.assertIn("状態: 未検証 (`unverified`)", report)
+
+        case["case_metadata"]["revision"] = 6
+        case["baseline"]["target_revision"] = "fixed-v6"
+        report = generate_resume_markdown(case)
+        self.assertIn("Reviewer評価勧告**: 未記録（現在版）。過去評価（case Revision 5", report)
+        self.assertIn("対象版・サイクル未特定）: 判断延期推奨（defer）", report)
+
+    def test_resume_markdown_distinguishes_owner_terminal_and_held_decisions(self) -> None:
+        cases = (
+            (
+                "accepted",
+                {"decision": "accepted", "rationale": "全件を確認"},
+                "Ownerが受入を確定",
+                "安全性の追加保証を意味しません",
+            ),
+            (
+                "accepted-with-risk",
+                {
+                    "decision": "accepted-with-risk",
+                    "rationale": "条件を設定して受容",
+                    "conditions": ["月次で監視"],
+                    "residual_risks": [{"finding_id": "F-RISK-01"}],
+                },
+                "残余リスク付き受入確定（accepted-with-risk）",
+                "条件付き受入はリスク解消を意味しません",
+            ),
+            (
+                "rejected",
+                {"decision": "rejected", "rationale": "要件を満たせない"},
+                "却下確定（rejected）",
+                "QA GateのFAILとは別の判断です",
+            ),
+            (
+                "held",
+                {"decision": "held", "rationale": "追加Evidenceが必要"},
+                "保留中（held）",
+                "案件は停止中です",
+            ),
+        )
+        for state, decision, expected_decision, detail in cases:
+            with self.subTest(state=state):
+                is_held = state == "held"
+                case = {
+                    "case_metadata": {
+                        "case_id": f"QMS-{state}",
+                        "revision": 6,
+                        "status": state,
+                        "owner": "owner-001",
+                        "cycle_count": 2,
+                        "cycle_limit": 3,
+                    },
+                    "baseline": {"purpose": "判断の確認", "targets": ["src/app.py"]},
+                    "implementation_authorization": {"allowed": False, "allowed_targets": []},
+                    "findings": [],
+                    "events": [{"operation": "review"}],
+                    "handoff": {
+                        "handoff_id": f"hnd-{state}",
+                        "next_role": "owner" if is_held else None,
+                        "next_action": "adjudicate" if is_held else None,
+                    },
+                    "adjudications": [decision],
+                }
+                report = generate_resume_markdown(case)
+                self.assertIn(expected_decision, report)
+                self.assertIn(detail, report)
+                self.assertIn("状態**: " + state + "（" + ("判断待ち" if is_held else "終了") + "）", report)
+
+    def test_unknown_resume_status_is_not_reported_as_verified_or_safe(self) -> None:
+        color, reason = determine_traffic_light(
+            status="future-status",
+            cycle_count=0,
+            cycle_limit=3,
+            blocking_findings=[],
+            gap_findings=[],
+            has_reviewed=True,
+        )
+        self.assertIn("未定義", color)
+        self.assertIn("工程を特定できません", reason)
+        self.assertNotIn("安全", color)
 
     def test_final_risk_assessment_markdown_renders_all_material_fields(self) -> None:
         """P0-5: final-risk-assessment.md が controls, assumptions, alternatives, proportionality, triggers を網羅表示する"""
         from quality_loop.markdown_report import generate_final_risk_assessment_markdown
 
         case = {
-            "case_metadata": {"case_id": "QMS-RISK-01", "revision": 5, "status": "reviewer-final-assessment"},
+            "case_metadata": {
+                "case_id": "QMS-RISK-01",
+                "revision": 5,
+                "status": "reviewer-final-assessment",
+                "cycle_count": 2,
+                "cycle_limit": 3,
+            },
+            "baseline": {"target_revision": "reviewed-v5"},
             "findings": [
                 {
                     "finding_id": "F-001",
@@ -338,6 +475,7 @@ class MarkdownReportTest(unittest.TestCase):
             ],
             "final_risk_assessments": [
                 {
+                    "revision": 5,
                     "overall_recommendation": "accept-with-conditions",
                     "rationale": "十分なフォールバックがあるため条件付き受入を推奨",
                     "residual_risks": [
@@ -362,6 +500,8 @@ class MarkdownReportTest(unittest.TestCase):
         }
 
         report = generate_final_risk_assessment_markdown(case)
+        self.assertIn("評価結果の対象版・サイクル**: `reviewed-v5` / 2/3", report)
+        self.assertNotIn("現在の対象に対する評価**: 未記録", report)
         self.assertIn("実装済み対策 (Implemented Controls)", report)
         self.assertIn("リトライ機能 (3回)", report)
         self.assertIn("受入前提条件 (Acceptance Assumptions)", report)
@@ -372,6 +512,37 @@ class MarkdownReportTest(unittest.TestCase):
         self.assertIn("これ以上の追加検証は費用対効果が低い", report)
         self.assertIn("再評価トリガー (Reassessment Triggers)", report)
         self.assertIn("遅延アラートが月3回以上発生時", report)
+
+    def test_final_risk_assessment_marks_stale_result_as_historical(self) -> None:
+        from quality_loop.markdown_report import generate_final_risk_assessment_markdown
+
+        case = {
+            "case_metadata": {
+                "case_id": "QMS-RISK-HISTORY",
+                "revision": 6,
+                "status": "reviewer-action",
+                "cycle_count": 3,
+                "cycle_limit": 4,
+            },
+            "baseline": {"target_revision": "fixed-v6"},
+            "findings": [],
+            "final_risk_assessments": [
+                {
+                    "revision": 5,
+                    "overall_recommendation": "defer",
+                    "rationale": "過去の評価",
+                    "residual_risks": [],
+                }
+            ],
+        }
+
+        report = generate_final_risk_assessment_markdown(case)
+        self.assertIn("過去評価（case Revision 5）", report)
+        self.assertIn("評価結果の対象版・サイクル**: 過去評価の対象は特定不能", report)
+        self.assertIn(
+            "現在の対象に対する評価**: 未記録（case Revision 6、対象版 `fixed-v6`、サイクル 3/4）",
+            report,
+        )
 
 
 if __name__ == "__main__":

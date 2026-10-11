@@ -409,8 +409,8 @@ class GitPreflightTests(unittest.TestCase):
             with redirect_stdout(output):
                 exit_code = main(["--root", str(root), "preflight"])
             self.assertEqual(0, exit_code)
-            self.assertIn("Git preflight: clean", output.getvalue())
-            self.assertIn("実装可能: はい", output.getvalue())
+            self.assertIn("Git事前確認: 変更なし", output.getvalue())
+            self.assertIn("実装開始可能: はい", output.getvalue())
 
     def test_path_classification_preserves_product_operational_excluded_and_rename_sides(self):
         from qa_workflow import gitops
@@ -1534,6 +1534,14 @@ class ExecutionContractIntegrationTests(unittest.TestCase):
             corrected.write_text(corrected_text)
             received = workflow.acquire(prepared["id"], body=corrected, revision=updated["revision"])
             self.assertEqual("content_pending", received["phase"])
+            saved_before = workflow.store.read(prepared["state_path"])
+            text = workflow.status_text(prepared["id"])
+            self.assertIn("詳細: 停止: レビュー結果の不備または訂正待ち", text)
+            self.assertIn("操作: 訂正依頼文を渡してください", text)
+            self.assertNotIn("妥当性を確認待ち", text)
+            self.assertIn("渡す文書:\n" + received["next"]["依頼文"], text)
+            self.assertEqual(received, workflow.status(prepared["id"]))
+            self.assertEqual(saved_before, workflow.store.read(prepared["state_path"]))
             self.assertEqual(old_hash, digest((repository / old_path).read_bytes()))
             accepted = workflow.confirm_content(prepared["id"], "訂正版の対象・基準を照合した", "Owner")
             self.assertEqual("reviewed", accepted["phase"])

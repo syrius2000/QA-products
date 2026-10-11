@@ -23,5 +23,31 @@
         "Reviewer検証用の次工程handoffを示す"
       ]
     }
+  ],
+  "activation_cases": [
+    {
+      "id": "response-explicit-plan",
+      "prompt": "QMS案件QMS-234のsubmit-planを進めてください。statusはnext_role=implementer、next_action=submit-planです。",
+      "expected_trigger": true,
+      "reason": "該当案件の実装計画提出を明示依頼し、Role条件も満たす。"
+    },
+    {
+      "id": "response-explicit-finding",
+      "prompt": "QMS案件QMS-234のF-02へのresponseを提出してください。statusはnext_role=implementer、next_action=submit-responseです。",
+      "expected_trigger": true,
+      "reason": "Finding応答提出を明示依頼し、Role条件も満たす。"
+    },
+    {
+      "id": "response-advice-only",
+      "prompt": "Findingへの返事はどのように書けばよいですか。",
+      "expected_trigger": false,
+      "reason": "一般的な説明相談で提出操作を依頼していない。"
+    },
+    {
+      "id": "response-report-only",
+      "prompt": "QMS案件QMS-234のF-02は修正済みです。",
+      "expected_trigger": false,
+      "reason": "進捗共有だけでresponse提出を依頼していない。"
+    }
   ]
 }

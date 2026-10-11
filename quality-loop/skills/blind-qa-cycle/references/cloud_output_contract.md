@@ -1,5 +1,11 @@
 # Cloud QA成果物契約
 
+人向けの状況説明では日本語を既定とし、`lang=en`は表示語彙だけを選ぶ。Gateは`03_machine.json`の`gate`と`STATUS.md`の単一語が一致する既存値のまま示し、評価結果にはinvite記載のReviewed SHAとCycleを併記する。未記録・未実施の結果を生成せず、前cycleのGateは現cycleの結果として再利用しない。
+
+表示工程は「準備」「QA・確認」「修正」「判断待ち」「終了」の5種類から、invite、STATUS、machine記録、レビュー・タスクと明示された次操作を根拠に選ぶ。Baseline/Reviewedや必須checkの不足、成果物・契約の不一致、保留、未解決Findingは一般工程より先に停止理由として説明し、必要入力・次担当・次操作を記録の範囲で示す。不明または矛盾した記録は確認待ちとし、終了・成功・Owner受入を推測しない。Gate、受入基準別判定、実行check結果、工程は別々に表示する。
+
+人向けには受入基準別の`PASS`＝基準充足、`FAIL`＝基準未達、`UNVERIFIED`＝未検証、実行checkの`PASS`＝実行成功、`FAIL`＝失敗、`NOT_RUN`＝未実施、`ERROR`＝実行エラーと説明し、原コードを保持する。必須checkの`NOT_RUN`／`ERROR`を完了扱いにせず、総合Gateの既存値と混同しない。英語選択は表示語彙のみを変え、モード、Gate、cycle記録、書込み範囲を変えない。
+
 ## 適用範囲
 
 この文書の4成果物契約は、明示的に `blind-qa-cycle` を起動した監査cycle専用です。`quality-qa` の通常QAでは、このファイルはReviewer向け参照資材とし、許可される出力は依頼に示す単一のQA Markdownだけです。通常QAのレビュー本文は、全受入基準の照合、実行checkのEvidence、Findingと実施側タスクリスト、未検証事項、最終Gateを一つに含めます。4ファイルを作らず、依頼に示された保存先だけを書き換えます。

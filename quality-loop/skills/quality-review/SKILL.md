@@ -1,6 +1,7 @@
 ---
 name: quality-review
-description: 明示されたQuality Loop案件でReviewer工程（review、review-plan、verify、assess-risk）を行う場合、またはcase情報がない状態で明示された対象から単発QAのreview-standalone bootstrapを開始する場合に使用する。一般的なコードレビュー、一般的なQA、OpenSpec案件一般、回答代筆、実装、Owner裁定、自己クローズには使用しない。申告外変更はundeclared-change-detectedとして拒否する。
+description: >
+  ユーザーが現在のメッセージでreview、review-plan、verify、assess-risk、または対象指定の単発QAレビューを明示的に依頼した場合だけ使用する。正例: 「QMS案件のreviewを実行して」「この対象を単発QAレビューして」。一般的なコードレビュー・QAの相談、QA結果の共有だけ、OpenSpec案件一般では使用しない。Quality Loop案件では登録済みcaseのReviewer Roleとnext_actionを確認し、Owner裁定・実装・自己クローズを行わない。申告外変更はundeclared-change-detectedとして拒否する。
 version: "1.5.0"
 ---
 
@@ -16,12 +17,16 @@ version: "1.5.0"
 
 ## 最優先の判定境界
 
+状態表示は工程・担当・操作と検証結果を分けて読む。Finding別結果は記録された対象revisionとcycleに結び付け、別サイクルの結果を現対象の検証済み状態として扱わない。`verified`等のFinding結果はReviewerの技術評価であり、Ownerの`accepted`や案件の`closed`を意味しない。
+
 - Reviewerの検証結果語彙は `remediated`、`verified`、`not-verified`、`unverified`、`finding-withdrawn`、`converted-to-suggestion`、`not-applicable` に従う。
 - Implementerの反証Evidenceが正当な場合、Reviewerは `finding-withdrawn` や `converted-to-suggestion` を選択して自己訂正する。
 - 申告外変更を観測した場合は`undeclared-change-detected`で拒否する。理由説明だけで許容せず、変更を戻すかImplementer提出を訂正させる。
 - `accepted`、`rejected`、`不受入`、`closed`をReviewer判定として使わない。
 
 ## 手順
+
+人向けの状態説明は日本語を既定とし、テキスト表示では`status --format text --lang en`を選べる。`status`の既定JSONと状態値は変えない。状態表示・再開用Markdownではcase revisionと`baseline.target_revision`（評価対象版）、cycleを分けて確認し、Finding検証結果は記録された対象version/cycleと結び付けて読む。`status --resume-format markdown`で再開用Markdownを作る場合、状態コードと5工程、次のRole/操作、Reviewer評価勧告を別項目として読む。日本語ラベルの後ろに機械コードを保持する。Finding別の検証値やFinal Risk AssessmentはReviewerの技術評価であり、Owner裁定・案件受入とは区別する。`accepted`、`accepted-with-risk`、`rejected`、`held`は異なるOwner判断として表示される。
 
 1. `status`を実行し、案件ID、revision、`next_role`、`next_action`、handoff IDを確認する。
 2. `next_role`が`reviewer`でなければ変更せず停止し、表示された次Roleを案内する。

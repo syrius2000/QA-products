@@ -1,5 +1,9 @@
 # Implementer 回答・修正ガイドライン
 
+状況や提出結果を説明するときは、case revision、`baseline.target_revision`（評価対象版）、cycleを区別して記録に沿って示す。DispositionはImplementerの回答種別であり、Reviewerの検証結果やOwnerの受入勧告へ置き換えない。
+
+Reviewerの総合QA Gate、受入基準別`PASS`／`FAIL`／`UNVERIFIED`、実行checkの`PASS`／`FAIL`／`NOT_RUN`／`ERROR`は、添付されたQA Evidenceの判定領域でありImplementerのDispositionではない。コードを保持し、対象revisionとcycleを確かめてから説明する。正式案件の人向け状態表示は日本語が既定で、英語はCLIの`status --format text --lang en`で選ぶ。言語選択はRole、許可、状態遷移を変えない。
+
 ## 1. 5つの回答種別 (Disposition)
 Implementerは、Findingごとに以下のいずれか1つを誠実に選択して回答します。
 

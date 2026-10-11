@@ -658,7 +658,9 @@ class StatusTest(unittest.TestCase):
             self.assertEqual("create-case", result["last_completed_operation"])
             resume_path = Path(temp_dir) / "QMS-0001" / "resume.md"
             self.assertTrue(resume_path.is_file())
-            self.assertIn("**次の操作**: review", resume_path.read_text(encoding="utf-8"))
+            resume = resume_path.read_text(encoding="utf-8")
+            self.assertIn("**次の操作**: レビュー（review）", resume)
+            self.assertIn("**評価対象版 (baseline.target_revision)**: `r1`", resume)
 
 
 if __name__ == "__main__":

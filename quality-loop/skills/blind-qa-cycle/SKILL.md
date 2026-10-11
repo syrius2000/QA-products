@@ -1,14 +1,7 @@
 ---
 name: blind-qa-cycle
 description: >
-  Explicit-only independent blind QA lifecycle for local peer agents or
-  GitHub/cloud agents. Supports prepare, checkpoint, cloud (Reviewed+invite+topic push+path),
-  cloud re-qa, local, invite, respond, review (cloud may commit+push QA artifacts only),
-  ingest (requester writes back review artifacts), and human note. Artifacts under
-  docs/Artifacts/qa_cycles/<topic>/c<N>/. Use ONLY when explicitly invoked.
-  Never auto-run after commits or OpenSpec apply. Does not Owner-decide, fix
-  product code, or merge to main. Topic-only push only for cloud/cloud re-qa/
-  cloud review artifacts/ingest.
+  ユーザーが現在のメッセージで独立blind QAの特定モードを明示的に依頼した場合だけ使用する。正例: 「このtopicをprepareして」「この招待の独立reviewを実行して」「blind QAを再実行して」。結果やQA文書の共有だけ、QAの説明相談、一般的なコードレビュー、OpenSpec applyだけでは使用しない。prepare、checkpoint、cloud、cloud re-qa、local、invite、respond、review、ingest、human noteを支援する。commit後やOpenSpec apply後に自動起動しない。Owner裁定、製品コード修正、mainへのmergeを行わない。topic限定pushはcloud系モードとQA成果物に限る。
 disable-model-invocation: true
 ---
 
@@ -55,6 +48,22 @@ cleanなtopic branch → prepare (00_plan.mdをYip commit / Baseline確定)
 **実装が先に完了している場合**は、既存のcheckpointまたは前cycleのReviewedをBaselineとして、staged-onlyのReviewed Yip commitから開始する。招待には事後開始とBaseline選定理由を記録する。
 
 QA終結はOwner受入や`main`/`master`へのmergeを意味しない。merge・配備・外部Skill配置は別の判断・承認工程とする。
+
+状況と結論を人に説明する際は日本語を既定とし、必要なら`lang=ja`、`lang=en`または単独の`en`を表示指定として使う。言語指定は表示語彙だけを選び、`prepare`、`checkpoint`、`cloud`、`review`、`respond`、`ingest`等の操作モード、権限、保存記録を変えない。工程は記録から「準備」「QA・確認」「修正」「判断待ち」「終了」のいずれかで説明し、Gateとは別欄にする。Gateは`PASS`／`HOLD`／`FAIL`／`INCONCLUSIVE`の既存4値を保つ。結果には依頼のReviewed SHAとcycleを結び付け、未実施なら未記録、以前のcycleの結果なら過去結果と明記する。
+
+### 状況表示の根拠と優先順位
+
+`00_plan.md`、`00_invite.md`、`STATUS.md`、`03_machine.json`、cycle内のレビュー・タスク記録と明示された次の依頼を読み、工程・停止理由・次担当・次操作を記録に沿って説明する。モード名やGateだけから未記録の完了・承認を推測しない。
+
+| 工程 | 記録から確認する状況 |
+| :--- | :--- |
+| 準備 | 受入基準・必須checkの固定、Baseline/Reviewedの確定、依頼・招待の準備 |
+| QA・確認 | 独立Reviewerの確認中、必須確認待ち、出力契約・SHA・Evidenceの照合中 |
+| 修正 | Findingに対するImplementerの応答、許可された修正、修正後の再QA準備 |
+| 判断待ち | 入力・SHA・契約の不足や矛盾、未検証理由、Requester/Ownerの判断が残る状態 |
+| 終了 | このcycleの指定されたレビュー・応答・取込が記録上完了した状態。Gate値と残余Findingは併記し、Owner受入・merge・配備を意味しない |
+
+公開拒否、Baseline/Reviewed SHA不足、成果物欠落・契約不一致、必須checkの`NOT_RUN`／`ERROR`、保留理由、未解決Findingを停止理由として先に表示する。停止理由、再開に必要な入力、次の担当と操作をそれぞれ記録から引用または要約する。担当・操作が決められない場合は「確認待ち」とし、Reviewer、Implementer、Requester/Ownerのいずれかを推測で割り当てない。記録が矛盾する場合は優先順位を作らず、矛盾した項目と必要な確認を示す。
 
 ## Audience (local vs cloud)
 

@@ -69,6 +69,59 @@ class CliOutcomeTest(unittest.TestCase):
         self.assertEqual(2, code)
         self.assertIn("error", json.loads(out))
 
+    def test_status_defaults_to_japanese_and_allows_english_codes(self):
+        _, created = call(["--root", str(self.repository), "--json", "prepare",
+                           "--purpose", "対象製品をQAする", "--criterion", "対象製品を読むこと",
+                           "--target", "src/product.py", "--implementer", "Implementer",
+                           "--author", "Codex (GPT-6)", "--audience", "local", "--repository", "example/repo"])
+        request_id = json.loads(created)["id"]
+        _, japanese = call(["--root", str(self.repository), "status", "--request", request_id])
+        _, english = call(["--root", str(self.repository), "--lang", "en", "status", "--request", request_id])
+        self.assertIn("工程 準備", japanese)
+        self.assertIn("評価対象版:", japanese)
+        self.assertIn("現在サイクルのQA判定: なし（未記録）", japanese)
+        self.assertIn("状況 prepared", english)
+        self.assertIn("Current-cycle QA result: none", english)
+
+    def test_preflight_defaults_to_japanese_git_state_labels(self):
+        code, out = call(["--root", str(self.repository), "preflight"])
+        self.assertEqual(0, code)
+        self.assertIn("Git事前確認: 変更なし", out)
+        self.assertIn("ステージ済み: なし", out)
+        self.assertNotIn("clean", out)
+        self.assertNotIn("dirty", out)
+
+    def test_preflight_english_selection_keeps_existing_vocabulary(self):
+        code, out = call(["--root", str(self.repository), "--lang", "en", "preflight"])
+        self.assertEqual(0, code)
+        self.assertIn("Git preflight: clean", out)
+
+    def test_lang_does_not_change_json_or_saved_request(self):
+        _, created = call(["--root", str(self.repository), "--json", "prepare",
+                           "--purpose", "対象製品をQAする", "--criterion", "対象製品を読むこと",
+                           "--target", "src/product.py", "--implementer", "Implementer",
+                           "--author", "Codex (GPT-6)", "--audience", "local", "--repository", "example/repo"])
+        request_id = json.loads(created)["id"]
+        from qa_workflow.workflow import Workflow
+        workflow = Workflow(self.repository)
+        state_path = workflow.store.select(request_id)["state_path"]
+        before = workflow.store.read(state_path)
+        git_before = run_git(self.repository, "status", "--porcelain=v1", "--untracked-files=all")
+        _, json_ja = call(["--root", str(self.repository), "--json", "status", "--request", request_id])
+        _, json_en = call(["--root", str(self.repository), "--json", "--lang", "en", "status", "--request", request_id])
+        self.assertEqual(json.loads(json_ja), json.loads(json_en))
+        self.assertEqual(before, workflow.store.read(state_path))
+        _, text_ja = call(["--root", str(self.repository), "status", "--request", request_id])
+        _, text_en = call(["--root", str(self.repository), "--lang", "en", "status", "--request", request_id])
+        self.assertIn("現在サイクルのQA判定: なし（未記録）", text_ja)
+        self.assertIn("Current-cycle QA result: none", text_en)
+        self.assertEqual(before, workflow.store.read(state_path))
+        self.assertEqual(git_before, run_git(self.repository, "status", "--porcelain=v1", "--untracked-files=all"))
+
+    def test_invalid_language_is_rejected(self):
+        with self.assertRaises(SystemExit):
+            parser().parse_args(["--lang", "fr", "status"])
+
     def test_json_error_carries_the_next_step_for_the_user(self):
         _, out = call(["--root", str(self.repository), "--json", "status"])
         next_step = json.loads(out)["next"]
@@ -85,6 +138,31 @@ class CliOutcomeTest(unittest.TestCase):
         self.assertIn("サイクル 1", out)
         self.assertIn("担当:", out)
         self.assertIn("必要入力:", out)
+        from qa_workflow.workflow import Workflow
+        status = Workflow(self.repository).status("QA-001")
+        self.assertIn("渡す文書:\n" + status["next"]["依頼文"], out)
+
+    def test_invalid_review_cli_preserves_all_issues_and_invitation(self):
+        from qa_workflow.workflow import Workflow
+        _, out = call(["--root", str(self.repository), "--json", "prepare",
+                       "--purpose", "対象製品をQAする", "--criterion", "対象製品を読むこと",
+                       "--target", "src/product.py", "--implementer", "Implementer",
+                       "--author", "Codex (GPT-6)", "--audience", "local", "--repository", "example/repo"])
+        request_id = json.loads(out)["id"]
+        body = self.repository / "invalid_review.md"
+        body.write_text("# 不備のあるレビュー\n", encoding="utf-8")
+        workflow = Workflow(self.repository)
+        acquired = workflow.acquire(request_id, body=body)
+        self.assertEqual("invalid", acquired["phase"])
+        self.assertTrue(acquired["issues"])
+        before = workflow.store.select(request_id)
+        for lang in ("ja", "en"):
+            code, output = call(["--root", str(self.repository), "--lang", lang, "status", "--request", request_id])
+            self.assertEqual(0, code)
+            for issue in acquired["issues"]:
+                self.assertIn("確認事項: " + issue, output)
+            self.assertEqual(len(acquired["issues"]), output.count("確認事項: "))
+            self.assertEqual(before, workflow.store.select(request_id))
 
     def test_prepare_with_an_exclusion_records_the_reason(self):
         (self.repository / "src/extra.py").write_text("extra\n")
