@@ -2,6 +2,16 @@
 
 このリポジトリは、Quality Loopの開発正本、検証、設計判断、開発経緯を保存する場所です。実務者が利用する成果物は、別リポジトリの[Productivity-Skill](https://github.com/syrius2000/Productivity-Skill)へ確定版として取り込みます。
 
+## 更新のお知らせ（2026-10-11）
+
+QA関連スキル4件の起動条件と、QA状況表示を更新しました。変更はコミット `dd0f43e` として`master`へ反映済みです。
+
+- `quality-qa`、`quality-review`、`quality-response`、`blind-qa-cycle`は、ユーザーが現在のメッセージでQA操作を明示的に依頼した場合にだけ使用します。QAの相談・説明、結果や文書の共有、OpenSpecのverify/applyだけでは起動しません。
+- QA状況表示は日本語を既定とし、工程、判定、対象版、サイクル、過去の結果を区別します。対応する開発用Skillの説明は [`quality-loop/skills/`](quality-loop/skills/) を参照してください。
+- 独立再QAでは固定基準10件がすべて合格し、初回指摘3件の解消を確認しました。332テストとsubtest 125件が成功し、OpenSpec strict検証もvalidでした。
+
+この告知とスキル変更はQA-products内の開発正本に関するものです。Productivity-Skillなどリポジトリ外への配置・同期は別工程です。
+
 別PCで開発を再開する場合は、clone後にまず[開発引継ぎメモ](memo.md)を確認してください。現在の作業branch、開始手順、残課題、検証状況を記録しています。
 
 ```mermaid
