@@ -1,7 +1,7 @@
 # QA状態表示ChangeのArtifactアーカイブ
 
 created: 2026-10-11 20:00 (JST)
-update: 2026-10-11 20:00 (JST)
+update: 2026-10-11 20:14 (JST)
 author: Codex (GPT-6)
 
 ## 対象と結論
@@ -40,7 +40,7 @@ QA状態表示Change `simplify-qa-status-display` の計画、実装報告、基
 ## 未解決事項と引継ぎ
 
 - O-01とO-02を扱う場合は、それぞれの表示・案内範囲を確定して別Changeで検討する。
-- blind-qa-cycleの独立QA Cycle 1は本アーカイブ対象外です。FAILと未完了タスクがあるため、[Cycle 1の状態](../../../../docs/Artifacts/qa_cycles/unify-blind-qa-cycle/c1/STATUS.md)および[修復タスク](../../../../docs/Artifacts/qa_cycles/unify-blind-qa-cycle/c1/02_tasks.md)を元の場所で継続する。
+- blind-qa-cycleの独立QA Cycle 1は後日別途アーカイブされました。Gate `FAIL`と未解決Finding、追加の独立QAを省略する利用者判断は[Cycle 1アーカイブ](../unify-blind-qa-cycle/archived_summary_007_1011.md)を参照してください。元のQA記録は変更していません。
 - アーカイブした文書に記載されたテスト結果・仕様判定は当時の履歴であり、現行環境で再検証したとの主張ではない。
 
 ## 元文書と復元情報

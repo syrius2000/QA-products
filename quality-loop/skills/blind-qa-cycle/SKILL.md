@@ -45,7 +45,7 @@ cleanなtopic branch → prepare (00_plan.mdをYip commit / Baseline確定)
                    → note → 監査cycle終結
 ```
 
-**実装が先に完了している場合**は、既存のcheckpointまたは前cycleのReviewedをBaselineとして、staged-onlyのReviewed Yip commitから開始する。招待には事後開始とBaseline選定理由を記録する。
+**実装が先に完了している場合**は、通常の事後開始では既存checkpointをBaselineとする。`cloud`から明示起動し、同じ操作で新しいtopic branchを作る場合に限り、cloud手順の条件をすべて満たしたbranch開始前HEADを代替Baselineにできる。Re-QAでは前cycleのReviewedをBaselineとする。localやplain `invite`ではbranch-start例外を使わない。招待には事後開始とBaseline選定理由を記録する。
 
 QA終結はOwner受入や`main`/`master`へのmergeを意味しない。merge・配備・外部Skill配置は別の判断・承認工程とする。
 
@@ -213,7 +213,7 @@ Used by `cloud` / `local` / plain invite. Plain invite does **not** create WIP c
 2. Resolve **Audience** (`local` | `cloud`). Ask once if missing (unless entered via shortcut).
 3. For bare `invite` with Audience=`cloud` **without** going through Mode cloud's commit/push pipeline: run remote visibility gate only; on FAIL print push help and do not claim path handoff; on SUCCESS may emit path if `00_invite.md` is already on `origin/<branch>`, else full body.
 4. For `audience=local`: set `Remote visibility: local-only`. Skip origin ancestor check (optional warn if unpushed).
-5. Choose `topic` and start mode. Reuse the matching prepared plan's cycle directory and preserve its exact criteria when one unambiguous unused plan exists; otherwise use the next unused cycle and require a valid checkpoint Baseline for `post-change`. Re-QA uses the previous cycle's Reviewed SHA and a new cycle. Never overwrite an existing invite or frozen cycle.
+5. Choose `topic` and start mode. Reuse the matching prepared plan's cycle directory and preserve its exact criteria when one unambiguous unused plan exists; otherwise use the next unused cycle. For `post-change`, require a valid checkpoint Baseline, except when this invite is entered through Mode `cloud` and that mode has already verified every `branch_start` condition in step 3. The exception applies only to that explicit cloud operation; plain `invite` and `local` require a checkpoint. Re-QA uses the previous cycle's Reviewed SHA and a new cycle. Never overwrite an existing invite or frozen cycle.
 6. Collect **Requester notes** (or `(none)`). Do not rewrite focus pack bodies.
 7. Select focus pack id(s).
 8. Read [`references/cloud_output_contract.md`](references/cloud_output_contract.md). For cloud path handoff, the reviewer loads `00_invite.md` from git; still keep the invite file self-contained (inline focus criteria and output templates inside `00_invite.md`).

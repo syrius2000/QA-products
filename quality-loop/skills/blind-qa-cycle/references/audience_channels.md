@@ -1,6 +1,6 @@
 # Audience channels — local vs cloud
 
-One skill (`blind-qa-cycle`), one Output dir contract. Choose **Audience** at invite time (or via shortcuts). `prepare` records criteria before implementation; `cloud` or `local` later finalizes the invite for the same prepared cycle. When implementation is already complete, use the checkpoint-based post-change route and record that start mode in the invite.
+One skill (`blind-qa-cycle`), one Output dir contract. Choose **Audience** at invite time (or via shortcuts). `prepare` records criteria before implementation; `cloud` or `local` later finalizes the invite for the same prepared cycle. For completed implementation, the normal post-change Baseline is the matching checkpoint. Only an explicit `/blind-qa-cycle cloud` operation that creates a new topic branch itself may use the pre-switch branch-start HEAD instead, and only after every condition in the cloud procedure is verified. Local and plain-invite routes still require a checkpoint. Re-QA uses the previous cycle's Reviewed SHA.
 
 ## Shortcuts
 
@@ -8,9 +8,9 @@ One skill (`blind-qa-cycle`), one Output dir contract. Choose **Audience** at in
 | :--- | :--- | :--- |
 | `/blind-qa-cycle prepare` | (n/a) | `00_plan.md` only → Yip plan Baseline; no invite, review, fetch, or push. |
 | `/blind-qa-cycle checkpoint` | (n/a) | Baseline local commit only. No invite, no push. |
-| `/blind-qa-cycle cloud` | `cloud` | Use matching prepared plan as Baseline, otherwise checkpoint; Reviewed Yip → final invite → invite commit → **topic-only push** → **path handoff**. |
+| `/blind-qa-cycle cloud` | `cloud` | Use matching prepared plan as Baseline; otherwise use checkpoint. If none exists, only this same explicit operation may use its captured pre-switch HEAD when it creates the new topic branch and verifies all `branch_start` conditions. Then Reviewed Yip → final invite → invite commit → **topic-only push** → **path handoff**. |
 | `/blind-qa-cycle cloud re-qa` | `cloud` | Baseline = previous cycle Reviewed; then same as cloud one-shot. |
-| `/blind-qa-cycle local` | `local` | Use matching prepared plan as Baseline, otherwise checkpoint; skip origin check and push. Full body; do not paste to GitHub Cloud. |
+| `/blind-qa-cycle local` | `local` | Use matching prepared plan as Baseline, otherwise checkpoint (no `branch_start` exception); skip origin check and push. Full body; do not paste to GitHub Cloud. |
 | `/blind-qa-cycle invite` | ask if omitted | Full invite flow; no push unless via `cloud`. |
 | `/blind-qa-cycle review` | from invite | Cloud: write 4 artifacts then **artifact-only** commit+topic push (or return bodies for ingest). |
 | `/blind-qa-cycle ingest` | (n/a) | Requester writes returned 4 files → artifact commit+topic push. |
@@ -46,7 +46,7 @@ One skill (`blind-qa-cycle`), one Output dir contract. Choose **Audience** at in
 - If cloud **review** cannot push: return four file bodies; requester runs `/blind-qa-cycle ingest`. Do not claim origin persistence.
 - If cloud **invite** push/preflight fails: keep local commits; show topic-only push help; emit full invite body as fallback; do not claim path handoff.
 - Invite must set `Remote visibility: pushed` when invite preflight succeeds.
-- Typical flow: `prepare` → implement → stage → `/blind-qa-cycle cloud` → Cloud opens the path → **review** writes+pushes QA artifacts (or ingest) → Finding response and re-QA → cycle closure. If work is already implemented, use `checkpoint` instead of `prepare`. Later merge to `main` is an Owner decision outside this cycle.
+- Typical flow: `prepare` → implement → stage → `/blind-qa-cycle cloud` → Cloud opens the path → **review** writes+pushes QA artifacts (or ingest) → Finding response and re-QA → cycle closure. If work is already implemented, use a checkpoint instead of `prepare` for the normal post-change route. The only exception is a new topic branch created by the same explicit cloud operation with all `branch_start` conditions verified; local and plain-invite routes still require a checkpoint. Later merge to `main` is an Owner decision outside this cycle.
 
 ## review when SHA missing
 

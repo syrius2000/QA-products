@@ -19,6 +19,7 @@ author: Codex (GPT-5)
 ## 現行Quality Loopの要約
 
 - [完了済みArtifact整理統合アーカイブ](archived_summary_004_0906.md): 2026-08-24〜2026-09-06の完了済み計画・報告・QA・同期記録
+- [blind-qa-cycle Cycle 1のアーカイブ](qa_workflow/unify-blind-qa-cycle/archived_summary_007_1011.md): Gate `FAIL`と未解決Findingを保持し、利用者判断で独立再QAを省略した記録
 - [QA状態表示ChangeのArtifactアーカイブ](qa_workflow/qa-status-display/archived_summary_006_1011.md): 2026-10-11の計画・実装報告・基準・独立QAの6文書
 - [QAループ統合Artifactsのアーカイブ記録](archived_summary_005_1005.md): 2026-10-04〜2026-10-05のArtifact 39件を整理。当時はArtifacts直下にPlan 040を保持
 - [実装履歴統合アーカイブ](archived_summary_003_0831.md): Plan 011〜016と初期実装・QA・Owner裁定

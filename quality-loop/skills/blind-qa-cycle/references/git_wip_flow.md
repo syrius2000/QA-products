@@ -1,6 +1,6 @@
 # QA開始前準備と既存ブランチのWIPコミット連携
 
-この手順は、既存の非default topic branchで事前にQA計画を固定する経路と、事前計画なしで実装済み差分をQAへ渡す経路を定めます。`prepare`の計画commitまたは`checkpoint` commitがBaselineとなり、後続Reviewed commitまでの差分だけを独立QAへ渡します。モード名は **`checkpoint` のまま**です（`setup`へリネームしない）。
+この手順は、既存の非default topic branchで事前にQA計画を固定する経路と、事前計画なしで実装済み差分をQAへ渡す経路を定めます。Baselineは、準備済みcycleでは対応する`prepare`計画commit、通常の事後開始では`checkpoint` commitです。唯一の例外として、今回の明示的な`cloud`操作自身が新しいtopic branchを作る場合は、cloud手順の全条件を確認したbranch切替前HEADを使えます。localまたはplain `invite`ではcheckpointを要求します。Re-QAでは前cycleのReviewed SHAを使います。後続Reviewed commitまでの差分だけを独立QAへ渡します。モード名は **`checkpoint` のまま**です（`setup`へリネームしない）。
 
 Git状態に触れる前にread-only preflightを行い、root、branch、HEAD、upstream/default branch、staged・unstaged・untracked pathを記録します。既存変更をstage、stash、reset、clean、restoreで整理しません。今回対象・無関係・不明を分類し、対象外staged変更、unstaged/untracked混在、default branch、branchまたはbaseline不明ならcommitせず、人が指定した整理後に再確認します。clean基準点は別の隔離worktreeで作るか、対象WIPだけを明示されたcheckpoint契約で固定します。
 
@@ -16,7 +16,7 @@ Git状態に触れる前にread-only preflightを行い、root、branch、HEAD�
 どちらも Baseline..Reviewed の差分が審査範囲
 ```
 
-事前準備経路では、計画commitがBaseline treeを作るため`00_plan.md`はレビュー差分へ含まれません。実装後のfinal inviteは同じcycleに追加し、BaselineとReviewedの完全SHAを固定します。事後開始では最新の同topic `Blind-QA-Checkpoint`をBaselineにし、見つからなければ停止します。
+事前準備経路では、計画commitがBaseline treeを作るため`00_plan.md`はレビュー差分へ含まれません。実装後のfinal inviteは同じcycleに追加し、BaselineとReviewedの完全SHAを固定します。通常の事後開始では最新の同topic `Blind-QA-Checkpoint`をBaselineにし、見つからなければ停止します。ただし、同じ明示`cloud`操作で新しいtopic branchを作成した場合に限り、branch切替前に記録した完全HEAD SHAを代替Baselineにできます。branchはそのSHAから開始し、Reviewedより前に別commitがなく、招待にsource branchと`branch_start`理由を記録することを確認します。これらを満たさない場合はcheckpointなしで進みません。localとplain `invite`にはこの例外を適用しません。Re-QAでは前cycleのReviewed SHAをBaselineとするため、新しいcheckpointは要求しません。
 
 ## `/blind-qa-cycle prepare`
 
@@ -91,10 +91,10 @@ cloud review（または ingest）
 - `prepare`の計画commitは`00_plan.md`だけ、`cloud`のinvite追従commitは`00_invite.md`だけをstageしてよいです。
 - `review` / `ingest` の成果物コミットに限り、Output dir の4ファイルだけをステージしてよいです。
 - index以外に変更がある場合は、対象ファイルを利用者が整理・stageした後に再実行します。
-- ブランチ作成、commit修正、reset、rebase、main マージ、force-pushはこのフローに含めません。
+- ブランチ作成、commit修正、reset、rebase、main マージ、force-pushは通常このフローに含めません。ただし、明示`/blind-qa-cycle cloud`操作自身が新topic branchを作り、上記cloud節の`branch_start`条件をすべて満たす場合に限り、そのbranch作成を許可します。条件外のbranch作成は行いません。
 - QA成果物（invite / review artifacts）はReviewedコミット確定後に作成するため、レビュー対象差分へ混入しません。
 - topicを変えて同じブランチでQAする場合は、新しいtopicのチェックポイントを作ります。
-- 実装前に受入基準を固定できる新規作業では`prepare`を使います。すでに実装済みならcheckpointでBaselineを固定します。Re-QA（`cloud re-qa`）では前回ReviewedをBaselineにできるためcheckpoint再取得は必須ではありません。
+- 実装前に受入基準を固定できる新規作業では`prepare`を使います。すでに実装済みなら通常はcheckpointでBaselineを固定します。唯一、同じ明示`cloud`操作で新topic branchを作り、cloud節の全条件を満たす場合はbranch開始前HEADを使えます。Re-QA（`cloud re-qa`）では前回ReviewedをBaselineにできるためcheckpoint再取得は必須ではありません。
 
 ## Git上の確認
 
