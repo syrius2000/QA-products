@@ -23,7 +23,7 @@ author: Codex (GPT-6)
 | --- | --- |
 | [基準票](qa_acceptance_criteria_001_1011.md) | `c34090dd95bcb51b51a387ffa3e26d2c43b8c4d0c40eea0ed8437fe76e2cc0ec` |
 | [計画書040](implementation_plan_040_1011.md) | `07823805fc1e8014f16745146ab5d7a8b0c60c3366650a74c3f3e726a498ed00` |
-| [規範仕様](../../openspec/changes/simplify-qa-status-display/specs/qa-status-display/spec.md) | `ba38d766052b32e4fa49a3bb6af1ac9a896d27ff4a5f0ddf3167f388d392cd98` |
+| [規範仕様](../../../../../openspec/changes/archive/2026-10-11-simplify-qa-status-display/specs/qa-status-display/spec.md) | `ba38d766052b32e4fa49a3bb6af1ac9a896d27ff4a5f0ddf3167f388d392cd98` |
 | [初回独立QA報告](qa_independent_review_001_1011.md) | `c59a91693f9818e792fa893a513029c7aa7945768c8eb58ab8f61e6dce1a25b7` |
 
 基準票に記載された初回対象ハッシュは過去の対象版として保持し、再QA対象には本書の修正後ハッシュを使用します。受入基準AC-001〜AC-010と規範仕様の版は同一です。

@@ -76,4 +76,4 @@ python3 scripts/sync_productivity_skills.py --dry-run
 
 ## 変更時の境界
 
-大きな変更は、先に日本語の実装計画を作成します。現在の整理作業計画は[implementation_plan_040_1005.md](docs/Artifacts/implementation_plan_040_1005.md)です。QAループ統合の過去計画・報告・QA記録は[統合アーカイブ](docs/Archives/archived_summary_005_1005.md)を参照してください。Productivity-Skillへの同期、既存Skillの上書き、旧資料の移動・削除、commit、remoteへのpushは対象と承認を分けて扱います。
+大きな変更は、先に日本語の実装計画を作成します。進行中のQA関連計画は[Plan 038](docs/Artifacts/implementation_plan_038_1006.md)と[Plan 039](docs/Artifacts/implementation_plan_039_1007.md)、未完了の独立QAは[blind-qa-cycle Cycle 1](docs/Artifacts/qa_cycles/unify-blind-qa-cycle/c1/STATUS.md)を参照してください。完了したQA状態表示Changeの計画・報告・QA記録は[アーカイブ](docs/Archives/qa_workflow/qa-status-display/archived_summary_006_1011.md)に保存しています。QAループ統合の過去記録は[統合アーカイブ](docs/Archives/archived_summary_005_1005.md)を参照してください。Productivity-Skillへの同期、既存Skillの上書き、旧資料の移動・削除、commit、remoteへのpushは対象と承認を分けて扱います。

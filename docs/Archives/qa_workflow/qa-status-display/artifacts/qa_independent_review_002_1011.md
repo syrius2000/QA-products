@@ -45,7 +45,7 @@ author: Claude Code (Claude Opus 5.5)
 
 ### F-01 過去の評価勧告の表示: 解消
 
-- 対象: [quality_loop/status_display.py:60-80](../../quality-loop/quality_loop/status_display.py#L60-L80)。テキスト表示と再開用Markdownが、この共通関数を使うようになりました。
+- 対象: [quality_loop/status_display.py:60-80](../../../../../quality-loop/quality_loop/status_display.py#L60-L80)。テキスト表示と再開用Markdownが、この共通関数を使うようになりました。
 - 方法: 対象版`rev-1`で`accept-with-conditions`を記録しました。その後、Ownerが`rework-requested`と`baseline_update`で対象版を`rev-2`へ変更しました。正本と2つのruntimeで同じ手順を実行し、3つの出力は完全に一致しました。
 - 期待: 過去の勧告を、現在版`rev-2`の結果として表示しないこと。
 - 観測: 評価直後は、勧告に対象版`rev-1`、サイクル3、case Revision 9が付きました。`rev-2`への変更後は、日本語テキスト・英語テキスト・再開用Markdownのいずれも、現在版は未記録で、勧告は過去評価と表示しました。
@@ -58,13 +58,13 @@ Reviewer recommendation: not recorded for current revision; historical assessmen
 
 ### F-02 依頼文と不備一覧の欠落: 解消
 
-- 対象: [qa_workflow/status_display.py:184-191](../../quality-loop/qa_workflow/status_display.py#L184-L191)
+- 対象: [qa_workflow/status_display.py:184-191](../../../../../quality-loop/qa_workflow/status_display.py#L184-L191)
 - 方法: quality-qaの全経路で、変更前の版のテキスト出力に含まれる依頼文の本文と各「確認事項」行を取り出しました。修正後の日本語・英語の出力に、それぞれが全文含まれるかを照合しました。正本では16の状態、quality-qa runtimeでは11の状態で実行しました。
 - 観測: 実行した全状態で、日本語・英語とも全文が含まれていました。対象は、prepared、finalize後、handoff後、invalid（不備、訂正待ち）、content_pending、reviewed（FAIL、INCONCLUSIVE、HOLD、PASS）、planned、approved、submitted、decision、再QA依頼です。invalidの不備一覧は50件すべてが表示されました。`prepare`の操作直後のテキスト出力にも「渡す文書」が表示されました。JSONの`依頼文`と`issues`は変更前の版と同一でした。
 
 ### F-03 訂正版受領後の矛盾: 解消
 
-- 対象: [qa_workflow/status_display.py:39-40](../../quality-loop/qa_workflow/status_display.py#L39-L40)
+- 対象: [qa_workflow/status_display.py:39-40](../../../../../quality-loop/qa_workflow/status_display.py#L39-L40)
 - 方法: `correction`の後に訂正版を`acquire`しました。これで状態が`content_pending`、`pending_correction`記録ありになります。
 - 観測: 停止としての訂正待ちが、一般工程の説明より先に詳細欄に表示されました。詳細と次の操作は矛盾しません。
 

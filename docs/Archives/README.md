@@ -12,22 +12,23 @@ author: Codex (GPT-5)
 
 - [開発史](history/README.md): 時系列の実装・検証・同期の経緯
 - [設計判断](decisions/README.md): 方針、境界、採用理由、保留判断
-- [Markdown記録](quality-loop/): 既存のQuality Loop固有記録。リンクを確認しながら段階的に整理する
+- [Markdown記録](../../quality-loop/): 既存のQuality Loop固有記録。リンクを確認しながら段階的に整理する
 - [旧spec-driven-qa記録](spec-driven-qa/): 旧版の設計・比較・QA記録
 - [Archive方針](adr/): 文書と公開Git履歴の境界に関するADR
 
 ## 現行Quality Loopの要約
 
 - [完了済みArtifact整理統合アーカイブ](archived_summary_004_0906.md): 2026-08-24〜2026-09-06の完了済み計画・報告・QA・同期記録
-- [QAループ統合Artifactsのアーカイブ記録](archived_summary_005_1005.md): 2026-10-04〜2026-10-05のArtifact 39件を整理。Artifacts直下には現行Plan 040のみを保持
+- [QA状態表示ChangeのArtifactアーカイブ](qa_workflow/qa-status-display/archived_summary_006_1011.md): 2026-10-11の計画・実装報告・基準・独立QAの6文書
+- [QAループ統合Artifactsのアーカイブ記録](archived_summary_005_1005.md): 2026-10-04〜2026-10-05のArtifact 39件を整理。当時はArtifacts直下にPlan 040を保持
 - [実装履歴統合アーカイブ](archived_summary_003_0831.md): Plan 011〜016と初期実装・QA・Owner裁定
 - [最終独立QA受入サマリー](qa_acceptance_summary_001_0831.md): v1.4.0のQA判定とOwner引き継ぎ
 - [原本ZIP・tarball保管場所](../../archives/quality-loop/): 添付計画、QA用パッケージ、圧縮版原本
 
 ## 既存記録の分類
 
-- [実装計画・実装履歴](quality-loop/implementation/): 現行Quality Loopの開発記録
-- [QA記録](quality-loop/qa/): Quality Loop固有の独立QA、QA依頼、Owner裁定
+- [実装計画・実装履歴](../../quality-loop/): 現行Quality Loopの開発記録
+- [QA記録](qa_workflow/): Quality Loop固有の独立QA、QA依頼、Owner裁定
 - [旧版の設計](spec-driven-qa/design/): 旧Contractの設計検討、Finding、設計資料
 - [旧版の圧縮企画](spec-driven-qa/compact/): 旧spec-driven-qa Skillのサイズ削減企画
 - [旧版のQAプロンプト](spec-driven-qa/qa/): 旧Skill比較・評価用の実行指示

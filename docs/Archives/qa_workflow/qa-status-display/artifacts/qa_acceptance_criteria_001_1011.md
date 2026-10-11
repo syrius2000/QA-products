@@ -15,9 +15,9 @@ OpenSpec仕様差分を機能要件の基準とし、計画書040の受入基準
 | 文書 | 版の識別 | 用途 |
 |---|---|---|
 | [計画書040](implementation_plan_040_1011.md) | `implementation_plan_040_1011.md`、update 2026-10-11 17:10 JST、SHA-256 `07823805fc1e8014f16745146ab5d7a8b0c60c3366650a74c3f3e726a498ed00` | 受入基準の原文 |
-| [OpenSpec仕様差分](../../openspec/changes/simplify-qa-status-display/specs/qa-status-display/spec.md) | Change `simplify-qa-status-display`、SHA-256 `ba38d766052b32e4fa49a3bb6af1ac9a896d27ff4a5f0ddf3167f388d392cd98` | 機能要件の規範的根拠 |
-| [OpenSpec提案](../../openspec/changes/simplify-qa-status-display/proposal.md) | SHA-256 `7e0fef5a24f23f82eb59f97c1783ceaec3faf2de4ad66b390d5daa32bbdb77ef` | 目的・対象範囲 |
-| [OpenSpec設計](../../openspec/changes/simplify-qa-status-display/design.md) | SHA-256 `40c354a6e0fd2ddce2cd7cdd23914c05b44c532fd6b41df8d10ebc58e43cc71c` | 状態対応・優先順位・実装方式の説明 |
+| [OpenSpec仕様差分](../../../../../openspec/changes/archive/2026-10-11-simplify-qa-status-display/specs/qa-status-display/spec.md) | Change `simplify-qa-status-display`、SHA-256 `ba38d766052b32e4fa49a3bb6af1ac9a896d27ff4a5f0ddf3167f388d392cd98` | 機能要件の規範的根拠 |
+| [OpenSpec提案](../../../../../openspec/changes/archive/2026-10-11-simplify-qa-status-display/proposal.md) | SHA-256 `7e0fef5a24f23f82eb59f97c1783ceaec3faf2de4ad66b390d5daa32bbdb77ef` | 目的・対象範囲 |
+| [OpenSpec設計](../../../../../openspec/changes/archive/2026-10-11-simplify-qa-status-display/design.md) | SHA-256 `40c354a6e0fd2ddce2cd7cdd23914c05b44c532fd6b41df8d10ebc58e43cc71c` | 状態対応・優先順位・実装方式の説明 |
 
 仕様差分のRequirementは次の5項目です。`tasks.md`の完了チェックのみを合格根拠とはしません。
 

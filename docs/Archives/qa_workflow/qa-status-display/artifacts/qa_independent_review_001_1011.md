@@ -54,7 +54,7 @@ QA開始時に全ハッシュを再計算し、基準票の記載と一致する
 
 - 重大度: 高
 - 対象AC: AC-010
-- 対象: [quality_loop/status_display.py:178-185](../../quality-loop/quality_loop/status_display.py#L178-L185)、[quality_loop/markdown_report.py:225-235](../../quality-loop/quality_loop/markdown_report.py#L225-L235)
+- 対象: [quality_loop/status_display.py:178-185](../../../../../quality-loop/quality_loop/status_display.py#L178-L185)、[quality_loop/markdown_report.py:225-235](../../../../../quality-loop/quality_loop/markdown_report.py#L225-L235)
 - 観測: `status --format text`と再開用Markdownは、最新の最終リスク評価を対象版やcase revisionと照合せずに「Reviewer評価勧告」として表示します。
 - 再現: 対象版`rev-1`で`assess-risk`に`accept`を記録しました。続けてOwnerが`rework-requested`と`baseline_update`で対象版を`rev-2`に変更しました。
 - 期待: 仕様「修正後の版が未評価」では、過去の結果を過去版・過去サイクルの結果として示し、現在版の判定として再利用しません。
@@ -72,7 +72,7 @@ Reviewer評価勧告: 受入推奨（accept）
 
 - 重大度: 中
 - 対象AC: AC-001（詳細の意味を失わない）。英語表示にも同じ欠落があります。
-- 対象: [qa_workflow/cli.py:92-107](../../quality-loop/qa_workflow/cli.py#L92-L107)、[qa_workflow/status_display.py:119-174](../../quality-loop/qa_workflow/status_display.py#L119-L174)
+- 対象: [qa_workflow/cli.py:92-107](../../../../../quality-loop/qa_workflow/cli.py#L92-L107)、[qa_workflow/status_display.py:119-174](../../../../../quality-loop/qa_workflow/status_display.py#L119-L174)
 - 観測: JSONを指定しない`status`と、依頼IDを返す全操作のテキスト出力が新しい表示関数を通ります。この関数は「渡す文書」と「確認事項」を出力しません。
 - 期待: 変更前のテキスト出力は、渡す依頼文の本文と、レビュー不備の各項目を表示していました。quality-qaのSKILL.mdも、利用者に渡す依頼文を示すよう指示しています。
 - 実際: 不備のあるレビューを取り込んだ`invalid`状態で、変更前は不備50件を列挙していました。変更後は日本語・英語とも「結果の不備または訂正待ちです」だけを表示し、何が不備かを示しません。`prepare`、`finalize`、`handoff`の後も依頼文の本文が出なくなりました。
@@ -83,7 +83,7 @@ JSON出力の`issues`と`依頼文`は変更前と同一です。欠落は人向
 
 - 重大度: 中
 - 対象AC: AC-009
-- 対象: [qa_workflow/status_display.py:29-50](../../quality-loop/qa_workflow/status_display.py#L29-L50)
+- 対象: [qa_workflow/status_display.py:29-50](../../../../../quality-loop/qa_workflow/status_display.py#L29-L50)
 - 観測: 工程の判定は`phase`だけを見ており、`pending_correction`を参照しません。訂正版を`acquire`すると、内容確認まで`phase`が`content_pending`、`pending_correction`が記録済みの状態になります。
 - 期待: 設計の優先順位1では、訂正待ちを一般工程より先に停止状態として表示します。
 - 実際: 次のとおり、詳細はレビュー内容の確認待ち、操作は訂正依頼文を渡すことを示します。利用者はどちらを行えばよいか判断できません。
