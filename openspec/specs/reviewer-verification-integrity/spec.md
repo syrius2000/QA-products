@@ -27,7 +27,7 @@ Reviewer の提出検証は、入力 handoff の `semantic_digest` および `co
 
 ### Requirement: リポジトリ相対 Evidence パスの実在を検証する
 
-Author 提出の `test_evidence` がリポジトリ相対パスとして解釈可能な場合、Reviewer 検証はそのパスが対象ワークスペース上に存在することを確認しなければならない。存在しないパスを成功 Evidence として受理してはならない。非パスの自由記述は非空であることを必須とし、パス実在検査の対象外としてよい。
+Author 提出の `test_evidence` がリポジトリ相対パスとして解釈可能な場合、Reviewer 検証はそのパスが対象ワークスペース上に存在することを確認しなければならない。存在しないパスを成功 Evidence として受理してはならない。非パスの自由記述は非空であることを必須とし、パス実在検査の対象外としてよい。これらの条件は MUST とする。
 
 #### Scenario: 存在する相対パス Evidence を受理する
 
@@ -46,7 +46,7 @@ Author 提出の `test_evidence` がリポジトリ相対パスとして解釈�
 
 ### Requirement: modified_files の存在を検証する
 
-Author 提出に `modified_files` が含まれる場合、Reviewer 検証は列挙された各パスが対象ワークスペース上に存在することを確認しなければならない。1 件でも欠落があれば提出を拒否しなければならない。変更ファイル一覧を要求する提出では、空または欠落の `modified_files` を成功として扱ってはならない。
+Author 提出に `modified_files` が含まれる場合、Reviewer 検証は列挙された各パスが対象ワークスペース上に存在することを確認しなければならない。1 件でも欠落があれば提出を拒否しなければならない。変更ファイル一覧を要求する提出では、空または欠落の `modified_files` を成功として扱ってはならない。これらの条件は MUST とする。
 
 #### Scenario: すべての modified_files が存在する提出を受理する
 
@@ -65,7 +65,7 @@ Author 提出に `modified_files` が含まれる場合、Reviewer 検証は列�
 
 ### Requirement: 厳密化の自動テストを提供する
 
-本 Capability の stale digest 拒否、Evidence パス実在拒否、`modified_files` 欠落拒否は、再現可能な自動テスト（golden および negative）で確認できなければならない。テスト未整備のまま完了主張をしてはならない。
+本 Capability の stale digest 拒否、Evidence パス実在拒否、`modified_files` 欠落拒否は、再現可能な自動テスト（golden および negative）で確認できなければならない。テスト未整備のまま完了主張をしてはならない。これらの条件は MUST とする。
 
 #### Scenario: stale digest の negative テストが失敗を検出する
 

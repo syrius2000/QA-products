@@ -59,7 +59,7 @@
 | 既定ブランチへ統合する | merge/deployをOwnerの別判断として案内し、自動実行しない | `SKILL.md` サイクル全体の流れ / 監査cycleの終結 | 対応 |
 | 他のQA Skillが必要な依頼 | 対象Skillを案内し、正本データを複製・移動しない | `SKILL.md` 適用範囲と他QA Skillとの使い分け | 対応 |
 
-`.agents/skills/blind-qa-cycle/`の互換shimと旧本文解消は別途Plan 039の承認待ちで、上表の契約統合とは別の未完了配置作業として残る。
+`.agents/skills/blind-qa-cycle/`の配置変更は本Changeの契約統合とは別工程としてPlan 039に切り出した。当初のshim案は後日の利用者判断で取りやめ、2026-10-11に旧配置をバックアップ後に削除した。現在の配置状態とバックアップ照合は本記録§1の表を参照する。
 
 ## 4. 静的確認と変更範囲
 
@@ -68,6 +68,6 @@
 - `git diff --check`: 成功。
 - 追跡対象の変更パスは正本Skill本文と4つの参照Markdownのみ。`quality-qa`、`quality-review`、`quality-response`、既存QA cycle記録、製品コードに変更はない。
 - `docs/Artifacts/`には作業前からのPlan 038に加えてPlan 039の計画記録がある。OpenSpec Changeと計画書は未追跡Artifactで、Git差分の対象製品コードではない。
-- `.agents/skills/blind-qa-cycle/`は未変更。Plan 039の明示承認待ち。
+- この記録を作成した2026-10-07時点では`.agents/skills/blind-qa-cycle/`は未変更で、Plan 039の個別判断待ちだった。その後2026-10-11に利用者判断で旧配置を削除し、shimは配置していない。後日の状態は本記録§1の表に記載した。
 
 これらはOpenSpec構造・リンク・変更範囲の静的確認であり、動作テストや独立QAを実施した結果ではない。

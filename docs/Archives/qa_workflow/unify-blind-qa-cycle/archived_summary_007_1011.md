@@ -1,7 +1,7 @@
 # blind-qa-cycle Cycle 1 アーカイブ記録
 
 created: 2026-10-11 20:14 (JST)
-update: 2026-10-11 20:14 (JST)
+update: 2026-10-11 20:21 (JST)
 author: Codex (GPT-6)
 
 対象期間: 2026-10-11
@@ -16,14 +16,14 @@ Cycle 1のGateは `FAIL` のまま保存する。利用者は実装側の文書�
 
 - Cycle 1の元文書は凍結された独立Reviewer記録として保持し、Gate、Finding状態、task checkbox、機械判定を変更しない。
 - 利用者判断により、独立Reviewerによる再QAは実施しない。Cycle 1を再開扱いにせず、PASSへ変更しない。
-- `QA-FLOW-M01`に対応するBaseline説明の修正は、Cycle 1の後に実装側で行われた。Plan 041の作業ブランチ上で未コミットであり、独立確認は受けていない。これをCycle 1のFinding解決として記録しない。
+- `QA-FLOW-M01`に対応するBaseline説明の修正は、Cycle 1の後に実装側で行われ、commit `cc798c2`に保存された。独立確認は受けていないため、これをCycle 1のFinding解決として記録しない。
 
 ## 主要成果と検証の限界
 
 - 独立QAではAC-001、AC-003〜AC-008がPASS、AC-002がFAIL、AC-009がUNVERIFIEDだった。path-sanitizationの範囲では実在する個人パスを検出しなかった。
 - Blocking Finding `QA-FLOW-M01` は、適格なcloud `branch_start` Baselineを許す手順と、checkpoint必須と読める共有案内との不整合だった。元レビューではFindingはOPEN、T-01は未完了である。
 - 必須check `openspec validate --strict unify-blind-qa-cycle` はReviewer環境で `NOT_RUN`。Reviewer環境に実行ファイルがなく、招待の制約により依存追加もされていない。
-- 本ローカル作業で同じ名前を指定した検証も、対象ChangeがArchiveへ移動済みのためCLIが項目を認識せず実行できなかった。Archive全件のstrict検証では該当するアーカイブ済みChange自体はvalidだったが、他の古いChangeに未完了taskがあり全体結果は失敗した。これらはCycle 1の必須checkを遡及して満たすものではない。
+- 本ローカル作業でも `openspec validate --strict unify-blind-qa-cycle` は対象ChangeがArchive済みのためCLIが項目を認識せず実行できなかった。修正後の `blind-qa-cycle` spec単体のstrict検証はvalidだった。全spec strict検証は別spec `reviewer-verification-integrity` の警告で失敗した。Archive全件のstrict検証では対象Change自体はvalidだったが、他の古いChangeに未完了taskがあり全体結果は失敗した。これらはCycle 1の必須checkを遡及して満たすものではない。
 - 独立再QAを省略したため、修正後のReviewed SHAに対するPASS根拠はない。
 
 ## 未解決事項と引継ぎ
@@ -44,4 +44,4 @@ Cycle 1のGateは `FAIL` のまま保存する。利用者は実装側の文書�
 | `docs/Artifacts/qa_cycles/unify-blind-qa-cycle/c1/03_machine.json` | [`c1/03_machine.json`](c1/03_machine.json) |
 | `docs/Artifacts/qa_cycles/unify-blind-qa-cycle/c1/STATUS.md` | [`c1/STATUS.md`](c1/STATUS.md) |
 
-5文書はGit commit `cb51be65f89bec37cc160e46dabceb53ed20265d`で追跡されており、元パスへ復元できる。今回の移動は未コミットで、commit・pushは行っていない。
+5文書はGit commit `cb51be65f89bec37cc160e46dabceb53ed20265d`で追跡されており、元パスへ復元できる。Cycle 1文書のArchive移動とPlan 041の実装はcommit `cc798c2`に保存されている。Cycle 1のQA判定・独立確認状態は変更していない。
