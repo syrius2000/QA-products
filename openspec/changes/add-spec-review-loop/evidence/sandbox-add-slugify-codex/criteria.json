@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "change_id": "add-slugify",
+  "fingerprint": "a4322eb62ba7a099e1392e57fd7d5af79b81be1f5549c6a41b0c7bbfca39d260",
+  "counts": {
+    "tasks": 2,
+    "scenarios": 2,
+    "checks": 2,
+    "ignored_unnumbered_tasks": 0
+  },
+  "criteria": [
+    {
+      "id": "T-1.1",
+      "kind": "task",
+      "source": "tasks.md:5",
+      "text": "1.1 `textutils.py`に`slugify(title: str) -> str`を実装する。検証: `python3 -m unittest test_textutils`が成功する。",
+      "verification": "`python3 -m unittest test_textutils`が成功する。",
+      "fingerprint": "7c379333c664f3d91da6ce079a96493888a1bae9f1427e18e7eb222e2f360eb2"
+    },
+    {
+      "id": "T-1.2",
+      "kind": "task",
+      "source": "tasks.md:6",
+      "text": "1.2 `test_textutils.py`に、空白・記号・大文字・前後の空白を含む入力のテストを追加する。検証: 各Scenarioに対応するテストが存在する。",
+      "verification": "各Scenarioに対応するテストが存在する。",
+      "fingerprint": "a837b93ead835ea37c9ef2528c956dbefa91cdb1ff00abdc57089e06c65cda96"
+    },
+    {
+      "id": "S-text-utils-1.1",
+      "kind": "scenario",
+      "source": "specs/text-utils/spec.md:8",
+      "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 空白と記号を含むタイトル\n- **WHEN** `slugify(\"Hello, World!\")`を呼ぶ\n- **THEN** `\"hello-world\"`が返る",
+      "operation": "ADDED",
+      "fingerprint": "35b268f48ce8458a093c095a621a46829c40555b0c761faf705f3fdc26df6ca5"
+    },
+    {
+      "id": "S-text-utils-1.2",
+      "kind": "scenario",
+      "source": "specs/text-utils/spec.md:12",
+      "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 前後の空白\n- **WHEN** `slugify(\"  Spec Review  \")`を呼ぶ\n- **THEN** `\"spec-review\"`が返る",
+      "operation": "ADDED",
+      "fingerprint": "61efd6a2f12f3b407808f4db1dc22415d162f4de8c0a09e6fbdbd037a967f213"
+    }
+  ],
+  "checks": [
+    {
+      "id": "CHK-VALIDATE",
+      "argv": [
+        "openspec",
+        "validate",
+        "--strict",
+        "add-slugify"
+      ],
+      "cwd": ".",
+      "timeout": 300,
+      "expected_exit": 0,
+      "fingerprint": "341bb8cc36dc46fa3001062ba31a10f7180e34a675b7a15e3bc853e123eb5337"
+    },
+    {
+      "id": "CHK-UNITTEST",
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "-q"
+      ],
+      "cwd": ".",
+      "timeout": 120,
+      "expected_exit": 0,
+      "fingerprint": "02dd4da6914ca54579a3d6c910d0be36f2c6cc5736de8ca64a3265aede70a693"
+    }
+  ],
+  "frozen_at": "2026-10-16T10:26:11+09:00"
+}

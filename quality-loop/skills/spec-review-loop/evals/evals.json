@@ -1,0 +1,69 @@
+{
+  "skill_name": "spec-review-loop",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/spec-review-loop add-auth",
+      "expected": "openspec listでchangeの存在を確認し、doctorとtopic branchを確認してからstartする。基準一覧を表示する"
+    },
+    {
+      "id": 2,
+      "prompt": "add-authをspec-review-loopで完成させて。今はmasterにいる",
+      "expected": "masterでは開始せず、topic branchへの切替を案内する"
+    },
+    {
+      "id": 3,
+      "prompt": "r2で同じFindingがまた未解消になった。どうする？",
+      "expected": "停滞で停止したことと残Findingを示し、人の判断・review-standalone・blind-qa-cycleの選択肢を示す。4 round目を始めない"
+    },
+    {
+      "id": 4,
+      "prompt": "PASSしたので仕上げて",
+      "expected": "finishのdry-run計画を表示し、利用者の明示確認後にだけ--confirmでsquashする。openspec archiveは実行しない"
+    }
+  ],
+  "activation_cases": [
+    {
+      "id": "srl-slash-command",
+      "prompt": "/spec-review-loop add-auth",
+      "expected_trigger": true,
+      "reason": "対象changeを示してループの実行を明示依頼している。"
+    },
+    {
+      "id": "srl-explicit-complete",
+      "prompt": "add-authをspec-review-loopで完成させて",
+      "expected_trigger": true,
+      "reason": "対象changeとspec-review-loopの実行を明示している。"
+    },
+    {
+      "id": "srl-explicit-loop",
+      "prompt": "openspec change add-spec-review-loop でレビューループを回して、Codexにレビューさせて",
+      "expected_trigger": true,
+      "reason": "対象changeを示してレビューループの実行を依頼している。"
+    },
+    {
+      "id": "srl-explain-only",
+      "prompt": "spec-review-loopってどういう仕組み？",
+      "expected_trigger": false,
+      "reason": "仕組みの説明依頼でありループの実行依頼ではない。"
+    },
+    {
+      "id": "srl-general-review",
+      "prompt": "このPRのコードをレビューして",
+      "expected_trigger": false,
+      "reason": "一般的なコードレビュー依頼であり対象changeのループ実行ではない。"
+    },
+    {
+      "id": "srl-openspec-apply-only",
+      "prompt": "openspec applyでadd-authを実装して",
+      "expected_trigger": false,
+      "reason": "OpenSpec applyだけの依頼でありレビューループの明示依頼ではない。"
+    },
+    {
+      "id": "srl-result-share",
+      "prompt": "spec-review-loopの結果はPASSでした",
+      "expected_trigger": false,
+      "reason": "結果の共有だけで操作を依頼していない。"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+aebf94ff50701c01711f7268d2c943e4b32a195f
+feat(add-slugify): add slugify
+
+Spec-Review: add-slugify
+Spec-Review-Gate: PASS
+Spec-Review-Rounds: 2
+Spec-Review-Reviewer: cursor 2026.10.14-941492e / gpt-5.3-codex
+Spec-Review-Pre-Squash: 8b9e917b85291a51983ff474d998e4f97e61af87

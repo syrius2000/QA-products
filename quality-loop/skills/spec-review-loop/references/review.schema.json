@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spec-review-loop/review.schema.json",
+  "title": "spec-review-loop round review",
+  "description": "1 roundのレビュー記録。checksはCLIが実行して記録し、それ以外はReviewerが出力する。",
+  "type": "object",
+  "required": ["schema_version", "change_id", "round", "base_sha", "round_sha", "criteria_fingerprint", "reviewer", "criteria", "checks", "findings", "proposals", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "change_id": {"type": "string", "minLength": 1},
+    "round": {"type": "integer", "minimum": 1},
+    "base_sha": {"$ref": "#/$defs/sha"},
+    "round_sha": {"$ref": "#/$defs/sha"},
+    "criteria_fingerprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "reviewer": {
+      "type": "object",
+      "required": ["tool", "version", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "tool": {"enum": ["codex", "cursor", "claude"]},
+        "version": {"type": "string"},
+        "model": {"type": "string"}
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "verdict", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^(T-[0-9]+(\\.[0-9]+)+|S-.+-[0-9]+\\.[0-9]+)$"},
+          "text": {"type": "string", "minLength": 1},
+          "verdict": {"enum": ["PASS", "FAIL", "UNVERIFIED"]},
+          "evidence": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "exit_code", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^CHK-[A-Z0-9_-]+$"},
+          "status": {"enum": ["PASS", "FAIL", "NOT_RUN", "ERROR"]},
+          "exit_code": {"type": ["integer", "null"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "severity", "criterion_ids", "location", "description", "recommendation", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^F-[0-9]{3}$"},
+          "kind": {"enum": ["defect", "missing", "regression", "test-gap", "other"]},
+          "severity": {"enum": ["critical", "high", "medium", "low"]},
+          "criterion_ids": {"type": "array", "items": {"type": "string"}},
+          "location": {"type": "string", "description": "path:line。特定できない場合は理由"},
+          "description": {"type": "string", "minLength": 1},
+          "recommendation": {"type": "string", "minLength": 1},
+          "status": {"enum": ["new", "resolved", "unresolved", "unverified", "withdraw-proposed"], "description": "newは今回の新規。それ以外は前roundの未解決Findingに対する再判定"}
+        }
+      }
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "rationale"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^(P|F)-[0-9]{3}$"},
+          "description": {"type": "string", "minLength": 1},
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "summary": {"type": "string"}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  }
+}
