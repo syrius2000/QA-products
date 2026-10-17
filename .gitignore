@@ -21,3 +21,8 @@ garmin_live.ics
 
 # Claude Codeローカル設定
 /.claude/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
