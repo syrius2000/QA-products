@@ -2,13 +2,16 @@
 
 このリポジトリは、Quality Loopの開発正本、検証、設計判断、開発経緯を保存する場所です。実務者が利用する成果物は、別リポジトリの[Productivity-Skill](https://github.com/syrius2000/Productivity-Skill)へ確定版として取り込みます。
 
-## 更新のお知らせ（2026-10-11）
+## 更新のお知らせ（2026-10-17）
 
-QA関連スキル4件の起動条件と、QA状況表示を更新しました。変更はコミット `dd0f43e` として`master`へ反映済みです。
+開発用Skillの一覧を整理し、新しいレビューループSkill `spec-review-loop` を追加しました。`feat/add-spec-review-loop`ブランチへpush済みで、`master`へは未統合です。
 
-- `quality-qa`、`quality-review`、`quality-response`、`blind-qa-cycle`は、ユーザーが現在のメッセージでQA操作を明示的に依頼した場合にだけ使用します。QAの相談・説明、結果や文書の共有、OpenSpecのverify/applyだけでは起動しません。
-- QA状況表示は日本語を既定とし、工程、判定、対象版、サイクル、過去の結果を区別します。対応する開発用Skillの説明は [`quality-loop/skills/`](quality-loop/skills/) を参照してください。
-- 独立再QAでは固定基準10件がすべて合格し、初回指摘3件の解消を確認しました。332テストとsubtest 125件が成功し、OpenSpec strict検証もvalidでした。
+- `spec-review-loop`（0.1.0）: OpenSpec changeの`tasks.md`とspec deltaを受入基準として固定し、round commit、別系統AI Reviewerによる読取り専用の独立レビュー、決定論的なGate判定、終了時の検証付きsquashを行います。明示的に依頼された場合にだけ使用します。Reviewerは`codex`（既定）、`cursor`（Cursor CLIの`agent`）、`claude`から選びます。使い方は [`SKILL.md`](quality-loop/skills/spec-review-loop/SKILL.md) を参照してください。
+- QA関連Skill（`quality-qa`、`quality-review`、`quality-response`、`blind-qa-cycle`、`spec-review-loop`）は、ユーザーが現在のメッセージで操作を明示的に依頼した場合にだけ使用します。QAの相談・説明、結果や文書の共有、OpenSpecのverify/applyだけでは起動しません。
+- 上記のうち`spec-review-loop`は、Productivity-Skillへの配備・同期の対象外です。配備は動作確認後の別changeで扱います。
+- 開発用Skillの一覧と使い分けは [Quality Loop README](quality-loop/README.md) を参照してください。
+
+直前の告知（2026-10-11）: QA関連スキル4件の起動条件と、QA状況表示を更新しました。変更はコミット `dd0f43e` として`master`へ反映済みです。
 
 この告知とスキル変更はQA-products内の開発正本に関するものです。Productivity-Skillなどリポジトリ外への配置・同期は別工程です。
 
@@ -44,7 +47,7 @@ Productivity-Skill/.agents/skills/quality-response/
 - `scripts/`: Productivity-Skillへの同期、runtime同一性、Markdownリンクの検査
 - `docs/Archives/`: Markdown形式の開発史、設計判断、QA記録
 - `archives/`: zip、tar.gzなどのバイナリ・原本アーカイブ
-- `qms-cases/`: Quality Loop案件の正本とEvidence
+- `openspec/`: OpenSpecのchange（仕様差分、設計、タスク、実装記録）。完了したchangeは`openspec/changes/archive/`に保存します
 
 開発史と設計判断の索引は[Archive案内](docs/Archives/README.md)から辿れます。現行の機能仕様は[Quality Loop README](quality-loop/README.md)と[機能仕様](quality-loop/FUNCTIONAL_SPEC.md)を参照してください。
 

@@ -6,6 +6,21 @@
 
 `skills/quality-qa/`、`skills/quality-review/`、`skills/quality-response/`は、それぞれ単独で`.agents/skills/`へコピーできます。各ディレクトリには`SKILL.md`、CLIラッパー、Skill固有runtime、必要なreferencesを含め、開発元リポジトリ外でも動作する構造を保ちます。各Skillの版は同梱の`VERSION`で確認してください。
 
+配備の管理対象は上の3件です（`SKILL_DEPLOYMENT_GUIDE.md`と`scripts/sync_productivity_skills.py`）。`skills/blind-qa-cycle/`と`skills/spec-review-loop/`は開発用Skillで、配備の対象外です。
+
+## 開発用Skillと使い分け
+
+| Skill | 版 | 用途 | 入口 |
+|---|---|---|---|
+| [`quality-qa`](skills/quality-qa/SKILL.md) | 0.2.2 | 通常の独立QA依頼、結果確認、承認済み修正と再QA | 「この変更をQAして」など |
+| [`blind-qa-cycle`](skills/blind-qa-cycle/SKILL.md) | 1.0 | 監査ブランチとYip commitによる固定SHA監査（4成果物） | 特定モードの明示依頼（prepare、cloud、review など） |
+| [`quality-review`](skills/quality-review/SKILL.md)／[`quality-response`](skills/quality-response/SKILL.md) | 1.5.0／1.4.0 | 正式caseのReviewer／Implementer工程（`case.json`が正本） | 明示されたQuality Loop案件の工程 |
+| [`spec-review-loop`](skills/spec-review-loop/SKILL.md) | 0.1.0 | OpenSpec changeを受入基準に、実装→別系統AIの独立レビューを数round回し、終了時にsquash | 対象changeとループ実行の明示依頼 |
+
+いずれも、ユーザーが現在のメッセージで操作を明示的に依頼した場合にだけ起動します。説明や相談、結果の共有だけでは起動しません。
+
+`spec-review-loop`の受入基準の正本はOpenSpecのchangeです。仕様の詳細は`openspec/changes/add-spec-review-loop/`を参照してください。
+
 RuntimeはPython 3.10以上の標準ライブラリだけで動作し、外部pipパッケージを要求しません。対応方針はPython 3.10および現行Python環境で検証します。
 
 ## 公開操作
@@ -83,5 +98,7 @@ Python標準ライブラリだけを使用します。外部ライブラリへ�
 - `skills/quality-review/`: 初回レビュー、Plan合意、独立検証、最終リスク評価
 - `skills/quality-response/`: Response Plan提出、修正提出とEvidence添付
 - `skills/quality-qa/`: 独立QA依頼、結果検査、承認済み修正と再QAを扱う別workflow
+- `skills/blind-qa-cycle/`: 監査ブランチとYip commitによる固定SHA監査の別workflow（配備対象外）
+- `skills/spec-review-loop/`: OpenSpec changeの受入基準による独立レビューループ（配備対象外）
 
 Quality Loop caseを扱う`quality-review`と`quality-response`は最初に`status`を確認し、CLIが返した次Roleとhandoffを次工程へ渡します。Skillは案件正本`case.json`を直接編集しません。

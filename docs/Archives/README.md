@@ -1,8 +1,8 @@
 # QA-products Archive案内
 
 created: 2026-08-31 22:18 (JST)
-update: 2026-10-11 20:21 (JST)
-author: Codex (GPT-5)
+update: 2026-10-17 (JST)
+author: Claude Code
 
 ## 目的
 
@@ -13,6 +13,8 @@ author: Codex (GPT-5)
 - [開発史](history/README.md): 時系列の実装・検証・同期の経緯
 - [設計判断](decisions/README.md): 方針、境界、採用理由、保留判断
 - [Markdown記録](../../quality-loop/): 既存のQuality Loop固有記録。リンクを確認しながら段階的に整理する
+- [OpenSpec change（完了分）](../../openspec/changes/archive/): 2026-08-25以降に完了したchangeの提案・設計・タスク・仕様差分。最新は`2026-10-11-*`の4件と`2026-10-06-*`
+- [OpenSpec change（進行中）](../../openspec/changes/add-spec-review-loop/): `spec-review-loop`の仕様と実装記録。archive前の状態で、`evidence/`にdogfood実行の証跡を保存している。archive後は`openspec/changes/archive/`へ移動する
 - [旧spec-driven-qa記録](spec-driven-qa/): 旧版の設計・比較・QA記録
 - [Archive方針](adr/): 文書と公開Git履歴の境界に関するADR
 
@@ -34,8 +36,6 @@ author: Codex (GPT-5)
 - [旧版の設計](spec-driven-qa/design/): 旧Contractの設計検討、Finding、設計資料
 - [旧版の圧縮企画](spec-driven-qa/compact/): 旧spec-driven-qa Skillのサイズ削減企画
 - [旧版のQAプロンプト](spec-driven-qa/qa/): 旧Skill比較・評価用の実行指示
-- `misc/`: Quality Loopの正本・仕様・運用資料ではない参考資料
-- `temporary/`: 現在は使用していない一時資料の保存先。今回の削除対象は保存しない
 - [Archive方針ADR](adr/0001-repository-document-archive-policy.md): ルート文書、Archive、公開Git履歴の境界
 
 ## 正本と履歴の区別
