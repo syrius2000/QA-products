@@ -1,6 +1,6 @@
 # Quality Loop 機能仕様 (v1.3.0)
 
-> 独立QA依頼・Cloud実行検証を含む通常QA workflowは [`skills/quality-qa/`](skills/quality-qa/SKILL.md) に実装し、この文書の正式case state machineとは別管理する。通常QAの状態を既存 `case.json` へ自動反映しない。
+> 独立QA依頼・Cloud実行検証を含む通常QA workflowは [`skills/quality-qa/`](skills/quality-qa/SKILL.md) に実装し、この文書の正式case state machineとは別管理する。通常QAの状態を既存 `case.json` へ自動反映しない。同様に、[`skills/blind-qa-cycle/`](skills/blind-qa-cycle/SKILL.md)（監査ブランチ上の固定SHA監査）と[`skills/spec-review-loop/`](skills/spec-review-loop/SKILL.md)（OpenSpec changeの受入基準によるレビューループ）も正式case state machineとは別管理する。`spec-review-loop`の受入基準と仕様の正本はOpenSpecのchange（`openspec/changes/`）である。
 
 ## 1. 目的
 
