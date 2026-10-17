@@ -1,0 +1,389 @@
+{
+  "schema_version": 1,
+  "change_id": "add-spec-review-loop",
+  "fingerprint": "0df605a8a5e200802b43c1786baf116d1726bf481d9127300cb448bfbc1aefc1",
+  "counts": {
+    "tasks": 19,
+    "scenarios": 24,
+    "checks": 2,
+    "ignored_unnumbered_tasks": 0
+  },
+  "criteria": [
+    {
+      "id": "T-1.1",
+      "kind": "task",
+      "source": "tasks.md:5",
+      "text": "1.1 `references/review.schema.json`を作成し、基準別判定（PASS／FAIL／UNVERIFIED）、check結果（PASS／FAIL／NOT_RUN／ERROR）、Finding（ID・種別・重大度・基準ID・`path:line`・対応案・前round判定）、提案、Reviewer情報、base／round SHAを定義する。検証: 正常例・欠落例・重複例のJSONでスキーマ検証のテストが期待どおり成否を返す。",
+      "verification": "正常例・欠落例・重複例のJSONでスキーマ検証のテストが期待どおり成否を返す。",
+      "fingerprint": "af9ec053e36e231869ce38d8d51df049c89e06fc6a6e426d48dbe9c154dd4259"
+    },
+    {
+      "id": "T-1.2",
+      "kind": "task",
+      "source": "tasks.md:6",
+      "text": "1.2 `references/reviewer_contract.md`を作成し、読取り専用、全基準IDの順序どおりの判定、根拠の記載、範囲外指摘の提案扱い、前round Findingの再判定を定める。検証: 契約の各項目が1.1のスキーマ項目またはGate規則に対応している。",
+      "verification": "契約の各項目が1.1のスキーマ項目またはGate規則に対応している。",
+      "fingerprint": "7652ac73847a02277fdab64e409cae98ebfe7eba7fbe220cd512a2e9afcd86c5"
+    },
+    {
+      "id": "T-2.1",
+      "kind": "task",
+      "source": "tasks.md:10",
+      "text": "2.1 tasks.mdのタスクと「検証:」文、spec deltaのADDED／MODIFIED／REMOVEDのScenarioを抽出し、`T-N.M`と`S-<cap>-<要件番号>.<n>`のIDを付ける。検証: 既存のarchive済みchange 3件以上で、抽出件数と原文が手作業の数え上げと一致する。",
+      "verification": "」文、spec deltaのADDED／MODIFIED／REMOVEDのScenarioを抽出し、`T-N.M`と`S-<cap>-<要件番号>.<n>`のIDを付ける。検証: 既存のarchive済みchange 3件以上で、抽出件数と原文が手作業の数え上げと一致する。",
+      "fingerprint": "5fdbc4bdd99419a31ea71a67073dc057cceebbb16339c704b8fda422e977f3cf"
+    },
+    {
+      "id": "T-2.2",
+      "kind": "task",
+      "source": "tasks.md:11",
+      "text": "2.2 チェックボックス状態を除いた原文のSHA-256で要件指紋を計算し、再抽出時のドリフトを検出する。検証: `[ ]`→`[x]`では差分なし、タスク本文の1文字変更ではドリフトになるテストが通る。",
+      "verification": "`[ ]`→`[x]`では差分なし、タスク本文の1文字変更ではドリフトになるテストが通る。",
+      "fingerprint": "09cc5c81221367ba8b8770d3ea14559679cd4ec16033d18fb99cd11678afb21f"
+    },
+    {
+      "id": "T-3.1",
+      "kind": "task",
+      "source": "tasks.md:15",
+      "text": "3.1 `start`のbranch・作業ツリー検査とbase SHAの記録、`commit-round`の実装報告必須・未stage拒否・trailer付与を実装する。検証: 一時gitリポジトリでmaster拒否、報告なし拒否、untracked拒否、正常commitのtrailerをテストで確認する。",
+      "verification": "一時gitリポジトリでmaster拒否、報告なし拒否、untracked拒否、正常commitのtrailerをテストで確認する。",
+      "fingerprint": "180536a264c8c9377a329726d33d10d7e4facf07a3a7fd8cb186e4f2c7a6c119"
+    },
+    {
+      "id": "T-3.2",
+      "kind": "task",
+      "source": "tasks.md:16",
+      "text": "3.2 round SHAの一時worktreeの作成と、終了時・例外時の確実な削除を実装する。検証: Reviewerの成功・失敗・timeoutのいずれでも`git worktree list`に残らないテストが通る。",
+      "verification": "Reviewerの成功・失敗・timeoutのいずれでも`git worktree list`に残らないテストが通る。",
+      "fingerprint": "5846e6f675e408a55707d0109d66a9607a901f24c466c015801af039cc61429b"
+    },
+    {
+      "id": "T-3.3",
+      "kind": "task",
+      "source": "tasks.md:17",
+      "text": "3.3 `finish`のdry-run、前提条件検査（他commitの混在・push済み・dirty）、バックアップref作成、`reset --soft`によるsquash、tree一致検証、失敗時の復元を実装する。検証: 正常squash、push済み拒否、他commit混在拒否、tree不一致の模擬で復元される各テストが通る。",
+      "verification": "正常squash、push済み拒否、他commit混在拒否、tree不一致の模擬で復元される各テストが通る。",
+      "fingerprint": "dfed8325d5f7ab6a7a811622978f038196e7fb2714a96318b656338b6a22edbd"
+    },
+    {
+      "id": "T-3.4",
+      "kind": "task",
+      "source": "tasks.md:18",
+      "text": "3.4 `prune`を実装し、到達不能になるround SHAを表示して確認後にだけrefを削除する。検証: 確認なしでは削除されず、確認後に`refs/spec-review/`から消えるテストが通る。",
+      "verification": "確認なしでは削除されず、確認後に`refs/spec-review/`から消えるテストが通る。",
+      "fingerprint": "f57d11984d7330f6d7d0c17ca028d5fab0ccb933446dd0017989e3e576182292"
+    },
+    {
+      "id": "T-4.1",
+      "kind": "task",
+      "source": "tasks.md:22",
+      "text": "4.1 Codex CLI（既定）、Cursor CLI（`agent`）、Claude CLIの読取り専用・非対話での実行方法と最終出力の取得方法を、macOS上の実機の版で確認し、design.mdのOpen Questionを解消する。検証: 各CLIの版と使用フラグをdesign.mdに追記し、`doctor`がそれらを検出できる。",
+      "verification": "各CLIの版と使用フラグをdesign.mdに追記し、`doctor`がそれらを検出できる。",
+      "fingerprint": "b27ec8bf1ed48f23484dca39a5b53b0e6ba9e5cd64931c4322a8304691e9eaf1"
+    },
+    {
+      "id": "T-4.2",
+      "kind": "task",
+      "source": "tasks.md:23",
+      "text": "4.2 アダプタ共通インタフェース（プロンプト入力、cwd、timeout、出力ファイル）と3実装、`doctor`を実装する。検証: 偽Reviewer（固定JSONを返すスクリプト）で3アダプタ経路のテストが通り、未導入CLIでは`doctor`が導入方法を示す。",
+      "verification": "偽Reviewer（固定JSONを返すスクリプト）で3アダプタ経路のテストが通り、未導入CLIでは`doctor`が導入方法を示す。",
+      "fingerprint": "4950248d35e57c187b96cfd7b9a5de10304e1a7fab18db44873bba62795c4205"
+    },
+    {
+      "id": "T-5.1",
+      "kind": "task",
+      "source": "tasks.md:27",
+      "text": "5.1 構造検証（ID順序・重複・原文・SHA一致）とGate優先順位、提案の除外を実装する。検証: spec deltaの「レビュー結果を構造検証してGateを判定する」の全Scenarioをテストで再現して期待結果になる。",
+      "verification": "spec deltaの「レビュー結果を構造検証してGateを判定する」の全Scenarioをテストで再現して期待結果になる。",
+      "fingerprint": "2a91ddbb633eec82184c0ca12f2be93fc294d1759b63d35ef130e24ae9efffb5"
+    },
+    {
+      "id": "T-5.2",
+      "kind": "task",
+      "source": "tasks.md:28",
+      "text": "5.2 round上限と停滞（同一Finding 2連続未解消、未解消数の非減少）の判定を実装する。検証: spec deltaの「停止条件に達したら止めて引き継ぐ」の全Scenarioをテストで再現して期待結果になる。",
+      "verification": "spec deltaの「停止条件に達したら止めて引き継ぐ」の全Scenarioをテストで再現して期待結果になる。",
+      "fingerprint": "805ebcb63c1ad0e1d4c2c44baf8b26c5d402b8eccd7884f9e2e09b7ca5e96a5b"
+    },
+    {
+      "id": "T-5.3",
+      "kind": "task",
+      "source": "tasks.md:29",
+      "text": "5.3 `r<N>_review.md`と`summary.md`をJSONから生成する。検証: 生成物に全基準ID・Gate・Finding・提案・Reviewer情報・round SHAが含まれる。",
+      "verification": "生成物に全基準ID・Gate・Finding・提案・Reviewer情報・round SHAが含まれる。",
+      "fingerprint": "526aefa673915d9ccab2ac1e0b48fe107adc5d6ff6560dacc56f7efda89ee8b7"
+    },
+    {
+      "id": "T-6.1",
+      "kind": "task",
+      "source": "tasks.md:33",
+      "text": "6.1 `bin/spec-review-loop-cli`とサブコマンド（start／commit-round／review／status／finish／prune／refreeze／doctor）を実装する。終了コードは既存Skillに合わせる（0成功、2契約拒否、3入出力、4内部エラー）。検証: 各サブコマンドの正常系・拒否系がテストで期待どおりの終了コードを返す。",
+      "verification": "各サブコマンドの正常系・拒否系がテストで期待どおりの終了コードを返す。",
+      "fingerprint": "6539ebab08a3ea2e2cfd73c52884fd7b0b505dec5646cefbdc5e75e70de0506f"
+    },
+    {
+      "id": "T-6.2",
+      "kind": "task",
+      "source": "tasks.md:34",
+      "text": "6.2 `SKILL.md`を作成する。明示起動の条件と非起動例、実装担当の手順（実装→報告→commit-round→review→Finding対応）、停止時の引継ぎ、既存QA経路との使い分けを記載する。検証: descriptionが`quality-loop-skill-deployment`の明示起動要件と同じ形式（適用範囲・明示依頼例・非発火例）を満たす。",
+      "verification": "descriptionが`quality-loop-skill-deployment`の明示起動要件と同じ形式（適用範囲・明示依頼例・非発火例）を満たす。",
+      "fingerprint": "f9ae1d23fc0b7c8f429234bf48010dbafce3efac2989e14b0b10963a11a21ecc"
+    },
+    {
+      "id": "T-6.3",
+      "kind": "task",
+      "source": "tasks.md:35",
+      "text": "6.3 `evals/evals.json`に起動・非起動の代表発話を追加する。検証: 起動例と非起動例をそれぞれ3件以上含む。",
+      "verification": "起動例と非起動例をそれぞれ3件以上含む。",
+      "fingerprint": "98e2209cde49323caf1ef34d587922c1997a09be0fcc0f3c5fd9527662223f9e"
+    },
+    {
+      "id": "T-7.1",
+      "kind": "task",
+      "source": "tasks.md:39",
+      "text": "7.1 一時リポジトリ上の小さなOpenSpec changeで、偽Reviewerにより「1 round目FAIL → 2 round目PASS → finish」を通しで実行する。検証: round commit 2件が1 commitにまとまり、tree一致、`summary.md`とtrailerの内容が正しい。",
+      "verification": "round commit 2件が1 commitにまとまり、tree一致、`summary.md`とtrailerの内容が正しい。",
+      "fingerprint": "eb1f1639949f295a56c9bb58cd4c604a2d9b4a088f500d98148a1f5408157655"
+    },
+    {
+      "id": "T-7.2",
+      "kind": "task",
+      "source": "tasks.md:40",
+      "text": "7.2 macOS実機でCodex CLIを使い、実際のchange 1件で通しで実行する。検証: Reviewerのツール・モデル名が記録され、Gate推移が`summary.md`に残る。実行できない場合は理由を記録し、完了扱いにしない。",
+      "verification": "Reviewerのツール・モデル名が記録され、Gate推移が`summary.md`に残る。実行できない場合は理由を記録し、完了扱いにしない。",
+      "fingerprint": "4bcc78757ff030c0ad98bdbeb8346cd124954112d6292be2beb6822f544e409e"
+    },
+    {
+      "id": "T-7.3",
+      "kind": "task",
+      "source": "tasks.md:41",
+      "text": "7.3 OpenSpec成果物と変更範囲を最終確認する。検証: `openspec validate --strict add-spec-review-loop`が成功し、差分に`quality-qa`、`blind-qa-cycle`、`quality-review`、`quality-response`、既存QA記録の変更が含まれない。",
+      "verification": "`openspec validate --strict add-spec-review-loop`が成功し、差分に`quality-qa`、`blind-qa-cycle`、`quality-review`、`quality-response`、既存QA記録の変更が含まれない。",
+      "fingerprint": "885f0e53c48f67bf619405f8e4282b3883d2904c2303d82dd8378ec66814c262"
+    },
+    {
+      "id": "S-spec-review-loop-1.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:12",
+      "text": "ADDED: ### Requirement: 明示起動と他QA経路との区別\n#### Scenario: changeを指定してループを依頼する\n- **WHEN** 利用者が`/spec-review-loop <change-id>`、または対象changeを示してレビューループの実行を依頼する\n- **THEN** システムは対象changeの存在を確認してから`start`を実行する",
+      "operation": "ADDED",
+      "fingerprint": "5c95e51644a320a6e6b38bdf6e3072e28682323588375a26cec5a0e57c8d8ed1"
+    },
+    {
+      "id": "S-spec-review-loop-1.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:16",
+      "text": "ADDED: ### Requirement: 明示起動と他QA経路との区別\n#### Scenario: 説明や一般レビューだけを求める\n- **WHEN** 利用者がループの仕組みの説明、一般的なコードレビュー、またはOpenSpec applyだけを依頼する\n- **THEN** システムはループを起動せず、既存QA経路の記録も変更しない",
+      "operation": "ADDED",
+      "fingerprint": "021b58bc9e13a247fb294b2548152292f93d128481a45b36de976d6769aa6498"
+    },
+    {
+      "id": "S-spec-review-loop-2.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:23",
+      "text": "ADDED: ### Requirement: OpenSpec changeから受入基準を固定する\n#### Scenario: タスクとScenarioを抽出する\n- **WHEN** tasks.mdに番号付きタスクがあり、spec deltaにScenarioがあるchangeで`start`を実行する\n- **THEN** 各タスクに`T-N.M`、各Scenarioに`S-<cap>-<要件番号>.<n>`のIDが原文の順序で付き、一覧が利用者に表示される",
+      "operation": "ADDED",
+      "fingerprint": "5eeeb91b712128b5c5e9ce9eb6fb52b0f5142cbb765d71cb2b16d77f98896223"
+    },
+    {
+      "id": "S-spec-review-loop-2.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:27",
+      "text": "ADDED: ### Requirement: OpenSpec changeから受入基準を固定する\n#### Scenario: タスクを完了済みにしても指紋が変わらない\n- **WHEN** 実装担当がround中にタスクを`[ ]`から`[x]`へ変更する\n- **THEN** そのタスクの要件指紋は変わらず、基準ドリフトとして扱われない",
+      "operation": "ADDED",
+      "fingerprint": "ddc89d39c022901c9bf048bdb720707466463336dac10f8fb731582050a21809"
+    },
+    {
+      "id": "S-spec-review-loop-2.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:31",
+      "text": "ADDED: ### Requirement: OpenSpec changeから受入基準を固定する\n#### Scenario: 基準がround途中で書き換わる\n- **WHEN** round開始時に再抽出した基準の指紋集合が`criteria.json`と異なる\n- **THEN** システムはGateをHOLDとしてループを停止し、変更された基準IDと`refreeze`の必要を示す",
+      "operation": "ADDED",
+      "fingerprint": "18235cfbb4cce2c417ef876bd3f8e4710f204a9049e2ee18b5bf9480733cefc7"
+    },
+    {
+      "id": "S-spec-review-loop-2.4",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:35",
+      "text": "ADDED: ### Requirement: OpenSpec changeから受入基準を固定する\n#### Scenario: 基準を抽出できない\n- **WHEN** 対象changeにtasks.mdもScenarioも見つからない\n- **THEN** システムは`start`を拒否し、何もcommitしない",
+      "operation": "ADDED",
+      "fingerprint": "5e9730bdd4656b01e808a1b7c3bb03953012074c53da72a31a7dd2b05e032ad2"
+    },
+    {
+      "id": "S-spec-review-loop-3.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:42",
+      "text": "ADDED: ### Requirement: roundごとにcommitでレビュー対象を固定する\n#### Scenario: default branchで開始しようとする\n- **WHEN** 現在のbranchがmainまたはmasterで`start`を実行する\n- **THEN** システムは開始を拒否し、topic branchへの切替を案内する",
+      "operation": "ADDED",
+      "fingerprint": "e1649a7ec869912738382f08cf19ea2d0a190dc559047134eae3ba6060dbd967"
+    },
+    {
+      "id": "S-spec-review-loop-3.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:46",
+      "text": "ADDED: ### Requirement: roundごとにcommitでレビュー対象を固定する\n#### Scenario: 実装報告なしでroundを閉じようとする\n- **WHEN** `review/r<N>_report.md`が存在しない状態で`commit-round`を実行する\n- **THEN** システムはcommitせず、実装報告の作成を求める",
+      "operation": "ADDED",
+      "fingerprint": "f5feb0ab2fda5261f661bc3ceeded0b45b8712e62dd637cd3ada6223c339f2bd"
+    },
+    {
+      "id": "S-spec-review-loop-3.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:50",
+      "text": "ADDED: ### Requirement: roundごとにcommitでレビュー対象を固定する\n#### Scenario: 対象外の変更が残っている\n- **WHEN** `commit-round`の時点でunstagedまたはuntrackedの変更がある\n- **THEN** システムはそのpathを表示してcommitせず、stageするか除外するかの判断を求める",
+      "operation": "ADDED",
+      "fingerprint": "ca3b8df89ad7166c0272556f814c42ab4dd6232adc6dcf8aa101503284914d4a"
+    },
+    {
+      "id": "S-spec-review-loop-4.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:57",
+      "text": "ADDED: ### Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする\n#### Scenario: 既定Reviewerでレビューする\n- **WHEN** Reviewerの指定なしで`review`を実行する\n- **THEN** システムはround SHAの一時worktreeでCodex CLIを読取り専用で起動し、使用したツール名・バージョン・モデル名を記録する",
+      "operation": "ADDED",
+      "fingerprint": "b3cabfa679b99a53b59631e02e2a376097674d0a6e91f8a91c0134a8f7f7df41"
+    },
+    {
+      "id": "S-spec-review-loop-4.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:61",
+      "text": "ADDED: ### Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする\n#### Scenario: Reviewer CLIが見つからない\n- **WHEN** 指定されたReviewer CLIが未導入、または必要な読取り専用指定に対応しない\n- **THEN** システムはレビューを実行せず、`doctor`の結果と導入・切替の方法を示す",
+      "operation": "ADDED",
+      "fingerprint": "ed2e2d5fcb4aa36265860ca70ac184dce7113c5d35534c9c384f83644e046002"
+    },
+    {
+      "id": "S-spec-review-loop-4.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:65",
+      "text": "ADDED: ### Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする\n#### Scenario: Reviewerが失敗する\n- **WHEN** Reviewerの起動失敗、timeout、またはスキーマ不適合の出力が起きる\n- **THEN** システムはそのroundをINCONCLUSIVEとして記録し、PASSにせず、同roundの再試行を1回まで許す",
+      "operation": "ADDED",
+      "fingerprint": "c7b42f2698efa6b8ccc88ee609fe683412198f3e933ce8b3741032fdd57a8c92"
+    },
+    {
+      "id": "S-spec-review-loop-5.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:72",
+      "text": "ADDED: ### Requirement: レビュー結果を構造検証してGateを判定する\n#### Scenario: 基準IDが欠落した結果を受け取る\n- **WHEN** Reviewer出力に`criteria.json`の基準IDのいずれかが含まれない、または重複する\n- **THEN** システムはその出力をスキーマ不適合として扱い、Gateを判定しない",
+      "operation": "ADDED",
+      "fingerprint": "5b2e06b4a037ee622d0d6c291f89c77a18e3a26fffdb4c8e1aa3cb589da2956b"
+    },
+    {
+      "id": "S-spec-review-loop-5.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:76",
+      "text": "ADDED: ### Requirement: レビュー結果を構造検証してGateを判定する\n#### Scenario: FAILと必須checkの未実行が併存する\n- **WHEN** ある基準がFAILで、同時に必須checkがNOT_RUNである\n- **THEN** GateはFAILとなり、各check状態と理由は個別に記録される",
+      "operation": "ADDED",
+      "fingerprint": "dc54b9e2dcf9985d9218111356949bcd576b5b0591704dacdce02bd47d86265e"
+    },
+    {
+      "id": "S-spec-review-loop-5.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:80",
+      "text": "ADDED: ### Requirement: レビュー結果を構造検証してGateを判定する\n#### Scenario: 範囲外の改善要求が出る\n- **WHEN** Reviewerが受入基準に対応しない改善を求める\n- **THEN** その指摘は提案として`r<N>_review.md`に記録され、GateとFindingの停滞判定に影響しない",
+      "operation": "ADDED",
+      "fingerprint": "b1df621bae6be6d6931575cf0cfe526be7f85fdd00cb12243736e64712c9a5ba"
+    },
+    {
+      "id": "S-spec-review-loop-6.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:87",
+      "text": "ADDED: ### Requirement: 停止条件に達したら止めて引き継ぐ\n#### Scenario: 2 round目でPASSする\n- **WHEN** 2 round目のGateがPASSになる\n- **THEN** システムはループを止め、`finish`による整理と、人による`openspec archive`の判断を案内する",
+      "operation": "ADDED",
+      "fingerprint": "f01f1adfec36e70342314d17f880bdf9e8a343d6e47a0669977c81eb2ca82f97"
+    },
+    {
+      "id": "S-spec-review-loop-6.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:91",
+      "text": "ADDED: ### Requirement: 停止条件に達したら止めて引き継ぐ\n#### Scenario: 同じFindingが解消されない\n- **WHEN** Finding `F-002`が2 round連続で未解消と判定される\n- **THEN** システムはround上限前でもループを止め、`F-002`の内容と引継ぎの選択肢を示す",
+      "operation": "ADDED",
+      "fingerprint": "44d0a27291d2cb39a5c49daee35884d1d99347381670991426e6d60d3e3e7b9e"
+    },
+    {
+      "id": "S-spec-review-loop-6.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:95",
+      "text": "ADDED: ### Requirement: 停止条件に達したら止めて引き継ぐ\n#### Scenario: round上限に達する\n- **WHEN** 3 round目のGateがPASSにならない\n- **THEN** システムは4 round目を開始せず、未解決Findingと選択肢を示す",
+      "operation": "ADDED",
+      "fingerprint": "df628b5ba3764e7064d1d7e6fab18a2243f3a37e5dbed1c6020bceb7af0afa55"
+    },
+    {
+      "id": "S-spec-review-loop-7.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:102",
+      "text": "ADDED: ### Requirement: 終了時にround commitを検証付きでsquashする\n#### Scenario: PASS後に確認してsquashする\n- **WHEN** GateがPASSで前提条件を満たし、利用者が計画を確認して`finish --confirm`を実行する\n- **THEN** システムは`review/summary.md`を加えたうえでバックアップrefを作り、base以降を1 commitにまとめ、tree一致を検証して、round数・Gate・Reviewer・squash前SHAをtrailerに記録する",
+      "operation": "ADDED",
+      "fingerprint": "136871a038fd3e172faf82f02bf2e52708abfab8a25ba15fa62eea65e8d72fbe"
+    },
+    {
+      "id": "S-spec-review-loop-7.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:106",
+      "text": "ADDED: ### Requirement: 終了時にround commitを検証付きでsquashする\n#### Scenario: round commitが既にpushされている\n- **WHEN** base..HEADのround commitのいずれかがリモート追跡refから到達可能である\n- **THEN** システムはsquashせず、force-pushが必要になるため別途の明示承認と手作業が必要であることを示す",
+      "operation": "ADDED",
+      "fingerprint": "ec1a90a17a5dbb8ea7492689029bf24514d3640c5166e12849c5ac753a54dc57"
+    },
+    {
+      "id": "S-spec-review-loop-7.3",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:110",
+      "text": "ADDED: ### Requirement: 終了時にround commitを検証付きでsquashする\n#### Scenario: tree一致の検証に失敗する\n- **WHEN** squash後の`HEAD^{tree}`がバックアップrefのtreeと一致しない\n- **THEN** システムはバックアップrefの状態へ戻し、失敗として報告する",
+      "operation": "ADDED",
+      "fingerprint": "3bad693d739d337b9f4adc5cdc071db377b18682117208b5f6e8b7579a00be9e"
+    },
+    {
+      "id": "S-spec-review-loop-7.4",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:114",
+      "text": "ADDED: ### Requirement: 終了時にround commitを検証付きでsquashする\n#### Scenario: PASS以外で終了する\n- **WHEN** 利用者がPASS以外のGateで`finish`を求める\n- **THEN** システムは`--accept-residual`による明示を求め、そのGateと残余Findingを要約とtrailerに記録する",
+      "operation": "ADDED",
+      "fingerprint": "ab070512e8021e832686457ba0c7cc8235d7918d0410b51c02bd95bbc59968d6"
+    },
+    {
+      "id": "S-spec-review-loop-8.1",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:121",
+      "text": "ADDED: ### Requirement: レビュー成果物をchangeとともに残す\n#### Scenario: archive後も証跡を参照する\n- **WHEN** 利用者がsquash後に`openspec archive`を実行する\n- **THEN** `review/`配下の成果物がarchive先のchangeフォルダに含まれ、round SHAとGate推移を`summary.md`で確認できる",
+      "operation": "ADDED",
+      "fingerprint": "789e1d2a6deb9959af8967b16359644a8f9ca31dcda437a3ce6b0cff9a0b7f7e"
+    },
+    {
+      "id": "S-spec-review-loop-8.2",
+      "kind": "scenario",
+      "source": "specs/spec-review-loop/spec.md:125",
+      "text": "ADDED: ### Requirement: レビュー成果物をchangeとともに残す\n#### Scenario: バックアップrefを削除する\n- **WHEN** 利用者が`prune`を実行する\n- **THEN** システムは対象refとround SHAが到達不能になることを表示し、確認後にだけ削除する",
+      "operation": "ADDED",
+      "fingerprint": "8ef116de812f807c49c7aefe0634aec96f7c25a8799ef61c36abeb0020600d7c"
+    }
+  ],
+  "checks": [
+    {
+      "id": "CHK-VALIDATE",
+      "argv": [
+        "openspec",
+        "validate",
+        "--strict",
+        "add-spec-review-loop"
+      ],
+      "cwd": ".",
+      "timeout": 300,
+      "expected_exit": 0,
+      "fingerprint": "e10dd783f130b442b4b2133d6ecd8e8df93eb21cade5630f7e33a748b7c2b1a3"
+    },
+    {
+      "id": "CHK-PYTEST",
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "quality-loop/skills/spec-review-loop/tests"
+      ],
+      "cwd": ".",
+      "timeout": 900,
+      "expected_exit": 0,
+      "fingerprint": "10012b898a77c5c23d457fa8b95a231cac1c510eb0940ba228a76686de06a321"
+    }
+  ],
+  "frozen_at": "2026-10-17T00:36:18+09:00"
+}

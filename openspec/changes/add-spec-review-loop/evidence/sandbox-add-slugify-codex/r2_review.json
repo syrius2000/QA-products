@@ -1,0 +1,134 @@
+{
+  "round": 2,
+  "sha": "a1ea689918e255b00d3081ceba932e650aa7b06a",
+  "committed_at": "2026-10-16T10:30:47+09:00",
+  "attempts": [
+    {
+      "at": "2026-10-16T10:30:47+09:00",
+      "tool": "codex",
+      "version": "codex-cli 0.160.1",
+      "model": "gpt-6-luna",
+      "error": "Reviewerが作業ツリーへ書き込みました（読取り専用契約違反）"
+    },
+    {
+      "at": "2026-10-16T10:31:35+09:00",
+      "tool": "codex",
+      "version": "codex-cli 0.160.1",
+      "model": "gpt-6-luna"
+    }
+  ],
+  "gate": {
+    "gate": "PASS",
+    "reasons": [
+      "全基準と全必須checkがPASS"
+    ]
+  },
+  "stop": {
+    "stop": true,
+    "reason": "pass",
+    "stalled": []
+  },
+  "review": {
+    "schema_version": 1,
+    "change_id": "add-slugify",
+    "round": 2,
+    "base_sha": "080f88450384cfe927c3bfe398afcc7f201e837a",
+    "round_sha": "a1ea689918e255b00d3081ceba932e650aa7b06a",
+    "criteria_fingerprint": "a4322eb62ba7a099e1392e57fd7d5af79b81be1f5549c6a41b0c7bbfca39d260",
+    "reviewer": {
+      "tool": "codex",
+      "version": "unknown",
+      "model": "gpt-6.1-sol"
+    },
+    "criteria": [
+      {
+        "id": "T-1.1",
+        "text": "1.1 `textutils.py`に`slugify(title: str) -> str`を実装する。検証: `python3 -m unittest test_textutils`が成功する。",
+        "verdict": "PASS",
+        "evidence": "round SHAの`textutils.py`に`slugify(title: str) -> str`があり、`re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')`でslugを返す。提示された必須check `CHK-UNITTEST` はexit_code 0、PASS。"
+      },
+      {
+        "id": "T-1.2",
+        "text": "1.2 `test_textutils.py`に、空白・記号・大文字・前後の空白を含む入力のテストを追加する。検証: 各Scenarioに対応するテストが存在する。",
+        "verdict": "PASS",
+        "evidence": "round SHAの`test_textutils.py`に`test_spaces_and_symbols`、`test_leading_and_trailing_spaces`、`test_uppercase`があり、各入力と期待値を検証している。"
+      },
+      {
+        "id": "S-text-utils-1.1",
+        "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 空白と記号を含むタイトル\n- **WHEN** `slugify(\"Hello, World!\")`を呼ぶ\n- **THEN** `\"hello-world\"`が返る",
+        "verdict": "PASS",
+        "evidence": "round SHAの`textutils.py`は小文字化後、英数字以外の連続をハイフンに置換する。`test_textutils.py`の`test_spaces_and_symbols`で`Hello, World!`から`hello-world`になることを確認している。"
+      },
+      {
+        "id": "S-text-utils-1.2",
+        "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 前後の空白\n- **WHEN** `slugify(\"  Spec Review  \")`を呼ぶ\n- **THEN** `\"spec-review\"`が返る",
+        "verdict": "PASS",
+        "evidence": "round SHAの`textutils.py`は置換後に`.strip('-')`を適用する。`test_textutils.py`の`test_leading_and_trailing_spaces`で`  Spec Review  `から`spec-review`になることを確認している。"
+      }
+    ],
+    "checks": [
+      {
+        "id": "CHK-VALIDATE",
+        "exit_code": 0,
+        "status": "PASS",
+        "reason": "期待 0・実際 0"
+      },
+      {
+        "id": "CHK-UNITTEST",
+        "exit_code": 0,
+        "status": "PASS",
+        "reason": "期待 0・実際 0"
+      }
+    ],
+    "findings": [
+      {
+        "id": "F-001",
+        "kind": "missing",
+        "severity": "high",
+        "criterion_ids": [
+          "T-1.1"
+        ],
+        "location": "openspec/changes/add-slugify/review/checks.json:1",
+        "description": "round SHAで`slugify(title: str) -> str`が実装され、必須check `CHK-UNITTEST` もPASSしているため、前roundの指摘は解消している。",
+        "recommendation": "追加対応不要。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-002",
+        "kind": "missing",
+        "severity": "high",
+        "criterion_ids": [
+          "T-1.2"
+        ],
+        "location": "test_textutils.py:7",
+        "description": "空白・記号・大文字・前後の空白を含む入力について、基準の求めるテストがround SHAに追加されている。",
+        "recommendation": "追加対応不要。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-003",
+        "kind": "defect",
+        "severity": "medium",
+        "criterion_ids": [
+          "S-text-utils-1.2"
+        ],
+        "location": "textutils.py:5",
+        "description": "置換後に先頭・末尾のハイフンを除去し、前後空白のシナリオで期待値`spec-review`を返す。",
+        "recommendation": "追加対応不要。",
+        "status": "resolved"
+      }
+    ],
+    "proposals": [],
+    "summary": "全受入基準をround SHA上の実装とテストで確認し、前roundの未解決Finding 3件はいずれも解消と判定した。提示された必須checkは両方PASS。"
+  },
+  "retry_allowed": false,
+  "reviewer": {
+    "tool": "codex",
+    "version": "codex-cli 0.160.1",
+    "model": "gpt-6-luna"
+  },
+  "structural_errors": [],
+  "reviewed_at": "2026-10-16T10:31:55+09:00",
+  "change_id": "add-slugify",
+  "base_sha": "080f88450384cfe927c3bfe398afcc7f201e837a"
+}

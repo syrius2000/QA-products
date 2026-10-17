@@ -1,0 +1,415 @@
+{
+  "round": 2,
+  "sha": "8b28ed1037fb5859f809ab96d55c17e8484412cc",
+  "committed_at": "2026-10-16T17:44:30+09:00",
+  "attempts": [
+    {
+      "at": "2026-10-16T17:44:36+09:00",
+      "tool": "codex",
+      "version": "codex-cli 0.160.1",
+      "model": "gpt-6.1-sol（effort medium）"
+    }
+  ],
+  "gate": {
+    "gate": "FAIL",
+    "reasons": [
+      "FAIL: T-2.2, T-4.1, S-spec-review-loop-2.3"
+    ]
+  },
+  "stop": {
+    "stop": true,
+    "reason": "stagnation",
+    "stalled": [
+      "F-003"
+    ]
+  },
+  "review": {
+    "schema_version": 1,
+    "change_id": "add-spec-review-loop",
+    "round": 2,
+    "base_sha": "ac998ea71b04aac543c4bcf0b90ece6268967bac",
+    "round_sha": "8b28ed1037fb5859f809ab96d55c17e8484412cc",
+    "criteria_fingerprint": "8fcd90a769b8fcb1bb2b3f1d1c9ff3995455381d5fb19a95b158d701431b3c35",
+    "reviewer": {
+      "tool": "codex",
+      "version": "unknown",
+      "model": "unknown"
+    },
+    "criteria": [
+      {
+        "id": "T-1.1",
+        "text": "1.1 `references/review.schema.json`を作成し、基準別判定（PASS／FAIL／UNVERIFIED）、check結果（PASS／FAIL／NOT_RUN／ERROR）、Finding（ID・種別・重大度・基準ID・`path:line`・対応案・前round判定）、提案、Reviewer情報、base／round SHAを定義する。検証: 正常例・欠落例・重複例のJSONでスキーマ検証のテストが期待どおり成否を返す。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/references/review.schema.json:7 に必須項目を定義。tests/test_schema_contract.py:39 以降に正常・欠落・重複の検査がある。python3 -Bによるメモリ上の検査でも、保存済み正常JSONの適合と4種類の不正構造の拒否を確認した。"
+      },
+      {
+        "id": "T-1.2",
+        "text": "1.2 `references/reviewer_contract.md`を作成し、読取り専用、全基準IDの順序どおりの判定、根拠の記載、範囲外指摘の提案扱い、前round Findingの再判定を定める。検証: 契約の各項目が1.1のスキーマ項目またはGate規則に対応している。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/references/reviewer_contract.md:5 以降に読取り専用、基準の保持、根拠、Gate、提案、再判定を規定。tests/test_schema_contract.py:81 以降でスキーマ項目とGate規則への対応を検査している。"
+      },
+      {
+        "id": "T-2.1",
+        "text": "2.1 tasks.mdのタスクと「検証:」文、spec deltaのADDED／MODIFIED／REMOVEDのScenarioを抽出し、`T-N.M`と`S-<cap>-<要件番号>.<n>`のIDを付ける。検証: 既存のarchive済みchange 3件以上で、抽出件数と原文が手作業の数え上げと一致する。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:39、93、127 に抽出処理がある。読取り専用の再照合でarchive済み4件のタスク／Scenario件数が37/25、5/5、15/18、11/23となり、原文の見出し数と一致した。tests/test_criteria.py:26 以降に件数と原文の照合がある。"
+      },
+      {
+        "id": "T-2.2",
+        "text": "2.2 チェックボックス状態を除いた原文のSHA-256で要件指紋を計算し、再抽出時のドリフトを検出する。検証: `[ ]`→`[x]`では差分なし、タスク本文の1文字変更ではドリフトになるテストが通る。",
+        "verdict": "FAIL",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:184、215 に指紋と比較処理があり、tests/test_criteria.py:62 以降に指定の2テストがある。ただしcriteria.py:203で0件の再抽出を例外にするため、全基準削除時にはドリフト検出に到達しない。Session.commit_roundをメモリ上のモックで確認し、HOLDやrefreeze案内のない通常の抽出エラーとなることを再現した。F-007参照。"
+      },
+      {
+        "id": "T-3.1",
+        "text": "3.1 `start`のbranch・作業ツリー検査とbase SHAの記録、`commit-round`の実装報告必須・未stage拒否・trailer付与を実装する。検証: 一時gitリポジトリでmaster拒否、報告なし拒否、untracked拒否、正常commitのtrailerをテストで確認する。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/session.py:75、78、97で開始条件とbaseを扱い、gitops.py:80で報告・未stage・trailerを扱う。tests/test_gitops.py:19、39、46、60に対応テストがある。"
+      },
+      {
+        "id": "T-3.2",
+        "text": "3.2 round SHAの一時worktreeの作成と、終了時・例外時の確実な削除を実装する。検証: Reviewerの成功・失敗・timeoutのいずれでも`git worktree list`に残らないテストが通る。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gitops.py:101でcontextmanagerを使い、finallyでworktree削除・prune・一時ディレクトリ削除を行う。tests/test_gitops.py:75、86で成功・失敗・timeout・例外時の残存を検査している。"
+      },
+      {
+        "id": "T-3.3",
+        "text": "3.3 `finish`のdry-run、前提条件検査（他commitの混在・push済み・dirty）、バックアップref作成、`reset --soft`によるsquash、tree一致検証、失敗時の復元を実装する。検証: 正常squash、push済み拒否、他commit混在拒否、tree不一致の模擬で復元される各テストが通る。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:30、81、98、99、106で計画・条件・バックアップ・例外復元・tree検証を実装。gitops.py:178でHEAD・index・作業ツリーを復元する。tests/test_gitops.py:101、119、129、139、147、191に正常・拒否・復元テストがある。F-001の指摘箇所は修正済み。"
+      },
+      {
+        "id": "T-3.4",
+        "text": "3.4 `prune`を実装し、到達不能になるround SHAを表示して確認後にだけrefを削除する。検証: 確認なしでは削除されず、確認後に`refs/spec-review/`から消えるテストが通る。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:115で対象refと到達不能SHAを返し、confirmがある場合だけ削除する。tests/test_gitops.py:178で確認前のref保持と確認後の消失を検査している。"
+      },
+      {
+        "id": "T-4.1",
+        "text": "4.1 Codex CLI（既定）、Antigravity CLI（`agy`）／Gemini CLI、Claude CLIの読取り専用・非対話での実行方法と最終出力の取得方法を、macOS上の実機の版で確認し、design.mdのOpen Questionを解消する。検証: 各CLIの版と使用フラグをdesign.mdに追記し、`doctor`がそれらを検出できる。",
+        "verdict": "FAIL",
+        "evidence": "openspec/changes/add-spec-review-loop/design.md:154 以降に版とフラグがあるが、157でGeminiは実機未確認。implementation-record.md:54、58ではagyも最終出力取得まで未確認とされる。tasks.md:22も未完了。F-003は未解消。"
+      },
+      {
+        "id": "T-4.2",
+        "text": "4.2 アダプタ共通インタフェース（プロンプト入力、cwd、timeout、出力ファイル）と3実装、`doctor`を実装する。検証: 偽Reviewer（固定JSONを返すスクリプト）で3アダプタ経路のテストが通り、未導入CLIでは`doctor`が導入方法を示す。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/reviewers.py:28、54、108、146に共通インタフェース・出力取得・probe・実行処理がある。tests/test_reviewers.py:23以降で4アダプタ経路を検査し、未導入時の導入案内も検査している。"
+      },
+      {
+        "id": "T-5.1",
+        "text": "5.1 構造検証（ID順序・重複・原文・SHA一致）とGate優先順位、提案の除外を実装する。検証: spec deltaの「レビュー結果を構造検証してGateを判定する」の全Scenarioをテストで再現して期待結果になる。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:12、26、73に提案除外・構造検証・Gate優先順位を実装。review_round.py:105で格下げ前のスキーマ検証を追加した。tests/test_gate.py:31、43、76、202に欠落、優先順位、提案、不正構造のテストがある。"
+      },
+      {
+        "id": "T-5.2",
+        "text": "5.2 round上限と停滞（同一Finding 2連続未解消、未解消数の非減少）の判定を実装する。検証: spec deltaの「停止条件に達したら止めて引き継ぐ」の全Scenarioをテストで再現して期待結果になる。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:102、116に停止・停滞判定がある。tests/test_gate.py:143以降でr2 PASS、同一Finding未解消、r3上限、未解消数非減少を検査している。"
+      },
+      {
+        "id": "T-5.3",
+        "text": "5.3 `r<N>_review.md`と`summary.md`をJSONから生成する。検証: 生成物に全基準ID・Gate・Finding・提案・Reviewer情報・round SHAが含まれる。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/report.py:12、42に両生成処理があり、61以降でsummaryにも最終roundの全基準とcheckを追加。python3 -Bのメモリ上の生成で43基準すべての表行を確認した。tests/test_report.py:16、39にも対応検査がある。"
+      },
+      {
+        "id": "T-6.1",
+        "text": "6.1 `bin/spec-review-loop-cli`とサブコマンド（start／commit-round／review／status／finish／prune／refreeze／doctor）を実装する。終了コードは既存Skillに合わせる（0成功、2契約拒否、3入出力、4内部エラー）。検証: 各サブコマンドの正常系・拒否系がテストで期待どおりの終了コードを返す。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/bin/spec-review-loop-cli:1から同梱runtimeを起動し、runtime/spec_review_loop/cli.py:18、65、88で全サブコマンドと終了コードを処理する。tests/test_cli.py:11以降に正常・契約拒否・入出力・内部エラーの検査がある。"
+      },
+      {
+        "id": "T-6.2",
+        "text": "6.2 `SKILL.md`を作成する。明示起動の条件と非起動例、実装担当の手順（実装→報告→commit-round→review→Finding対応）、停止時の引継ぎ、既存QA経路との使い分けを記載する。検証: descriptionが`quality-loop-skill-deployment`の明示起動要件と同じ形式（適用範囲・明示依頼例・非発火例）を満たす。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/SKILL.md:3のdescriptionに適用範囲・明示依頼例・非発火例がある。本文に実装担当の手順、停止時の引継ぎ、既存QA経路との使い分けを記載。tests/test_skill.py:14以降で形式と内容を検査している。"
+      },
+      {
+        "id": "T-6.3",
+        "text": "6.3 `evals/evals.json`に起動・非起動の代表発話を追加する。検証: 起動例と非起動例をそれぞれ3件以上含む。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/evals/evals.json:25以降のactivation_casesに起動例3件、非起動例4件がある。tests/test_skill.py:30以降で各3件以上を検査している。"
+      },
+      {
+        "id": "T-7.1",
+        "text": "7.1 一時リポジトリ上の小さなOpenSpec changeで、偽Reviewerにより「1 round目FAIL → 2 round目PASS → finish」を通しで実行する。検証: round commit 2件が1 commitにまとまり、tree一致、`summary.md`とtrailerの内容が正しい。",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/tests/test_integration.py:11の通しテストがr1 FAIL→r2 PASS→finishを実行し、2件から1件への集約、バックアップとのtree一致、summary、trailer、成果物追跡、clean状態を検査する。提示されたCHK-PYTESTもPASS。"
+      },
+      {
+        "id": "T-7.2",
+        "text": "7.2 macOS実機でCodex CLIを使い、実際のchange 1件で通しで実行する。検証: Reviewerのツール・モデル名が記録され、Gate推移が`summary.md`に残る。実行できない場合は理由を記録し、完了扱いにしない。",
+        "verdict": "PASS",
+        "evidence": "openspec/changes/add-spec-review-loop/evidence/sandbox-add-slugify-codex/r1_review.json、r2_review.jsonの保存済み結果を読取り確認し、codex-cli 0.160.1／gpt-6-luna、各round SHA、FAIL→PASSを確認した。同ディレクトリのsummary.md:12以降に推移、squash_commit.txt:4以降にGate・round数・Reviewer・squash前SHAが残る。F-005の証跡不足は解消。"
+      },
+      {
+        "id": "T-7.3",
+        "text": "7.3 OpenSpec成果物と変更範囲を最終確認する。検証: `openspec validate --strict add-spec-review-loop`が成功し、差分に`quality-qa`、`blind-qa-cycle`、`quality-review`、`quality-response`、既存QA記録の変更が含まれない。",
+        "verdict": "PASS",
+        "evidence": "git diff --name-only ac998ea71b04aac543c4bcf0b90ece6268967bac HEADで、変更が新Skillと対象change配下に限定されていることを確認した。対象外の既存Skill・QA記録の変更はない。提示されたround SHA上のCHK-VALIDATEは終了コード0でPASS。"
+      },
+      {
+        "id": "S-spec-review-loop-1.1",
+        "text": "Requirement: 明示起動と他QA経路との区別 (ADDED)\nScenario: changeを指定してループを依頼する\n- **WHEN** 利用者が`/spec-review-loop <change-id>`、または対象changeを示してレビューループの実行を依頼する\n- **THEN** システムは対象changeの存在を確認してから`start`を実行する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/SKILL.md:3に明示起動条件、起動前手順にchange存在確認を記載。runtime/spec_review_loop/criteria.py:30とsession.py:31で対象changeの存在を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-1.2",
+        "text": "Requirement: 明示起動と他QA経路との区別 (ADDED)\nScenario: 説明や一般レビューだけを求める\n- **WHEN** 利用者がループの仕組みの説明、一般的なコードレビュー、またはOpenSpec applyだけを依頼する\n- **THEN** システムはループを起動せず、既存QA経路の記録も変更しない",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/SKILL.md:3に説明・一般レビュー・OpenSpec applyのみでは非起動と規定し、本文にも非起動例と既存記録の非変更を記載。evals/evals.json:45以降に対応する非起動例がある。"
+      },
+      {
+        "id": "S-spec-review-loop-2.1",
+        "text": "Requirement: OpenSpec changeから受入基準を固定する (ADDED)\nScenario: タスクとScenarioを抽出する\n- **WHEN** tasks.mdに番号付きタスクがあり、spec deltaにScenarioがあるchangeで`start`を実行する\n- **THEN** 各タスクに`T-N.M`、各Scenarioに`S-<cap>-<要件番号>.<n>`のIDが原文の順序で付き、一覧が利用者に表示される",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:65、127、136でIDを付与し、render.py:23以降で一覧を表示。対象changeの再抽出で19タスク・24Scenario、計43基準と指定指紋の一致を確認した。"
+      },
+      {
+        "id": "S-spec-review-loop-2.2",
+        "text": "Requirement: OpenSpec changeから受入基準を固定する (ADDED)\nScenario: タスクを完了済みにしても指紋が変わらない\n- **WHEN** 実装担当がround中にタスクを`[ ]`から`[x]`へ変更する\n- **THEN** そのタスクの要件指紋は変わらず、基準ドリフトとして扱われない",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:49、69でチェックボックス状態を原文に含めない。tests/test_criteria.py:62以降の切替テストとtests/test_integration.py:27以降のr2完了チェック変更がこの挙動を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-2.3",
+        "text": "Requirement: OpenSpec changeから受入基準を固定する (ADDED)\nScenario: 基準がround途中で書き換わる\n- **WHEN** round開始時に再抽出した基準の指紋集合が`criteria.json`と異なる\n- **THEN** システムはGateをHOLDとしてループを停止し、変更された基準IDと`refreeze`の必要を示す",
+        "verdict": "FAIL",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/session.py:125、136およびreview_round.py:87はcrit.build成功後にだけドリフトを比較する。criteria.py:203が全基準削除時に例外を送出し、HOLD・変更ID・refreeze案内を経由しない。メモリ上のモックでcommit_roundの通常抽出エラーと状態書込み0回を確認した。F-007参照。"
+      },
+      {
+        "id": "S-spec-review-loop-2.4",
+        "text": "Requirement: OpenSpec changeから受入基準を固定する (ADDED)\nScenario: 基準を抽出できない\n- **WHEN** 対象changeにtasks.mdもScenarioも見つからない\n- **THEN** システムは`start`を拒否し、何もcommitしない",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:203で0件を拒否し、session.py:94で状態作成前に呼び出す。start処理にはcommit操作がない。tests/test_criteria.py:92以降に0件拒否のテストがある。"
+      },
+      {
+        "id": "S-spec-review-loop-3.1",
+        "text": "Requirement: roundごとにcommitでレビュー対象を固定する (ADDED)\nScenario: default branchで開始しようとする\n- **WHEN** 現在のbranchがmainまたはmasterで`start`を実行する\n- **THEN** システムは開始を拒否し、topic branchへの切替を案内する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gitops.py:13、46でmain/masterを拒否してtopic branchを案内。tests/test_gitops.py:19とtests/test_cli.py:11以降でmaster拒否を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-3.2",
+        "text": "Requirement: roundごとにcommitでレビュー対象を固定する (ADDED)\nScenario: 実装報告なしでroundを閉じようとする\n- **WHEN** `review/r<N>_report.md`が存在しない状態で`commit-round`を実行する\n- **THEN** システムはcommitせず、実装報告の作成を求める",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gitops.py:82で実装報告の存在と空でないことをcommit前に検査。tests/test_gitops.py:39で拒否とcommit数0を確認する。"
+      },
+      {
+        "id": "S-spec-review-loop-3.3",
+        "text": "Requirement: roundごとにcommitでレビュー対象を固定する (ADDED)\nScenario: 対象外の変更が残っている\n- **WHEN** `commit-round`の時点でunstagedまたはuntrackedの変更がある\n- **THEN** システムはそのpathを表示してcommitせず、stageするか除外するかの判断を求める",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gitops.py:86以降でreview成果物以外の未stage・未追跡pathを拒否結果に含める。tests/test_gitops.py:46で両状態のpath表示を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-4.1",
+        "text": "Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする (ADDED)\nScenario: 既定Reviewerでレビューする\n- **WHEN** Reviewerの指定なしで`review`を実行する\n- **THEN** システムはround SHAの一時worktreeでCodex CLIを読取り専用で起動し、使用したツール名・バージョン・モデル名を記録する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/reviewers.py:16、31で既定Codexとread-only起動を指定。review_round.py:86、128でround worktreeとReviewer情報を扱う。tests/test_reviewers.py:23以降と保存済み実機レビューJSONで起動経路・記録を確認できる。"
+      },
+      {
+        "id": "S-spec-review-loop-4.2",
+        "text": "Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする (ADDED)\nScenario: Reviewer CLIが見つからない\n- **WHEN** 指定されたReviewer CLIが未導入、または必要な読取り専用指定に対応しない\n- **THEN** システムはレビューを実行せず、`doctor`の結果と導入・切替の方法を示す",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/reviewers.py:108で存在と必須フラグを検査。review_round.py:78で実行前に拒否し、doctor結果・導入・切替案内を返す。tests/test_reviewers.pyとtests/test_gate.py:131以降に対応検査がある。"
+      },
+      {
+        "id": "S-spec-review-loop-4.3",
+        "text": "Requirement: 別系統のAI Reviewerが読取り専用で独立レビューする (ADDED)\nScenario: Reviewerが失敗する\n- **WHEN** Reviewerの起動失敗、timeout、またはスキーマ不適合の出力が起きる\n- **THEN** システムはそのroundをINCONCLUSIVEとして記録し、PASSにせず、同roundの再試行を1回まで許す",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/reviewers.py:153以降で起動失敗・timeoutを返し、review_round.py:98、105、119以降で不適合を記録し最大2 attemptに制限する。tests/test_gate.py:117以降と202以降に失敗・再試行・不正構造の検査がある。"
+      },
+      {
+        "id": "S-spec-review-loop-5.1",
+        "text": "Requirement: レビュー結果を構造検証してGateを判定する (ADDED)\nScenario: 基準IDが欠落した結果を受け取る\n- **WHEN** Reviewer出力に`criteria.json`の基準IDのいずれかが含まれない、または重複する\n- **THEN** システムはその出力をスキーマ不適合として扱い、Gateを判定しない",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:32以降でID配列の一致と欠落・重複を検査し、review_round.py:111で有効レビューとして採用しない。tests/test_schema_contract.py:65以降とtests/test_gate.py:31以降に対応テストがある。"
+      },
+      {
+        "id": "S-spec-review-loop-5.2",
+        "text": "Requirement: レビュー結果を構造検証してGateを判定する (ADDED)\nScenario: FAILと必須checkの未実行が併存する\n- **WHEN** ある基準がFAILで、同時に必須checkがNOT_RUNである\n- **THEN** GateはFAILとなり、各check状態と理由は個別に記録される",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:80以降でFAILを未検証より優先し、未実行理由も残す。report.py:27以降でcheck状態・終了コード・理由を個別に出力。tests/test_gate.py:56以降にFAILとNOT_RUN併存の検査がある。"
+      },
+      {
+        "id": "S-spec-review-loop-5.3",
+        "text": "Requirement: レビュー結果を構造検証してGateを判定する (ADDED)\nScenario: 範囲外の改善要求が出る\n- **WHEN** Reviewerが受入基準に対応しない改善を求める\n- **THEN** その指摘は提案として`r<N>_review.md`に記録され、GateとFindingの停滞判定に影響しない",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:12で対応基準のないFindingを提案へ移し、停止判定はfindingsのみを参照する。report.py:36で提案を別記する。tests/test_gate.py:76以降でPASSと提案欄への記録を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-6.1",
+        "text": "Requirement: 停止条件に達したら止めて引き継ぐ (ADDED)\nScenario: 2 round目でPASSする\n- **WHEN** 2 round目のGateがPASSになる\n- **THEN** システムはループを止め、`finish`による整理と、人による`openspec archive`の判断を案内する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:106でPASS停止、session.py:174以降でfinishと人によるarchive判断を案内する。tests/test_gate.py:143以降でr2 PASSと案内を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-6.2",
+        "text": "Requirement: 停止条件に達したら止めて引き継ぐ (ADDED)\nScenario: 同じFindingが解消されない\n- **WHEN** Finding `F-002`が2 round連続で未解消と判定される\n- **THEN** システムはround上限前でもループを止め、`F-002`の内容と引継ぎの選択肢を示す",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:120で前roundの未解決IDと今回のunresolvedを照合する。render.py:58以降でFinding内容と停止・引継ぎを表示する。tests/test_gate.py:151以降でF-002の停滞と次round拒否を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-6.3",
+        "text": "Requirement: 停止条件に達したら止めて引き継ぐ (ADDED)\nScenario: round上限に達する\n- **WHEN** 3 round目のGateがPASSにならない\n- **THEN** システムは4 round目を開始せず、未解決Findingと選択肢を示す",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gate.py:111で上限停止し、session.py:109、133で次round開始を拒否する。tests/test_gate.py:164以降でr3の停止とr4拒否を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-7.1",
+        "text": "Requirement: 終了時にround commitを検証付きでsquashする (ADDED)\nScenario: PASS後に確認してsquashする\n- **WHEN** GateがPASSで前提条件を満たし、利用者が計画を確認して`finish --confirm`を実行する\n- **THEN** システムは`review/summary.md`を加えたうえでバックアップrefを作り、base以降を1 commitにまとめ、tree一致を検証して、round数・Gate・Reviewer・squash前SHAをtrailerに記録する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:64、83、89、98、100、106で確認・summary・バックアップ・squash・tree・trailerを実装。tests/test_integration.py:11とtests/test_gitops.py:101に通しの検査がある。"
+      },
+      {
+        "id": "S-spec-review-loop-7.2",
+        "text": "Requirement: 終了時にround commitを検証付きでsquashする (ADDED)\nScenario: round commitが既にpushされている\n- **WHEN** base..HEADのround commitのいずれかがリモート追跡refから到達可能である\n- **THEN** システムはsquashせず、force-pushが必要になるため別途の明示承認と手作業が必要であることを示す",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:54で全commitのリモート追跡ref到達性を検査し、57以降で拒否と明示承認・手作業を案内。tests/test_gitops.py:119でリモート追跡refを用いた拒否を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-7.3",
+        "text": "Requirement: 終了時にround commitを検証付きでsquashする (ADDED)\nScenario: tree一致の検証に失敗する\n- **WHEN** squash後の`HEAD^{tree}`がバックアップrefのtreeと一致しない\n- **THEN** システムはバックアップrefの状態へ戻し、失敗として報告する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:106以降でtree不一致時にrestoreを実行して失敗を返す。gitops.py:178のhard resetにより作業ツリーも戻る。tests/test_gitops.py:147で改変ファイルを含む復元を検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-7.4",
+        "text": "Requirement: 終了時にround commitを検証付きでsquashする (ADDED)\nScenario: PASS以外で終了する\n- **WHEN** 利用者がPASS以外のGateで`finish`を求める\n- **THEN** システムは`--accept-residual`による明示を求め、そのGateと残余Findingを要約とtrailerに記録する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:40で明示受容を必須にし、64、68、70でGateと残余FindingのIDをtrailer化。report.py:67で要約へ残余Findingを記録する。tests/test_gitops.py:206で複数Findingのtrailerを検査する。"
+      },
+      {
+        "id": "S-spec-review-loop-8.1",
+        "text": "Requirement: レビュー成果物をchangeとともに残す (ADDED)\nScenario: archive後も証跡を参照する\n- **WHEN** 利用者がsquash後に`openspec archive`を実行する\n- **THEN** `review/`配下の成果物がarchive先のchangeフォルダに含まれ、round SHAとGate推移を`summary.md`で確認できる",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/session.py:32で成果物をchange内のreviewへ配置し、finish.py:89、91でsummaryを含め追跡する。report.py:54以降にround SHAとGate推移を出力。tests/test_integration.py:44以降でreview成果物が最終commitに含まれることを検査している。"
+      },
+      {
+        "id": "S-spec-review-loop-8.2",
+        "text": "Requirement: レビュー成果物をchangeとともに残す (ADDED)\nScenario: バックアップrefを削除する\n- **WHEN** 利用者が`prune`を実行する\n- **THEN** システムは対象refとround SHAが到達不能になることを表示し、確認後にだけ削除する",
+        "verdict": "PASS",
+        "evidence": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:115以降で対象refと到達不能SHAを算出してconfirm前は削除しない。render.py:95以降で表示する。tests/test_gitops.py:178に確認前後のref検査がある。"
+      }
+    ],
+    "checks": [
+      {
+        "id": "CHK-VALIDATE",
+        "exit_code": 0,
+        "status": "PASS",
+        "reason": "期待 0・実際 0"
+      },
+      {
+        "id": "CHK-PYTEST",
+        "exit_code": 0,
+        "status": "PASS",
+        "reason": "期待 0・実際 0"
+      }
+    ],
+    "findings": [
+      {
+        "id": "F-001",
+        "kind": "defect",
+        "severity": "high",
+        "criterion_ids": [
+          "T-3.3",
+          "S-spec-review-loop-7.3"
+        ],
+        "location": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:99; quality-loop/skills/spec-review-loop/runtime/spec_review_loop/gitops.py:178; quality-loop/skills/spec-review-loop/tests/test_gitops.py:147",
+        "description": "解消を確認した。squash commitの例外時にもrestoreを呼び、tree不一致時とともにHEAD・index・作業ツリーをバックアップへ戻す。回帰テストはcommit失敗時のclean状態と、tree不一致を起こしたファイルの復元まで確認する。",
+        "recommendation": "追加対応は不要。両方の復元回帰テストを維持する。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-002",
+        "kind": "defect",
+        "severity": "high",
+        "criterion_ids": [
+          "T-5.1",
+          "T-6.1",
+          "S-spec-review-loop-4.3"
+        ],
+        "location": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/review_round.py:105; quality-loop/skills/spec-review-loop/tests/test_gate.py:202",
+        "description": "解消を確認した。demote_proposalsより前にスキーマ検証を行い、不適合は_finish_roundへ渡す。findings要素null、criterion_ids null、criteria文字列を扱う回帰テストがある。メモリ上の検査でもこれらとproposals非配列が例外なく検証エラーとなった。",
+        "recommendation": "追加対応は不要。不正構造をINCONCLUSIVEとして記録する回帰テストを維持する。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-003",
+        "kind": "missing",
+        "severity": "medium",
+        "criterion_ids": [
+          "T-4.1"
+        ],
+        "location": "openspec/changes/add-spec-review-loop/design.md:156; openspec/changes/add-spec-review-loop/implementation-record.md:58; openspec/changes/add-spec-review-loop/tasks.md:22",
+        "description": "未解消。agyの最終出力取得までの実機確認は未了で、Gemini CLIも未導入・未確認である。doctorのフラグ検出と偽Reviewerによる経路検査では、要求された実機での読取り専用・非対話実行と出力取得の確認を満たさない。タスクが未完了に修正されている点は適切である。",
+        "recommendation": "対象CLIのmacOS実機版で読取り専用・非対話起動から最終JSON取得まで確認し、版・フラグ・観察結果を保存する。実行できない間は未完了を維持する。",
+        "status": "unresolved"
+      },
+      {
+        "id": "F-004",
+        "kind": "missing",
+        "severity": "medium",
+        "criterion_ids": [
+          "T-5.3"
+        ],
+        "location": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/report.py:61; quality-loop/skills/spec-review-loop/tests/test_report.py:39",
+        "description": "解消を確認した。summary.mdへ最終roundの全受入基準IDと判定、必須checkの状態を出力する。保存済みレビューからメモリ上で生成し、43基準すべての表行が存在することを確認した。",
+        "recommendation": "追加対応は不要。全基準IDの包含検査を維持する。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-005",
+        "kind": "test-gap",
+        "severity": "medium",
+        "criterion_ids": [
+          "T-7.2"
+        ],
+        "location": "openspec/changes/add-spec-review-loop/evidence/sandbox-add-slugify-codex/summary.md:12; openspec/changes/add-spec-review-loop/evidence/sandbox-add-slugify-codex/squash_commit.txt:4",
+        "description": "解消を確認した。実機Codexでのchange実行について、criteria、各roundのレビューJSON、Markdown、summary、squash commit情報がround SHA内へ追加された。JSONとsummaryのround SHA、Reviewerの版・モデル、FAIL→PASSの推移が一致している。",
+        "recommendation": "追加対応は不要。保存した実行証跡を維持する。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-006",
+        "kind": "missing",
+        "severity": "medium",
+        "criterion_ids": [
+          "S-spec-review-loop-7.4"
+        ],
+        "location": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/finish.py:68; quality-loop/skills/spec-review-loop/tests/test_gitops.py:206",
+        "description": "解消を確認した。非PASSのfinishでは最終レビューの未解決FindingからIDを抽出し、利用者の受容文とは別にSpec-Review-Residual-Findings trailerへ記録する。回帰テストはF-001、F-002の双方とFAIL Gateの記録を検査する。",
+        "recommendation": "追加対応は不要。非PASS終了時の残余Finding記録テストを維持する。",
+        "status": "resolved"
+      },
+      {
+        "id": "F-007",
+        "kind": "defect",
+        "severity": "medium",
+        "criterion_ids": [
+          "T-2.2",
+          "S-spec-review-loop-2.3"
+        ],
+        "location": "quality-loop/skills/spec-review-loop/runtime/spec_review_loop/criteria.py:203; quality-loop/skills/spec-review-loop/runtime/spec_review_loop/session.py:125; quality-loop/skills/spec-review-loop/runtime/spec_review_loop/review_round.py:87",
+        "description": "固定後に全タスク・Scenarioが削除された場合、再抽出した空集合を固定基準と比較できない。crit.buildが0件を契約エラーとして送出するため、commit-roundでは通常の抽出エラーとなり、reviewでもHOLD記録前に例外が伝播する。変更された基準IDとrefreezeの必要が示されない。Session.commit_roundをメモリ上で検査し、通常抽出エラー・状態書込み0回を再現した。",
+        "recommendation": "開始時の0件拒否と、既存セッションでの再抽出を分離する。再抽出では空集合も比較できるようにし、削除された全基準IDを含むHOLDとrefreeze案内を返す。commit-round前とround SHAレビュー時の双方に、全基準削除の回帰テストを追加する。",
+        "status": "new"
+      }
+    ],
+    "proposals": [],
+    "summary": "前roundの6件中5件は解消を確認した。F-003の代替Reviewer実機確認は未了。新たに、全基準削除時にドリフトをHOLDとして扱えないF-007を確認した。43基準を再判定し、指紋一致・archive済み4件の抽出件数・summaryの全基準ID出力を読取り専用で確認した。作業ツリーの変更はない。"
+  },
+  "retry_allowed": false,
+  "reviewer": {
+    "tool": "codex",
+    "version": "codex-cli 0.160.1",
+    "model": "gpt-6.1-sol（effort medium）"
+  },
+  "structural_errors": [],
+  "reviewed_at": "2026-10-16T17:50:37+09:00",
+  "change_id": "add-spec-review-loop",
+  "base_sha": "ac998ea71b04aac543c4bcf0b90ece6268967bac"
+}

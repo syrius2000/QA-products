@@ -1,0 +1,127 @@
+{
+  "round": 1,
+  "sha": "ce25449c63349650709973a4c0ee3ab78a8b3f1e",
+  "committed_at": "2026-10-16T10:26:11+09:00",
+  "attempts": [
+    {
+      "at": "2026-10-16T10:26:18+09:00",
+      "tool": "codex",
+      "version": "codex-cli 0.160.1",
+      "model": "gpt-6-luna"
+    }
+  ],
+  "gate": {
+    "gate": "FAIL",
+    "reasons": [
+      "FAIL: T-1.1, T-1.2, S-text-utils-1.2, CHK-UNITTEST"
+    ]
+  },
+  "stop": {
+    "stop": false,
+    "reason": "continue",
+    "stalled": []
+  },
+  "review": {
+    "schema_version": 1,
+    "change_id": "add-slugify",
+    "round": 1,
+    "base_sha": "080f88450384cfe927c3bfe398afcc7f201e837a",
+    "round_sha": "ce25449c63349650709973a4c0ee3ab78a8b3f1e",
+    "criteria_fingerprint": "a4322eb62ba7a099e1392e57fd7d5af79b81be1f5549c6a41b0c7bbfca39d260",
+    "reviewer": {
+      "tool": "codex",
+      "version": "unknown",
+      "model": "GPT-6"
+    },
+    "criteria": [
+      {
+        "id": "T-1.1",
+        "text": "1.1 `textutils.py`に`slugify(title: str) -> str`を実装する。検証: `python3 -m unittest test_textutils`が成功する。",
+        "verdict": "FAIL",
+        "evidence": "round SHAの`textutils.py`は`slugify`を定義している（関数本体は`re.sub(r'[^a-z0-9]+', '-', title.lower())`）。一方、CLI提示の必須check `CHK-UNITTEST` はexit_code 5でFAILし、「Ran 0 tests」「NO TESTS RAN」と記録されており、指定の検証は成功していない。"
+      },
+      {
+        "id": "T-1.2",
+        "text": "1.2 `test_textutils.py`に、空白・記号・大文字・前後の空白を含む入力のテストを追加する。検証: 各Scenarioに対応するテストが存在する。",
+        "verdict": "FAIL",
+        "evidence": "round SHAの変更一覧に`test_textutils.py`は含まれず、`git show ce25449c63349650709973a4c0ee3ab78a8b3f1e:test_textutils.py` はpath not foundで失敗した。実装報告も未着手・テスト未作成としている。"
+      },
+      {
+        "id": "S-text-utils-1.1",
+        "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 空白と記号を含むタイトル\n- **WHEN** `slugify(\"Hello, World!\")`を呼ぶ\n- **THEN** `\"hello-world\"`が返る",
+        "verdict": "PASS",
+        "evidence": "round SHAの`textutils.py`では入力を小文字化し、`[^a-z0-9]+`に一致する空白・記号の連続をハイフンに置換する。この実装から`Hello, World!`は`hello-world`となる。"
+      },
+      {
+        "id": "S-text-utils-1.2",
+        "text": "Requirement: タイトルからslugを作る (ADDED)\nScenario: 前後の空白\n- **WHEN** `slugify(\"  Spec Review  \")`を呼ぶ\n- **THEN** `\"spec-review\"`が返る",
+        "verdict": "FAIL",
+        "evidence": "round SHAの`textutils.py`の置換は入力の先頭・末尾の非英数字もハイフンにする。`  Spec Review  `は`-spec-review-`となり、期待値`spec-review`と一致しない。"
+      }
+    ],
+    "checks": [
+      {
+        "id": "CHK-VALIDATE",
+        "exit_code": 0,
+        "status": "PASS",
+        "reason": "期待 0・実際 0"
+      },
+      {
+        "id": "CHK-UNITTEST",
+        "exit_code": 5,
+        "status": "FAIL",
+        "reason": "期待 0・実際 5: ----------------------------------------------------------------------\nRan 0 tests in 0.000s\n\nNO TESTS RAN"
+      }
+    ],
+    "findings": [
+      {
+        "id": "F-001",
+        "kind": "missing",
+        "severity": "high",
+        "criterion_ids": [
+          "T-1.1"
+        ],
+        "location": "openspec/changes/add-slugify/review/checks.json:1",
+        "description": "指定された`python3 -m unittest test_textutils`が成功していない。CLI記録では0件のテストしか検出されず、必須checkがFAILしている。",
+        "recommendation": "`test_textutils.py`を追加してテストを検出可能にし、必須checkを成功させる。",
+        "status": "new"
+      },
+      {
+        "id": "F-002",
+        "kind": "missing",
+        "severity": "high",
+        "criterion_ids": [
+          "T-1.2"
+        ],
+        "location": "textutils.py:4",
+        "description": "受入基準で求められるテストファイルと、各Scenarioに対応するテストがround SHAに存在しない。",
+        "recommendation": "空白・記号・大文字・前後空白を含む入力を網羅し、各Scenarioに対応するテストを`test_textutils.py`に追加する。",
+        "status": "new"
+      },
+      {
+        "id": "F-003",
+        "kind": "defect",
+        "severity": "medium",
+        "criterion_ids": [
+          "S-text-utils-1.2"
+        ],
+        "location": "textutils.py:5",
+        "description": "前後の空白が置換結果の先頭・末尾にハイフンとして残り、指定Scenarioの期待値`spec-review`を返さない。",
+        "recommendation": "置換後に先頭・末尾のハイフンを除去し、前後空白のScenarioを満たす。",
+        "status": "new"
+      }
+    ],
+    "proposals": [],
+    "summary": "指定基準と必須checkに未達があり、Gate規則上FAIL。テストが未作成で必須unittest checkが失敗し、前後空白のScenarioでもslugifyの返値が期待値と異なる。"
+  },
+  "retry_allowed": false,
+  "reviewer": {
+    "tool": "codex",
+    "version": "codex-cli 0.160.1",
+    "model": "gpt-6-luna"
+  },
+  "structural_errors": [],
+  "reviewed_at": "2026-10-16T10:26:37+09:00",
+  "change_id": "add-slugify",
+  "base_sha": "080f88450384cfe927c3bfe398afcc7f201e837a"
+}
