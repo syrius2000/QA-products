@@ -266,3 +266,28 @@ def test_end_to_end_with_controls(repo, tmp_path, monkeypatch):
     assert not any(name.endswith(('.log', '.review.lock')) for name in tracked)
     assert any(name.endswith('r1_prompt.md') for name in tracked)
     assert git(repo, 'status', '--porcelain') == ''
+
+
+def test_timeout_kills_descendant_processes(repo, tmp_path, monkeypatch):
+    """timeoutではReviewerの子孫プロセスも止まり、孤児が残らない（tasks 1.1）。"""
+    pid_file = tmp_path / 'child.pid'
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'orphan')
+    monkeypatch.setenv('FAKE_CHILD_PID', str(pid_file))
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    code, out = cli(repo, 'review', CHANGE, '--timeout', '2')
+    assert code == 3 and pid_file.exists()
+    child = int(pid_file.read_text())
+
+    def gone():
+        try:
+            os.kill(child, 0)
+        except ProcessLookupError:
+            return True
+        # ゾンビはkill(0)が成功するので、状態も見る
+        try:
+            return open(f'/proc/{child}/stat').read().split(')')[1].split()[0] == 'Z'
+        except OSError:
+            return True
+    assert wait_for(gone, 5)
+    assert git(repo, 'worktree', 'list').count('\n') == 1                  # 一時worktreeも残らない
