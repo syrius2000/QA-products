@@ -147,6 +147,16 @@ class Session:
                                  'started_epoch': datetime.now(JST).timestamp()}).encode('utf-8'))
         self._lock_fd = fd
 
+    def update_lock_info(self, round_no: int, tool: str) -> None:
+        """保持中のロックの表示用情報を、再読込後のround・toolへ更新する（排他には影響しない）。"""
+        fd = getattr(self, '_lock_fd', None)
+        if fd is None:
+            return
+        os.ftruncate(fd, 0)
+        os.lseek(fd, 0, os.SEEK_SET)
+        os.write(fd, json.dumps({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
+                                 'started_epoch': datetime.now(JST).timestamp()}).encode('utf-8'))
+
     def release_lock(self) -> None:
         fd = getattr(self, '_lock_fd', None)
         if fd is None:
@@ -267,40 +277,52 @@ class Session:
     def drift_against_worktree(self) -> dict:
         return crit.drift(self.frozen(), crit.build(self.root, self.change_id, allow_empty=True))
 
+    def assert_no_review_running(self) -> None:
+        """state.lockを保持したまま呼ぶ。reviewのflockを一時的に取り、取れなければ実行中。"""
+        self.ensure_gitignore()
+        fd = os.open(self.path(LOCK_NAME), os.O_CREAT | os.O_RDWR, 0o644)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            info = self.lock_info() or {}
+            raise contract(f'r{info.get("round", "?")}のレビューが実行中です（PID {info.get("pid", "不明")}）',
+                           f'status で進行を確認し、終了を待ってください') from exc
+        finally:
+            os.close(fd)  # closeでflockも解放される
+
     def commit_round(self) -> dict:
-        state = self.state()
-        if gitops.current_branch(self.root) != state['branch']:
-            raise contract(f'開始時のbranch {state["branch"]} ではありません', f'git switch {state["branch"]} で戻ってください')
-        self.require_integrity(state)
-        if self.lock_info():
-            raise contract('レビューが実行中です', 'status で進行を確認し、終了を待ってください')
-        if state.get('awaiting_user'):
-            raise contract('一時停止中です（--pause round）。結果を人に見せ、指示を受けてから進めます',
-                           f'人の発言を spec-review-loop-cli instruct {self.change_id} --message "<発言>" で記録してください')
-        round_no = self.next_round(state)
-        if round_no > state['max_rounds']:
-            raise contract('round上限に達しています', 'status で引継ぎの選択肢を確認してください')
-        diff = self.drift_against_worktree()
-        if crit.has_drift(diff):
-            raise contract('基準ドリフト（HOLD）: 固定した受入基準が変更されています', '意図した変更なら利用者の明示指示で refreeze を実行してください', {'drift': diff})
-        pending = [i for i in state.get('instructions', []) if i['consumed_round'] is None]
-        if pending:
-            report_path = self.path(f'r{round_no}_report.md')
-            body = report_path.read_text(encoding='utf-8') if report_path.exists() else ''
-            missing = [i for i in pending if i['text'] not in body]
-            if missing:
-                raise contract('人の指示が実装報告に転記されていません',
-                               f'{self.review_rel}/r{round_no}_report.md に次の指示を原文のまま記載し、対応内容を書いてください',
-                               {'instructions': [f'{i["id"]}: {i["text"]}' for i in missing]})
-        result = gitops.commit_round(self.root, self.change_id, round_no, self.review_rel)
-        record = {'round': round_no, 'sha': result['sha'], 'committed_at': now_jst(), 'attempts': [],
-                  'gate': None, 'stop': None, 'review': None, 'retry_allowed': False}
-        consumed = {i['id'] for i in pending}
-        with self.state_lock():  # 転記を確認した指示だけを消化済みにする。確認後に追加された指示は未消化のまま残す
-            fresh = self.state()
+        # 検証から書込みまでを状態ロックで囲み、確認後に別プロセスが状態を変えられないようにする
+        with self.state_lock():
+            state = self.state()
+            if gitops.current_branch(self.root) != state['branch']:
+                raise contract(f'開始時のbranch {state["branch"]} ではありません', f'git switch {state["branch"]} で戻ってください')
+            self.require_integrity(state)
+            self.assert_no_review_running()
+            if state.get('awaiting_user'):
+                raise contract('一時停止中です（--pause round）。結果を人に見せ、指示を受けてから進めます',
+                               f'人の発言を spec-review-loop-cli instruct {self.change_id} --message "<発言>" で記録してください')
+            round_no = self.next_round(state)
+            if round_no > state['max_rounds']:
+                raise contract('round上限に達しています', 'status で引継ぎの選択肢を確認してください')
+            diff = self.drift_against_worktree()
+            if crit.has_drift(diff):
+                raise contract('基準ドリフト（HOLD）: 固定した受入基準が変更されています', '意図した変更なら利用者の明示指示で refreeze を実行してください', {'drift': diff})
+            pending = [i for i in state.get('instructions', []) if i['consumed_round'] is None]
+            if pending:
+                report_path = self.path(f'r{round_no}_report.md')
+                body = report_path.read_text(encoding='utf-8') if report_path.exists() else ''
+                missing = [i for i in pending if i['text'] not in body]
+                if missing:
+                    raise contract('人の指示が実装報告に転記されていません',
+                                   f'{self.review_rel}/r{round_no}_report.md に次の指示を原文のまま記載し、対応内容を書いてください',
+                                   {'instructions': [f'{i["id"]}: {i["text"]}' for i in missing]})
+            result = gitops.commit_round(self.root, self.change_id, round_no, self.review_rel)
+            record = {'round': round_no, 'sha': result['sha'], 'committed_at': now_jst(), 'attempts': [],
+                      'gate': None, 'stop': None, 'review': None, 'retry_allowed': False}
+            consumed = {i['id'] for i in pending}
             instructions = [{**i, 'consumed_round': round_no} if i['id'] in consumed else i
-                            for i in fresh.get('instructions', [])]
-            self.write_json('state.json', {**fresh, 'rounds': [*fresh['rounds'], record], 'instructions': instructions})
+                            for i in state.get('instructions', [])]
+            self.write_json('state.json', {**state, 'rounds': [*state['rounds'], record], 'instructions': instructions})
         return {'round': round_no, 'sha': result['sha'], 'paths': result['paths']}
 
     # --- refreeze ---

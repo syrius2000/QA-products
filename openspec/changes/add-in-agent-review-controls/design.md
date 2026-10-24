@@ -14,6 +14,11 @@
 - JSONの保存は一時ファイルへ書いてから`os.replace`で置き換え、読み手が書きかけを見ないようにする。
 - 停止中・終了済みのループには`instruct`を受け付けない（PR #9 P1-2）。`finish`は、実装報告に反映されていない指示があれば拒否し、`--accept-residual`で利用者の判断を明示した場合だけ、その指示IDとともに`Spec-Review-Unconsumed-Instructions`／`Spec-Review-Unconsumed-Judgment`をtrailerに残す。
 
+### D1c. 検査と確定の原子性（PR #9 再レビュー P2-1・P2-2）
+- `review`は、レビューロックの取得後に`state.json`を状態ロックの下で再読込し、レビューできるかの判定をやり直す（取得前に読んだ古い状態のまま、別プロセスが完了したroundを再レビューしない）。再読込の前後ではReviewerを起動しない。
+- `commit-round`と`finish`は、検査から`state.json`の確定までを状態ロックの下で行う。あわせてレビューロックを一時的に取って、実行中のreviewがないことを確認する（`instruct`は状態ロックの待ちに入り、確定後は「終了済み」として拒否される）。
+- 状態ロックはReviewerの実行中は保持しない（実行中の`instruct`を受け付けるため）。ロックの取得順は、レビューロック→状態ロックに統一し、`commit-round`・`finish`は状態ロックを保持したままレビューロックを非ブロッキングで試すだけにして、デッドロックを避ける。
+
 ### D2. 人の指示（instruct）と一時停止（pause）
 - `instruct <change> --message "<人の発言>"`は、`state.instructions`に`{id, at, text, after_round, consumed_round: null}`を追加する。`--message`が空なら拒否する。
 - `commit-round`は、未消化の指示すべてについて、その原文が`r<N>_report.md`に含まれることを検証し、含まれなければcommitせず、欠けた指示を表示して拒否する。成功時に`consumed_round`を記録する。

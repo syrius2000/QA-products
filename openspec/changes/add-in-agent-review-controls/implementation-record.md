@@ -25,3 +25,9 @@
 - P1-2 停止後の指示: 停止・終了後の`instruct`を拒否。未消化の指示があるfinishは`--accept-residual`での明示を要求（`test_instruct_after_stop_is_refused_and_finish_rejects_unconsumed`、`test_finish_requires_judgment_when_instruction_is_unconsumed`）。
 - P2-3 state.json競合: `state_lock`（flock）で直列化し、JSONは一時ファイル＋`os.replace`で保存。5並行reviewで起動は1回だけ（`test_only_one_of_concurrent_reviews_runs`）、8並行instructが全件残る（`test_concurrent_instructs_are_all_recorded`）。
 - テスト: 133件通過（前回127件＋並行系6件）。
+
+## PR #9 再レビュー対応（検査と確定の原子性）
+
+- P2-1: `review`はロック取得後にstateを再読込して判定をやり直す（`test_review_rechecks_state_after_acquiring_lock`）。修正前のコードでは失敗し、同じroundを2回レビューすることを確認した。
+- P2-2: `finish`の検査から`finished`の確定までを状態ロックの下で行う（`test_finish_check_and_commit_are_atomic_against_instruct`）。修正前のコードでは、検査後に割り込んだ`instruct`が受け付けられ、終了に混入することを確認した。
+- 追加: `commit-round`も状態ロックの下で検査・書込みを行い、実行中のreviewがあれば拒否する（`test_commit_round_is_refused_while_review_holds_the_lock`。これは修正前も別の検査で拒否できたため、回帰防止のテスト）。

@@ -393,3 +393,79 @@ def test_finish_requires_judgment_when_instruction_is_unconsumed(repo, tmp_path,
     assert code == 0
     body = git(repo, 'log', '-1', '--format=%B')
     assert 'Spec-Review-Unconsumed-Instructions: I-001' in body and 'Spec-Review-Unconsumed-Judgment: 指示は次のchangeで扱う' in body
+
+
+# --- PR #9 再レビュー指摘（検査と確定の原子性） ---
+
+def test_review_rechecks_state_after_acquiring_lock(repo, tmp_path, monkeypatch):
+    """P2-1: ロック取得前に読んだstateで、別プロセスがレビュー済みのroundを再レビューしない。"""
+    from spec_review_loop import review_round
+    from spec_review_loop.session import Session
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    ours = Session(repo, CHANGE)
+    original = Session.acquire_lock
+    calls = {'n': 0}
+
+    def acquire_after_competitor_finished(self, round_no, tool):
+        if self is ours and calls['n'] == 0:
+            calls['n'] += 1
+            review_round.review(Session(repo, CHANGE))      # 取得の直前に、別のプロセス相当がレビューを完了する
+        return original(self, round_no, tool)
+    monkeypatch.setattr(Session, 'acquire_lock', acquire_after_competitor_finished)
+    from spec_review_loop.errors import SpecReviewError
+    with pytest.raises(SpecReviewError, match='レビュー済み|レビューできる'):
+        review_round.review(ours)
+    log = (REVIEW(repo) / 'r1_reviewer.log').read_text(encoding='utf-8')
+    assert log.count('[srl] start') == 1                    # Reviewerは1回しか起動していない
+    assert len(load(repo, 'state.json')['rounds'][0]['attempts']) == 1
+
+
+def test_commit_round_is_refused_while_review_holds_the_lock(repo, tmp_path, monkeypatch):
+    """review実行中にcommit-roundが割り込んで、roundの記録を壊さない。"""
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
+    monkeypatch.setenv('FAKE_STREAM_STEPS', '5')
+    begin(repo)
+    set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
+    proc = background_review(repo)
+    assert wait_for(lambda: lock_active(repo))
+    write(repo / 'app.py', 'def greet(name):\n    return name or "x"\n')
+    git(repo, 'add', 'app.py')
+    report(repo, 2)
+    code, out = cli(repo, 'commit-round', CHANGE)
+    assert code == 2 and '実行中' in out
+    proc.communicate(timeout=60)
+    assert len(load(repo, 'state.json')['rounds']) == 1
+
+
+def test_finish_check_and_commit_are_atomic_against_instruct(repo, tmp_path, monkeypatch):
+    """P2-2: finishの検査後・確定前に追加されるinstructが、未消化のまま終了に紛れ込まない。
+
+    競合が起きうるのは、ループがまだactive（FAIL・停止前）で`--accept-residual`により終える場合。
+    """
+    from spec_review_loop import finish as finish_mod
+    from spec_review_loop.session import Session
+    begin(repo)
+    set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
+    assert cli(repo, 'review', CHANGE)[0] == 0
+    assert load(repo, 'state.json')['status'] == 'active'              # FAILだが、まだ停止していない
+    real_plan = finish_mod.plan
+    spawned = {}
+
+    def plan_then_race(session, message, accept_residual):
+        result = real_plan(session, message, accept_residual)           # 検査は「未消化の指示なし」で通る
+        spawned['proc'] = subprocess.Popen(
+            [sys.executable, str(SKILL / 'bin' / 'spec-review-loop-cli'), '--root', str(repo), 'instruct', CHANGE,
+             '--message', '検査の後に出された指示'], env=os.environ.copy(), text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(1.5)                                                 # instruct側がロック待ちに入る時間
+        return result
+    monkeypatch.setattr(finish_mod, 'plan', plan_then_race)
+    result = finish_mod.finish(Session(repo, CHANGE), None, '残余Findingは次のchangeで扱う', True)
+    out, err = spawned['proc'].communicate(timeout=30)
+    assert spawned['proc'].returncode == 2 and '終了済み' in out + err   # 確定後なので拒否される
+    assert result['dry_run'] is False
+    body = git(repo, 'log', '-1', '--format=%B')
+    assert 'Unconsumed' not in body
+    state = json.loads(git(repo, 'show', f'HEAD:openspec/changes/{CHANGE}/review/state.json'))
+    assert state['status'] == 'finished' and state.get('instructions', []) == []   # 指示が混入していない

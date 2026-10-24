@@ -72,10 +72,8 @@ def _failed_round(record: dict) -> bool:
     return record.get('gate') is not None and record.get('review') is None and record['gate']['gate'] == 'INCONCLUSIVE'
 
 
-def review(session: Session, reviewer: str | None = None, model: str | None = None, timeout: int | None = None,
-           effort: str | None = None) -> dict:
-    state = session.state()
-    session.require_integrity(state)
+def _eligibility(state: dict, reviewer: str | None) -> tuple[dict, str, bool]:
+    """レビューできるかを判定し、(対象record, Reviewer名, 切替モードか)を返す。状態は変えない。"""
     if not state['rounds']:
         raise contract('レビューできるroundがありません', 'status で次の操作を確認してください')
     record = state['rounds'][-1]
@@ -91,6 +89,14 @@ def review(session: Session, reviewer: str | None = None, model: str | None = No
             tried = sorted({a['tool'] for a in record['attempts']})
             raise contract(f'Reviewer {tool} はr{record["round"]}で再試行の上限（{MAX_ATTEMPTS}回）に達しています',
                            f'未試行のReviewerへ切り替えてください（試行済み: {", ".join(tried)}）: review --reviewer <別のReviewer>')
+    return record, tool, switchable
+
+
+def review(session: Session, reviewer: str | None = None, model: str | None = None, timeout: int | None = None,
+           effort: str | None = None) -> dict:
+    state = session.state()
+    session.require_integrity(state)
+    _, tool, _ = _eligibility(state, reviewer)  # 早期の拒否（ロックを取る前）
     model = model or state.get('model')
     effort = effort or state.get('effort')
     if effort and not re.fullmatch(r'[a-z]+', effort):
@@ -99,9 +105,15 @@ def review(session: Session, reviewer: str | None = None, model: str | None = No
     if not probe['ok']:
         raise contract(f'Reviewer {tool} を使えません: {probe.get("problem")}',
                        f'導入する（{probe["install"]}）か、--reviewer で別のReviewerを選んでください。doctor で確認できます', {'doctor': probe})
-    session.acquire_lock(record['round'], tool)
+    session.acquire_lock(state['rounds'][-1]['round'] if state['rounds'] else 0, tool)
     try:
-        return _review_locked(session, state, record, tool, model, timeout, effort, probe)
+        # ロック取得後に状態を再読込して判定し直す。取得前に読んだstateのまま、同じroundを再レビューしない
+        with session.state_lock():
+            fresh = session.state()
+        session.require_integrity(fresh)
+        record, tool, _ = _eligibility(fresh, reviewer)
+        session.update_lock_info(record['round'], tool)
+        return _review_locked(session, fresh, record, tool, model, timeout, effort, probe)
     finally:
         session.release_lock()
 

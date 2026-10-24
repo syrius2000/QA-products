@@ -7,6 +7,7 @@
 
 ## 2. 人の指示（session.py・cli.py）
 
+- [x] 2.4 PR #9再レビュー対応: `review`のロック取得後の状態再検証、`commit-round`・`finish`の検査〜確定の原子化。検証: ロック取得直前に別のreviewが完了する場合に再レビューしないこと、finishの検査後に割り込む`instruct`が終了に混入しないことを、修正前のコードで失敗し修正後に通るテストで確認する（test_controls.py）。
 - [x] 2.3 PR #9レビュー対応: ロックをflockへ変更、state.jsonの読取り→保存を排他化、停止後のinstructを拒否、未消化の指示を含むfinishを拒否。検証: 並行実行・並行instruct・停止後指示・未消化finishのテストが通る（test_controls.py）。
 
 - [x] 2.1 `instruct`を実装し、`commit-round`が未消化の指示の原文を実装報告に要求して消化済みを記録する。検証: spec deltaの「人の指示を原文のまま次のroundへ引き継ぐ」のScenarioのうち、転記なし拒否・転記あり成功・空指示拒否をテストで再現する。
