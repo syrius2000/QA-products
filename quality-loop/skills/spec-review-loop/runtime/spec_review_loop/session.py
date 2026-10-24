@@ -1,7 +1,9 @@
 """ループの状態（review/state.json）と、start・commit-round・refreeze・status。"""
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -12,6 +14,8 @@ from .errors import contract, io_error
 from .gate import DEFAULT_MAX_ROUNDS
 
 JST = timezone(timedelta(hours=9))
+LOCK_NAME = '.review.lock'
+GITIGNORE_LINES = ('*.log', LOCK_NAME)
 
 
 def now_jst() -> str:
@@ -20,6 +24,24 @@ def now_jst() -> str:
 
 def stamp_jst() -> str:
     return datetime.now(JST).strftime('%Y%m%d-%H%M%S')
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
 
 
 class Session:
@@ -69,9 +91,98 @@ class Session:
             raise contract(f'{self.review_rel}/config.json を読めません: {exc}') from exc
         return data if isinstance(data, dict) else {}
 
+    # --- 実行中ロック・ログ（review実行中の進行確認） ---
+    def ensure_gitignore(self) -> None:
+        self.review_dir.mkdir(parents=True, exist_ok=True)
+        path = self.path('.gitignore')
+        have = path.read_text(encoding='utf-8').splitlines() if path.exists() else []
+        missing = [line for line in GITIGNORE_LINES if line not in have]
+        if missing:
+            path.write_text('\n'.join([*have, *missing]) + '\n', encoding='utf-8')
+
+    def lock_info(self) -> dict | None:
+        """実行中のreviewがあれば情報を返す。PIDが存在しない古いロックはNone（呼び出し側で破棄する）。"""
+        path = self.path(LOCK_NAME)
+        try:
+            info = json.loads(path.read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError):
+            return None
+        return info if pid_alive(int(info.get('pid', 0))) else None
+
+    def acquire_lock(self, round_no: int, tool: str) -> None:
+        self.ensure_gitignore()
+        path = self.path(LOCK_NAME)
+        for _ in range(2):
+            try:
+                fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                info = self.lock_info()
+                if info:
+                    raise contract(f'r{info.get("round")}のレビューが実行中です（PID {info["pid"]}、{info.get("tool")}）',
+                                   f'status で進行を確認してください（{self.review_rel}/r{info.get("round")}_reviewer.log）。終了を待ってから再実行します',
+                                   {'lock': info})
+                path.unlink(missing_ok=True)  # 古いロック
+                continue
+            with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+                json.dump({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
+                           'started_epoch': datetime.now(JST).timestamp()}, fh)
+            return
+        raise io_error('レビューのロックを取得できません')
+
+    def release_lock(self) -> None:
+        info = None
+        try:
+            info = json.loads(self.path(LOCK_NAME).read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError):
+            pass
+        if info is None or info.get('pid') == os.getpid():
+            self.path(LOCK_NAME).unlink(missing_ok=True)
+
+    def reviewing(self) -> dict | None:
+        info = self.lock_info()
+        if not info:
+            return None
+        log = self.path(f'r{info.get("round")}_reviewer.log')
+        tail = log.read_text(encoding='utf-8', errors='replace').splitlines()[-20:] if log.exists() else []
+        return {**{k: info[k] for k in ('pid', 'round', 'tool', 'started_at')},
+                'elapsed_seconds': int(datetime.now(JST).timestamp() - info.get('started_epoch', 0)),
+                'log': f'{self.review_rel}/r{info.get("round")}_reviewer.log', 'log_tail': tail}
+
+    # --- 保存した成果物の改ざん検知 ---
+    def integrity_problems(self, state: dict | None = None) -> list[str]:
+        state = state or self.state()
+        problems = []
+        for record in state['rounds']:
+            n = record['round']
+            for key, name in (('review_sha256', f'r{n}_review.json'), ('prompt_sha256', f'r{n}_prompt.md')):
+                want = record.get(key)
+                if want and (not self.path(name).exists() or sha256_file(self.path(name)) != want):
+                    problems.append(f'{self.review_rel}/{name}')
+        return problems
+
+    def require_integrity(self, state: dict) -> None:
+        problems = self.integrity_problems(state)
+        if problems:
+            raise contract('HOLD: 記録したSHA-256と一致しないレビュー成果物があります（保存後に書き換えられた可能性）',
+                           '改変の経緯を確認し、元に戻すか、新しいroundとしてやり直してください', {'files': problems})
+
+    # --- instruct ---
+    def instruct(self, message: str | None) -> dict:
+        if not (message or '').strip():
+            raise contract('instructには人の発言（--message）が必要です', '利用者の実際の発言を原文のまま渡してください')
+        state = self.state()
+        if state['status'] == 'finished':
+            raise contract('終了済みのループには指示を記録できません')
+        after = state['rounds'][-1]['round'] if state['rounds'] else 0
+        items = state.get('instructions', [])
+        entry = {'id': f'I-{len(items) + 1:03d}', 'at': now_jst(), 'text': message.strip(),
+                 'after_round': after, 'consumed_round': None}
+        self.write_json('state.json', {**state, 'instructions': [*items, entry], 'awaiting_user': False})
+        return {'instruction': entry, 'next': f'次のr{after + 1}_report.mdに指示の原文を含めて実装し、commit-round を実行してください'}
+
     # --- start ---
     def start(self, reviewer: str | None, max_rounds: int | None, model: str | None, timeout: int | None,
-              effort: str | None = None) -> dict:
+              effort: str | None = None, pause: str | None = None) -> dict:
         branch = gitops.ensure_topic_branch(self.root)
         if self.path('state.json').exists():
             raise contract('このchangeのレビューループは開始済みです', 'status で現在の状態を確認してください')
@@ -85,7 +196,10 @@ class Session:
             'effort': effort or cfg.get('effort'),
             'timeout': timeout or cfg.get('timeout') or reviewers.DEFAULT_TIMEOUT,
             'max_rounds': max_rounds or cfg.get('max_rounds') or DEFAULT_MAX_ROUNDS,
+            'pause': pause or cfg.get('pause') or 'none',
         }
+        if options['pause'] not in ('none', 'round'):
+            raise contract('pauseは none か round を指定してください')
         reviewers.get(options['reviewer'])
         if options['effort'] is not None and not re.fullmatch(r'[a-z]+', str(options['effort'])):
             raise contract('effortは英小文字で指定してください（例: low／medium／high）')
@@ -97,9 +211,11 @@ class Session:
             'base_sha': gitops.head(self.root), 'started_at': now_jst(), 'status': 'active',
             'max_rounds': options['max_rounds'], 'reviewer': options['reviewer'], 'model': options['model'], 'effort': options['effort'],
             'timeout': options['timeout'], 'rounds': [], 'refreezes': [], 'finish': None,
+            'pause': options['pause'], 'awaiting_user': False, 'instructions': [],
         }
         self.write_json('criteria.json', {**doc, 'frozen_at': now_jst()})
         self.write_json('state.json', state)
+        self.ensure_gitignore()
         probe = reviewers.probe(options['reviewer'])
         return {'state': state, 'criteria': doc, 'reviewer_probe': probe,
                 'pending_change_files': gitops.dirty_outside(self.root, self.review_rel)}
@@ -129,16 +245,33 @@ class Session:
         state = self.state()
         if gitops.current_branch(self.root) != state['branch']:
             raise contract(f'開始時のbranch {state["branch"]} ではありません', f'git switch {state["branch"]} で戻ってください')
+        self.require_integrity(state)
+        if self.lock_info():
+            raise contract('レビューが実行中です', 'status で進行を確認し、終了を待ってください')
+        if state.get('awaiting_user'):
+            raise contract('一時停止中です（--pause round）。結果を人に見せ、指示を受けてから進めます',
+                           f'人の発言を spec-review-loop-cli instruct {self.change_id} --message "<発言>" で記録してください')
         round_no = self.next_round(state)
         if round_no > state['max_rounds']:
             raise contract('round上限に達しています', 'status で引継ぎの選択肢を確認してください')
         diff = self.drift_against_worktree()
         if crit.has_drift(diff):
             raise contract('基準ドリフト（HOLD）: 固定した受入基準が変更されています', '意図した変更なら利用者の明示指示で refreeze を実行してください', {'drift': diff})
+        pending = [i for i in state.get('instructions', []) if i['consumed_round'] is None]
+        if pending:
+            report_path = self.path(f'r{round_no}_report.md')
+            body = report_path.read_text(encoding='utf-8') if report_path.exists() else ''
+            missing = [i for i in pending if i['text'] not in body]
+            if missing:
+                raise contract('人の指示が実装報告に転記されていません',
+                               f'{self.review_rel}/r{round_no}_report.md に次の指示を原文のまま記載し、対応内容を書いてください',
+                               {'instructions': [f'{i["id"]}: {i["text"]}' for i in missing]})
         result = gitops.commit_round(self.root, self.change_id, round_no, self.review_rel)
         record = {'round': round_no, 'sha': result['sha'], 'committed_at': now_jst(), 'attempts': [],
                   'gate': None, 'stop': None, 'review': None, 'retry_allowed': False}
-        new_state = {**state, 'rounds': [*state['rounds'], record]}
+        instructions = [{**i, 'consumed_round': round_no} if i['consumed_round'] is None else i
+                        for i in state.get('instructions', [])]
+        new_state = {**state, 'rounds': [*state['rounds'], record], 'instructions': instructions}
         self.write_json('state.json', new_state)
         return {'round': round_no, 'sha': result['sha'], 'paths': result['paths']}
 
@@ -164,7 +297,14 @@ class Session:
     # --- status ---
     def status(self) -> dict:
         state = self.state()
-        return {'state': state, 'next': next_action(state, self.change_id)}
+        problems = self.integrity_problems(state)
+        running = self.reviewing()
+        nxt = next_action(state, self.change_id)
+        if problems:
+            nxt = 'HOLD: 記録したSHA-256と一致しない成果物があります（' + ', '.join(problems) + '）。改変の経緯を確認してください'
+        elif running:
+            nxt = f'r{running["round"]}のレビューが実行中です。ログ（{running["log"]}）を確認し、終了を待ってください'
+        return {'state': state, 'next': nxt, 'reviewing': running, 'integrity_problems': problems}
 
 
 def next_action(state: dict, change_id: str) -> str:
@@ -184,6 +324,13 @@ def next_action(state: dict, change_id: str) -> str:
     last = state['rounds'][-1]
     if last.get('gate') is None or last.get('retry_allowed'):
         return f'{cli} review {change_id} でr{last["round"]}のレビューを実行してください'
+    if last.get('review') is None and last['gate']['gate'] == 'INCONCLUSIVE':
+        tried = sorted({a['tool'] for a in last.get('attempts', [])})
+        return (f'r{last["round"]}のReviewerが失敗しました（試行済み: {", ".join(tried)}）。'
+                f'未試行のReviewerなら {cli} review {change_id} --reviewer <別のReviewer> で再実行できます')
+    if state.get('awaiting_user'):
+        return (f'一時停止中（--pause round）です。r{last["round"]}の結果を人に見せ、人の発言を '
+                f'{cli} instruct {change_id} --message "<発言>" で記録してから進めてください')
     n = last['round'] + 1
     return f'Findingに対応し、{state_review_rel(change_id)}/r{n}_report.md を書いてstageし、{cli} commit-round {change_id} を実行してください'
 

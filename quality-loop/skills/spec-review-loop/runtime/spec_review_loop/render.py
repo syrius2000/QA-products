@@ -17,7 +17,8 @@ def render_text(op: str, result: dict, change_id: str | None) -> str:
             lines += [f'  {key}: {item}' for item in items]
         return '\n'.join(lines)
     return {'start': _start, 'commit-round': _commit, 'review': _review, 'status': _status,
-            'finish': _finish, 'prune': _prune, 'refreeze': _refreeze, 'doctor': _doctor}[op](result)
+            'finish': _finish, 'prune': _prune, 'refreeze': _refreeze, 'doctor': _doctor,
+            'instruct': _instruct}[op](result)
 
 
 def _start(r: dict) -> str:
@@ -75,6 +76,14 @@ def _status(r: dict) -> str:
     for rec in s['rounds']:
         g = rec['gate']['gate'] if rec.get('gate') else '未レビュー'
         lines.append(f'  r{rec["round"]} {rec["sha"][:12]} Gate {g}')
+    run = r.get('reviewing')
+    if run:
+        lines.append(f'実行中: r{run["round"]} {run["tool"]} PID {run["pid"]} 経過 {run["elapsed_seconds"]}秒 ログ {run["log"]}')
+        lines += [f'  | {line}' for line in run['log_tail'][-5:]]
+    for item in r.get('integrity_problems') or []:
+        lines.append(f'HOLD: 記録と一致しません: {item}')
+    pending = [i for i in s.get('instructions', []) if i['consumed_round'] is None]
+    lines += [f'未消化の指示 {i["id"]}: {i["text"]}' for i in pending]
     if s['status'] == 'stopped' and s.get('stop_reason') in ('stagnation', 'max-rounds'):
         lines.append(HANDOFF)
     lines.append('次の操作: ' + r['next'])
@@ -112,3 +121,8 @@ def _doctor(r: dict) -> str:
         lines.append(f'Reviewer {name}: {p.get("version") or "-"} {mark}')
     lines.append(f'選択中のReviewer {r["selected"]}: ' + ('OK' if r['ok'] else '利用できません。導入するか --reviewer で切り替えてください'))
     return '\n'.join(lines)
+
+
+def _instruct(r: dict) -> str:
+    i = r['instruction']
+    return f'指示 {i["id"]} を記録しました（r{i["after_round"]}の後）: {i["text"]}\n次の操作: {r["next"]}'

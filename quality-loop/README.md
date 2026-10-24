@@ -15,7 +15,7 @@
 | [`quality-qa`](skills/quality-qa/SKILL.md) | 0.2.2 | 通常の独立QA依頼、結果確認、承認済み修正と再QA | 「この変更をQAして」など |
 | [`blind-qa-cycle`](skills/blind-qa-cycle/SKILL.md) | 1.0 | 監査ブランチとYip commitによる固定SHA監査（4成果物） | 特定モードの明示依頼（prepare、cloud、review など） |
 | [`quality-review`](skills/quality-review/SKILL.md)／[`quality-response`](skills/quality-response/SKILL.md) | 1.5.0／1.4.0 | 正式caseのReviewer／Implementer工程（`case.json`が正本） | 明示されたQuality Loop案件の工程 |
-| [`spec-review-loop`](skills/spec-review-loop/SKILL.md) | 0.1.0 | OpenSpec changeを受入基準に、実装→別系統AIの独立レビューを数round回し、終了時にsquash | 対象changeとループ実行の明示依頼 |
+| [`spec-review-loop`](skills/spec-review-loop/SKILL.md) | 0.2.0 | OpenSpec changeを受入基準に、実装→別系統AIの独立レビューを数round回し、終了時にsquash（実行中ログの確認・人の指示の記録・Reviewer切替に対応） | 対象changeとループ実行の明示依頼 |
 
 いずれも、ユーザーが現在のメッセージで操作を明示的に依頼した場合にだけ起動します。説明や相談、結果の共有だけでは起動しません。
 

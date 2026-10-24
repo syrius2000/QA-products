@@ -32,6 +32,9 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     state = session.state()
     if state['status'] == 'finished':
         raise contract('このループはsquash済みです')
+    session.require_integrity(state)
+    if session.lock_info():
+        raise contract('レビューが実行中です', 'status で進行を確認し、終了を待ってください')
     reviewed = [r for r in state['rounds'] if r.get('gate') is not None]
     if not reviewed or reviewed[-1] is not state['rounds'][-1]:
         raise contract('レビュー済みのroundがありません', 'commit-round と review を先に実行してください')
