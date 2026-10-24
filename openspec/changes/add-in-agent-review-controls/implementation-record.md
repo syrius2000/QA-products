@@ -15,5 +15,6 @@
 - 既存テスト1件（`test_gate.py`の再試行上限の例外メッセージ）は、仕様の変更（1 round・1 Reviewerあたり2回、別Reviewerへの切替を許可）に合わせて期待メッセージだけを「再試行の上限」へ変更した。
 - killpgによる子孫プロセスの停止は、killpgをproc.kill()に置き換えると`test_timeout_kills_descendant_processes`が失敗することで検出力を確認した。
 - claude／cursorアダプタは`--output-format json`のため、Reviewer終了までstdoutが出ない。実行中のログには`[srl] start`とstderrだけが出る。codexはstderrの進行が逐次出る。
+- evals/evals.jsonへ、実行中の確認・人の指示・pause・Reviewer切替の4例を追加した（dogfood r1のF-001）。
 - 実Claude CLIをReviewerにしたdogfoodで、`status`が実行中のPID・経過時間・ログを返すことを確認した。
 - T-6.3（macOS実機のCodex CLIでの通し実行）は未実施。実施まで完了扱いにしない。
