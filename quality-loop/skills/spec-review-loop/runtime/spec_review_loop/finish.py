@@ -43,6 +43,11 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     if gate_value != 'PASS' and not (accept_residual or '').strip():
         raise contract(f'最終GateがPASSではありません（{gate_value}）',
                        'PASS以外で終了するなら、利用者の判断を --accept-residual "<判断>" で明示してください')
+    unconsumed = [i for i in state.get('instructions', []) if i['consumed_round'] is None]
+    if unconsumed and not (accept_residual or '').strip():
+        raise contract('実装報告に反映されていない人の指示があります',
+                       '指示を反映する場合はループを続けてください。反映せずに終了する場合は、利用者の判断を --accept-residual "<判断>" で明示してください',
+                       {'instructions': [f'{i["id"]}: {i["text"]}' for i in unconsumed]})
     if gitops.current_branch(session.root) != state['branch']:
         raise contract(f'開始時のbranch {state["branch"]} ではありません')
     commits = gitops.commits_since(session.root, state['base_sha'])
@@ -72,6 +77,9 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     trailers = [f'Spec-Review: {session.change_id}', f'Spec-Review-Gate: {gate_value}',
                 f'Spec-Review-Rounds: {len(state["rounds"])}', f'Spec-Review-Reviewer: {_reviewer_label(last)}',
                 f'Spec-Review-Pre-Squash: {last["sha"]}']
+    if unconsumed:
+        trailers.append('Spec-Review-Unconsumed-Instructions: ' + ', '.join(i['id'] for i in unconsumed))
+        trailers.append('Spec-Review-Unconsumed-Judgment: ' + ' '.join(accept_residual.split()))
     if gate_value != 'PASS':
         _, latest = latest_review(state['rounds'])
         residual = [f['id'] for f in (latest or {}).get('findings', []) if f['status'] in OPEN_STATUSES]
@@ -102,7 +110,8 @@ def finish(session: Session, message: str | None, accept_residual: str | None, c
     ref_created = False
     try:
         session.write_text('summary.md', report.summary_markdown(state, info))
-        session.write_json('state.json', {**state, 'status': 'finished', 'finish': info})
+        with session.state_lock():
+            session.write_json('state.json', {**session.state(), 'status': 'finished', 'finish': info})
         gitops.git(session.root, 'add', '--', session.review_rel)
         n = last['round']
         gitops.git(session.root, 'commit', '-q', '-F', '-', input_text=(

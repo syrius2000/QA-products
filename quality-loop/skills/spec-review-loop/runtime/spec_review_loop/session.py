@@ -1,6 +1,8 @@
 """ループの状態（review/state.json）と、start・commit-round・refreeze・status。"""
 from __future__ import annotations
 
+import contextlib
+import fcntl
 import hashlib
 import json
 import os
@@ -15,7 +17,8 @@ from .gate import DEFAULT_MAX_ROUNDS
 
 JST = timezone(timedelta(hours=9))
 LOCK_NAME = '.review.lock'
-GITIGNORE_LINES = ('*.log', LOCK_NAME)
+STATE_LOCK_NAME = '.state.lock'
+GITIGNORE_LINES = ('*.log', LOCK_NAME, STATE_LOCK_NAME, '*.tmp')
 
 
 def now_jst() -> str:
@@ -69,7 +72,23 @@ class Session:
 
     def write_json(self, name: str, data: dict) -> None:
         self.review_dir.mkdir(parents=True, exist_ok=True)
-        self.path(name).write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        tmp = self.path(f'{name}.{os.getpid()}.tmp')
+        tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        os.replace(tmp, self.path(name))  # 読み手が書きかけを見ないよう、原子的に置き換える
+
+    @contextlib.contextmanager
+    def state_lock(self):
+        """state.jsonの読取り→更新→保存を直列化する排他ロック（OSのファイルロック。プロセスが死ねば解放される）。"""
+        self.ensure_gitignore()
+        fd = os.open(self.path(STATE_LOCK_NAME), os.O_CREAT | os.O_RDWR, 0o644)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            yield
+        finally:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            finally:
+                os.close(fd)
 
     def write_text(self, name: str, text: str) -> None:
         self.review_dir.mkdir(parents=True, exist_ok=True)
@@ -101,42 +120,45 @@ class Session:
             path.write_text('\n'.join([*have, *missing]) + '\n', encoding='utf-8')
 
     def lock_info(self) -> dict | None:
-        """実行中のreviewがあれば情報を返す。PIDが存在しない古いロックはNone（呼び出し側で破棄する）。"""
-        path = self.path(LOCK_NAME)
+        """実行中のreviewの情報（表示・拒否の判断用）。排他の正本はacquire_lockのOSロックで、これは参考情報。
+
+        内容が空（未取得・解放済み）、またはPIDが存在しない（異常終了）場合はNone。
+        """
         try:
-            info = json.loads(path.read_text(encoding='utf-8'))
+            info = json.loads(self.path(LOCK_NAME).read_text(encoding='utf-8'))
         except (OSError, json.JSONDecodeError):
             return None
         return info if pid_alive(int(info.get('pid', 0))) else None
 
     def acquire_lock(self, round_no: int, tool: str) -> None:
+        """OSのファイルロックで排他する。プロセスが死ねばOSが解放するので、古いロックの判定・削除をしない。"""
         self.ensure_gitignore()
-        path = self.path(LOCK_NAME)
-        for _ in range(2):
-            try:
-                fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            except FileExistsError:
-                info = self.lock_info()
-                if info:
-                    raise contract(f'r{info.get("round")}のレビューが実行中です（PID {info["pid"]}、{info.get("tool")}）',
-                                   f'status で進行を確認してください（{self.review_rel}/r{info.get("round")}_reviewer.log）。終了を待ってから再実行します',
-                                   {'lock': info})
-                path.unlink(missing_ok=True)  # 古いロック
-                continue
-            with os.fdopen(fd, 'w', encoding='utf-8') as fh:
-                json.dump({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
-                           'started_epoch': datetime.now(JST).timestamp()}, fh)
-            return
-        raise io_error('レビューのロックを取得できません')
+        fd = os.open(self.path(LOCK_NAME), os.O_CREAT | os.O_RDWR, 0o644)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            os.close(fd)
+            info = self.lock_info() or {}
+            raise contract(f'r{info.get("round", "?")}のレビューが実行中です（PID {info.get("pid", "不明")}、{info.get("tool", "")}）',
+                           f'status で進行を確認してください（{self.review_rel}/r{info.get("round", "<N>")}_reviewer.log）。終了を待ってから再実行します',
+                           {'lock': info})
+        os.ftruncate(fd, 0)
+        os.write(fd, json.dumps({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
+                                 'started_epoch': datetime.now(JST).timestamp()}).encode('utf-8'))
+        self._lock_fd = fd
 
     def release_lock(self) -> None:
-        info = None
+        fd = getattr(self, '_lock_fd', None)
+        if fd is None:
+            return
+        self._lock_fd = None
         try:
-            info = json.loads(self.path(LOCK_NAME).read_text(encoding='utf-8'))
-        except (OSError, json.JSONDecodeError):
-            pass
-        if info is None or info.get('pid') == os.getpid():
-            self.path(LOCK_NAME).unlink(missing_ok=True)
+            os.ftruncate(fd, 0)  # 内容を空にしてから解放する（空は「実行中でない」）
+        finally:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            finally:
+                os.close(fd)
 
     def reviewing(self) -> dict | None:
         info = self.lock_info()
@@ -170,14 +192,18 @@ class Session:
     def instruct(self, message: str | None) -> dict:
         if not (message or '').strip():
             raise contract('instructには人の発言（--message）が必要です', '利用者の実際の発言を原文のまま渡してください')
-        state = self.state()
-        if state['status'] == 'finished':
-            raise contract('終了済みのループには指示を記録できません')
-        after = state['rounds'][-1]['round'] if state['rounds'] else 0
-        items = state.get('instructions', [])
-        entry = {'id': f'I-{len(items) + 1:03d}', 'at': now_jst(), 'text': message.strip(),
-                 'after_round': after, 'consumed_round': None}
-        self.write_json('state.json', {**state, 'instructions': [*items, entry], 'awaiting_user': False})
+        with self.state_lock():
+            state = self.state()
+            if state['status'] != 'active':
+                label = {'finished': '終了済み', 'stopped': f'停止中（{state.get("stop_reason")}）'}.get(state['status'], state['status'])
+                raise contract(f'ループが{label}のため、指示を次のroundへ引き継げません',
+                               'HOLDで停止している場合は、利用者の指示で refreeze してから指示を記録してください。'
+                               'PASSなどで終える場合は、新しい指示を扱うか、finish --accept-residual で判断を明示してください')
+            after = state['rounds'][-1]['round'] if state['rounds'] else 0
+            items = state.get('instructions', [])
+            entry = {'id': f'I-{len(items) + 1:03d}', 'at': now_jst(), 'text': message.strip(),
+                     'after_round': after, 'consumed_round': None}
+            self.write_json('state.json', {**state, 'instructions': [*items, entry], 'awaiting_user': False})
         return {'instruction': entry, 'next': f'次のr{after + 1}_report.mdに指示の原文を含めて実装し、commit-round を実行してください'}
 
     # --- start ---
@@ -269,29 +295,32 @@ class Session:
         result = gitops.commit_round(self.root, self.change_id, round_no, self.review_rel)
         record = {'round': round_no, 'sha': result['sha'], 'committed_at': now_jst(), 'attempts': [],
                   'gate': None, 'stop': None, 'review': None, 'retry_allowed': False}
-        instructions = [{**i, 'consumed_round': round_no} if i['consumed_round'] is None else i
-                        for i in state.get('instructions', [])]
-        new_state = {**state, 'rounds': [*state['rounds'], record], 'instructions': instructions}
-        self.write_json('state.json', new_state)
+        consumed = {i['id'] for i in pending}
+        with self.state_lock():  # 転記を確認した指示だけを消化済みにする。確認後に追加された指示は未消化のまま残す
+            fresh = self.state()
+            instructions = [{**i, 'consumed_round': round_no} if i['id'] in consumed else i
+                            for i in fresh.get('instructions', [])]
+            self.write_json('state.json', {**fresh, 'rounds': [*fresh['rounds'], record], 'instructions': instructions})
         return {'round': round_no, 'sha': result['sha'], 'paths': result['paths']}
 
     # --- refreeze ---
     def refreeze(self, reason: str) -> dict:
         if not reason.strip():
             raise contract('refreezeには利用者の指示内容（--reason）が必要です')
-        state = self.state()
-        if state['status'] == 'finished':
-            raise contract('終了済みのループは再固定できません')
-        doc = crit.build(self.root, self.change_id)
-        diff = crit.drift(self.frozen(), doc)
-        after = state['rounds'][-1]['round'] if state['rounds'] else 0
-        entry = {'at': now_jst(), 'reason': reason, 'after_round': after, 'drift': diff, 'fingerprint': doc['fingerprint']}
-        reopen = state['status'] == 'stopped' and state.get('stop_reason') == 'hold'
-        new_state = {**state, 'refreezes': [*state.get('refreezes', []), entry],
-                     'status': 'active' if reopen else state['status'],
-                     'stop_reason': None if reopen else state.get('stop_reason')}
-        self.write_json('criteria.json', {**doc, 'frozen_at': now_jst()})
-        self.write_json('state.json', new_state)
+        with self.state_lock():
+            state = self.state()
+            if state['status'] == 'finished':
+                raise contract('終了済みのループは再固定できません')
+            doc = crit.build(self.root, self.change_id)
+            diff = crit.drift(self.frozen(), doc)
+            after = state['rounds'][-1]['round'] if state['rounds'] else 0
+            entry = {'at': now_jst(), 'reason': reason, 'after_round': after, 'drift': diff, 'fingerprint': doc['fingerprint']}
+            reopen = state['status'] == 'stopped' and state.get('stop_reason') == 'hold'
+            new_state = {**state, 'refreezes': [*state.get('refreezes', []), entry],
+                         'status': 'active' if reopen else state['status'],
+                         'stop_reason': None if reopen else state.get('stop_reason')}
+            self.write_json('criteria.json', {**doc, 'frozen_at': now_jst()})
+            self.write_json('state.json', new_state)
         return {'drift': diff, 'criteria': doc, 'reopened': reopen}
 
     # --- status ---

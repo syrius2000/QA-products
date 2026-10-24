@@ -30,6 +30,14 @@
 - **WHEN** `start --pause round`で開始し、review後にGateが停止条件に達していない状態で`commit-round`を実行する
 - **THEN** システムはcommitせず、人に結果を見せて`instruct`で指示を記録するよう求める
 
+#### Scenario: 停止後に指示を記録しようとする
+- **WHEN** ループがPASS・停滞・上限・HOLDのいずれかで停止している状態で`instruct`を実行する
+- **THEN** システムは記録せず、停止理由と、再固定または判断の明示の方法を示す
+
+#### Scenario: 未消化の指示があるままfinishする
+- **WHEN** 実装報告に反映されていない指示がある状態で`finish --confirm`を実行する
+- **THEN** システムは拒否し、指示の原文を示す。利用者の判断を`--accept-residual`で明示した場合だけ、指示IDと判断をtrailerに残して終了する
+
 #### Scenario: 空の指示を記録しようとする
 - **WHEN** `instruct`を空の`--message`で実行する
 - **THEN** システムは記録せず、人の発言を渡すよう求める

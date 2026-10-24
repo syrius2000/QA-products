@@ -18,3 +18,10 @@
 - evals/evals.jsonへ、実行中の確認・人の指示・pause・Reviewer切替の4例を追加した（dogfood r1のF-001）。
 - 実Claude CLIをReviewerにしたdogfoodで、`status`が実行中のPID・経過時間・ログを返すことを確認した。
 - T-6.3（macOS実機のCodex CLIでの通し実行）は未実施。実施まで完了扱いにしない。
+
+## PR #9 レビュー対応（並行操作）
+
+- P1-1 ロック競合: O_EXCL＋PID書込みを、flock（OSロック）へ置き換えた。作成直後の空ファイルを古いロックと誤認しない（`test_lock_held_but_still_empty_is_not_treated_as_stale`）。
+- P1-2 停止後の指示: 停止・終了後の`instruct`を拒否。未消化の指示があるfinishは`--accept-residual`での明示を要求（`test_instruct_after_stop_is_refused_and_finish_rejects_unconsumed`、`test_finish_requires_judgment_when_instruction_is_unconsumed`）。
+- P2-3 state.json競合: `state_lock`（flock）で直列化し、JSONは一時ファイル＋`os.replace`で保存。5並行reviewで起動は1回だけ（`test_only_one_of_concurrent_reviews_runs`）、8並行instructが全件残る（`test_concurrent_instructs_are_all_recorded`）。
+- テスト: 133件通過（前回127件＋並行系6件）。

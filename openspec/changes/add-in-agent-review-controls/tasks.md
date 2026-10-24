@@ -7,6 +7,8 @@
 
 ## 2. 人の指示（session.py・cli.py）
 
+- [x] 2.3 PR #9レビュー対応: ロックをflockへ変更、state.jsonの読取り→保存を排他化、停止後のinstructを拒否、未消化の指示を含むfinishを拒否。検証: 並行実行・並行instruct・停止後指示・未消化finishのテストが通る（test_controls.py）。
+
 - [x] 2.1 `instruct`を実装し、`commit-round`が未消化の指示の原文を実装報告に要求して消化済みを記録する。検証: spec deltaの「人の指示を原文のまま次のroundへ引き継ぐ」のScenarioのうち、転記なし拒否・転記あり成功・空指示拒否をテストで再現する。
 - [x] 2.2 `start --pause round`と`awaiting_user`を実装する。検証: 一時停止の拒否、`instruct`による解除、停止条件到達時に一時停止しないことをテストで確認する。
 

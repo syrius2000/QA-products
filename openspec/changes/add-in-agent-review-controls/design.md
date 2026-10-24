@@ -7,7 +7,12 @@
 ### D1. 逐次ログとロック
 - Reviewerを`Popen`で起動し、stdout／stderrを別スレッドで`review/r<N>_reviewer.log`へ逐次書き出す。timeoutでは`killpg`で子孫ごと止める。codexの最終出力は従来どおり`--output-last-message`、claude／cursorはstdoutのJSONから得る（stdoutはログと同時にメモリにも保持する）。
 - ログは`review/.gitignore`（`*.log`、`.review.lock`）で追跡対象外にする。`.gitignore`は`start`が作り、既存のループでは初回のreview時に作る。
-- `review`開始時に`review/.review.lock`（PID・開始時刻・round・tool）を`O_EXCL`で作り、終了時に消す。PIDが存在しない古いロックは破棄する。`status`はロックがあれば`reviewing`として、PID・経過時間・ログ末尾20行を返す。
+- `review`開始時に`review/.review.lock`へ`fcntl.flock`（排他・非ブロッキング）をかける。取得できなければ二重実行として拒否する。PID・開始時刻・round・toolは取得後に書き込み、終了時に内容を空にしてから解放する。OSのロックはプロセスが死ねば解放されるため、古いロックを判定して削除する処理は持たない（PR #9 P1-1: 作成直後の空ファイルを古いロックと誤認して奪う競合を排除）。`status`の表示用の情報は内容から読むが、排他の判断には使わない。
+
+### D1b. state.jsonの排他（PR #9 P2-3）
+- `state.json`の読取り→更新→保存は、`review/.state.lock`への`fcntl.flock`で直列化する（`instruct`・`commit-round`・`refreeze`・レビュー結果の保存・`finish`）。
+- JSONの保存は一時ファイルへ書いてから`os.replace`で置き換え、読み手が書きかけを見ないようにする。
+- 停止中・終了済みのループには`instruct`を受け付けない（PR #9 P1-2）。`finish`は、実装報告に反映されていない指示があれば拒否し、`--accept-residual`で利用者の判断を明示した場合だけ、その指示IDとともに`Spec-Review-Unconsumed-Instructions`／`Spec-Review-Unconsumed-Judgment`をtrailerに残す。
 
 ### D2. 人の指示（instruct）と一時停止（pause）
 - `instruct <change> --message "<人の発言>"`は、`state.instructions`に`{id, at, text, after_round, consumed_round: null}`を追加する。`--message`が空なら拒否する。

@@ -25,6 +25,11 @@ def background_review(repo, *extra):
     return subprocess.Popen(cmd, env=os.environ.copy(), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
+def lock_active(repo):
+    path = REVIEW(repo) / '.review.lock'
+    return path.exists() and bool(path.read_text(encoding='utf-8').strip())
+
+
 def wait_for(predicate, seconds=15):
     end = time.time() + seconds
     while time.time() < end:
@@ -53,7 +58,7 @@ def test_log_streams_and_status_reports_running(repo, tmp_path, monkeypatch):
     assert log.stat().st_size > first                            # 実行中にログが増えた
     text = log.read_text(encoding='utf-8')
     assert 'progress 4' in text and 'end returncode=0' in text
-    assert not (REVIEW(repo) / '.review.lock').exists()          # ロックは解放される
+    assert not lock_active(repo)                                 # ロックは解放される
     assert 'Gate: PASS' in cli(repo, 'status', CHANGE)[1] or load(repo, 'state.json')['rounds'][0]['gate']['gate'] == 'PASS'
 
 
@@ -129,7 +134,7 @@ def test_instruction_added_during_review_is_not_lost(repo, tmp_path, monkeypatch
     begin(repo)
     set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
     proc = background_review(repo)
-    assert wait_for(lambda: (REVIEW(repo) / '.review.lock').exists())
+    assert wait_for(lambda: lock_active(repo))
     assert cli(repo, 'instruct', CHANGE, '--message', 'レビュー中に出した指示')[0] == 0
     proc.communicate(timeout=30)
     state = load(repo, 'state.json')
@@ -243,7 +248,7 @@ def test_end_to_end_with_controls(repo, tmp_path, monkeypatch):
     begin(repo, '--pause', 'round')
     set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
     proc = background_review(repo)
-    assert wait_for(lambda: (REVIEW(repo) / '.review.lock').exists())
+    assert wait_for(lambda: lock_active(repo))
     assert '実行中' in cli(repo, 'status', CHANGE)[1]
     proc.communicate(timeout=30)
     assert cli(repo, 'commit-round', CHANGE)[0] == 2                      # pause
@@ -291,3 +296,100 @@ def test_timeout_kills_descendant_processes(repo, tmp_path, monkeypatch):
             return True
     assert wait_for(gone, 5)
     assert git(repo, 'worktree', 'list').count('\n') == 1                  # 一時worktreeも残らない
+
+
+# --- PR #9 レビュー指摘への対応（並行操作） ---
+
+def test_lock_held_but_still_empty_is_not_treated_as_stale(repo, tmp_path):
+    """P1-1: 取得直後でPIDを書く前（内容が空）のロックを、古いロックとして奪ってはならない。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    (REVIEW(repo) / '.gitignore').write_text('*.log\n.review.lock\n.state.lock\n*.tmp\n', encoding='utf-8')
+    holder = subprocess.Popen([sys.executable, '-c', (
+        'import fcntl, os, sys, time\n'
+        'fd = os.open(sys.argv[1], os.O_CREAT | os.O_RDWR)\n'
+        'fcntl.flock(fd, fcntl.LOCK_EX)\n'
+        'print("held", flush=True); time.sleep(6)\n'), str(REVIEW(repo) / '.review.lock')],
+        stdout=subprocess.PIPE, text=True)
+    try:
+        assert holder.stdout.readline().strip() == 'held'
+        assert (REVIEW(repo) / '.review.lock').read_text(encoding='utf-8') == ''     # PID未記入
+        code, out = cli(repo, 'review', CHANGE)
+        assert code == 2 and '実行中' in out
+        assert load(repo, 'state.json')['rounds'][0]['gate'] is None                   # レビューは始まっていない
+    finally:
+        holder.kill()
+        holder.wait()
+
+
+def test_only_one_of_concurrent_reviews_runs(repo, tmp_path, monkeypatch):
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
+    monkeypatch.setenv('FAKE_STREAM_STEPS', '6')
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    procs = [background_review(repo) for _ in range(5)]
+    codes = []
+    for proc in procs:
+        proc.communicate(timeout=60)
+        codes.append(proc.returncode)
+    assert sorted(codes) == [0, 2, 2, 2, 2]                       # 1つだけが実行され、残りは拒否される
+    log = (REVIEW(repo) / 'r1_reviewer.log').read_text(encoding='utf-8')
+    assert log.count('[srl] start') == 1                          # Reviewerは1回しか起動していない
+    assert load(repo, 'state.json')['rounds'][0]['gate']['gate'] == 'PASS'
+
+
+def test_concurrent_instructs_are_all_recorded(repo, tmp_path):
+    """P2-3: 並行する状態更新（instruct）が互いを上書きしない。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
+    assert cli(repo, 'review', CHANGE)[0] == 0
+    cmd = [sys.executable, str(SKILL / 'bin' / 'spec-review-loop-cli'), '--root', str(repo), 'instruct', CHANGE, '--message']
+    procs = [subprocess.Popen([*cmd, f'指示{i}'], env=os.environ.copy(), text=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE) for i in range(8)]
+    assert all(p.wait(timeout=60) == 0 for p in procs)
+    items = load(repo, 'state.json')['instructions']
+    assert sorted(i['text'] for i in items) == sorted(f'指示{i}' for i in range(8))
+    assert len({i['id'] for i in items}) == 8                      # IDも重複しない
+
+
+def test_instruct_during_review_survives_concurrent_state_write(repo, tmp_path, monkeypatch):
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
+    monkeypatch.setenv('FAKE_STREAM_STEPS', '4')
+    begin(repo)
+    set_review(tmp_path, make_review(repo, verdicts={'T-1.1': 'FAIL'}, findings=[finding('F-001')]))
+    proc = background_review(repo)
+    assert wait_for(lambda: lock_active(repo))
+    cmd = [sys.executable, str(SKILL / 'bin' / 'spec-review-loop-cli'), '--root', str(repo), 'instruct', CHANGE, '--message']
+    ins = [subprocess.Popen([*cmd, f'実行中の指示{i}'], env=os.environ.copy(), text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE) for i in range(6)]
+    assert all(p.wait(timeout=60) == 0 for p in ins)
+    proc.communicate(timeout=60)
+    state = load(repo, 'state.json')
+    assert len(state['instructions']) == 6 and state['rounds'][0]['gate']['gate'] == 'FAIL'
+
+
+def test_instruct_after_stop_is_refused_and_finish_rejects_unconsumed(repo, tmp_path):
+    """P1-2: 停止後の指示は引き継げない。未消化の指示を残したままfinishさせない。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    assert cli(repo, 'review', CHANGE)[0] == 0                    # PASSで停止
+    code, out = cli(repo, 'instruct', CHANGE, '--message', '停止後の指示')
+    assert code == 2 and '停止中' in out
+    assert load(repo, 'state.json').get('instructions', []) == []
+
+
+def test_finish_requires_judgment_when_instruction_is_unconsumed(repo, tmp_path, monkeypatch):
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
+    monkeypatch.setenv('FAKE_STREAM_STEPS', '4')
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    proc = background_review(repo)
+    assert wait_for(lambda: lock_active(repo))
+    assert cli(repo, 'instruct', CHANGE, '--message', 'レビュー中に出した指示')[0] == 0   # 実行中は受け付ける
+    proc.communicate(timeout=60)                                  # → PASSで停止。指示は未消化のまま
+    code, out = cli(repo, 'finish', CHANGE)
+    assert code == 2 and 'レビュー中に出した指示' in out and '--accept-residual' in out
+    code, out = cli(repo, '--json', 'finish', CHANGE, '--confirm', '--accept-residual', '指示は次のchangeで扱う')
+    assert code == 0
+    body = git(repo, 'log', '-1', '--format=%B')
+    assert 'Spec-Review-Unconsumed-Instructions: I-001' in body and 'Spec-Review-Unconsumed-Judgment: 指示は次のchangeで扱う' in body

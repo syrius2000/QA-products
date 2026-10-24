@@ -166,21 +166,23 @@ def _finish_round(session: Session, state: dict, record: dict, attempt: dict, re
                   'retry_allowed': retryable, 'reviewer': reviewer_info, 'structural_errors': errors, 'reviewed_at': now_jst()}
     if attempt.get('prompt_sha256'):
         new_record['prompt_sha256'] = attempt['prompt_sha256']
-    # 実行中に`instruct`などで更新されたstateを失わないよう、最新のstateへ今回のround記録だけを反映する
-    fresh = session.state()
-    new_state = {**fresh, 'rounds': [*fresh['rounds'][:-1], new_record]}
-    if stop['stop']:
-        new_state = {**new_state, 'status': 'stopped', 'stop_reason': stop['reason']}
-    else:
-        new_state = {**new_state, 'status': 'active', 'stop_reason': None}
-    new_state['awaiting_user'] = bool(new_state.get('pause') == 'round' and not stop['stop'] and not retryable
-                                      and review_data is not None)
     name = f'r{record["round"]}_review'
     full = {**new_record, 'change_id': session.change_id, 'base_sha': state['base_sha']}
-    session.write_json(f'{name}.json', full)
-    session.write_text(f'{name}.md', report.review_markdown(full))
-    if raw is not None:
-        session.write_text(f'{name}.attempt{len(attempts)}.raw.txt', raw)
-    new_record['review_sha256'] = sha256_file(session.path(f'{name}.json'))
-    session.write_json('state.json', new_state)
+    # state.jsonの読取り→更新→保存を排他ロックで直列化し、実行中に`instruct`などで追加された内容を失わない。
+    # 最新のstateへ、今回のround記録だけを反映する
+    with session.state_lock():
+        fresh = session.state()
+        new_state = {**fresh, 'rounds': [*fresh['rounds'][:-1], new_record]}
+        if stop['stop']:
+            new_state = {**new_state, 'status': 'stopped', 'stop_reason': stop['reason']}
+        else:
+            new_state = {**new_state, 'status': 'active', 'stop_reason': None}
+        new_state['awaiting_user'] = bool(new_state.get('pause') == 'round' and not stop['stop'] and not retryable
+                                          and review_data is not None)
+        session.write_json(f'{name}.json', full)
+        session.write_text(f'{name}.md', report.review_markdown(full))
+        if raw is not None:
+            session.write_text(f'{name}.attempt{len(attempts)}.raw.txt', raw)
+        new_record['review_sha256'] = sha256_file(session.path(f'{name}.json'))
+        session.write_json('state.json', new_state)
     return {'record': full, 'state': new_state, 'reviewer_failed': failed}
