@@ -71,8 +71,8 @@ def check_manifest(manifest: object) -> list[str]:
         if item['required'] is False:
             exclusion = item.get('exclusion')
             if not (isinstance(exclusion, dict)
-                    and str(exclusion.get('approved_by', '')).strip()
-                    and str(exclusion.get('reason', '')).strip()):
+                    and isinstance(exclusion.get('approved_by'), str) and exclusion['approved_by'].strip()
+                    and isinstance(exclusion.get('reason'), str) and exclusion['reason'].strip()):
                 problems.append(f'台帳 {item_id} は除外されていますが、承認者と理由がありません')
     return problems
 

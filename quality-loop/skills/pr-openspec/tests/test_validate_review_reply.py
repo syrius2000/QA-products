@@ -71,6 +71,14 @@ def test_manifest_unapproved_exclusion_is_inconclusive():
     assert rc == 2 and any('承認者と理由' in p for p in out['problems'])
 
 
+@pytest.mark.parametrize('manifest', ['manifest_unapproved_exclusion.json', 'manifest_null_approver.json', 'manifest_null_reason.json'])
+def test_exclusion_without_a_real_approver_and_reason_is_inconclusive(manifest):
+    """承認者や理由が null・空の除外は、out_of_scopeの回答があってもPASSにしない。"""
+    rc, out = run('reply_optional_out_of_scope.json', manifest)
+    assert rc == 2 and out['result'] == 'INCONCLUSIVE'
+    assert any('承認者と理由' in p for p in out['problems'])
+
+
 def test_failure_keeps_the_nonconforming_finding_even_when_structure_is_invalid(tmp_path):
     """構造に不備があっても、確実なnonconformingは kept_findings に残す（計画書の「確実なFindingは保持」）。"""
     data = json.loads((FIX / 'reply_fail_nonconforming.json').read_text(encoding='utf-8'))

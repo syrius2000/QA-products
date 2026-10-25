@@ -176,7 +176,7 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
 
 #### 全要求台帳と必須の決め方（第5版）
 
-- 台帳は、監査対象Hの`openspec/changes/<id>/specs/**/spec.md`から、`build_ledger.py`で決定論的に作る。対象は`## ADDED Requirements`、`## MODIFIED Requirements`、`## RENAMED Requirements`配下の全`### Requirement:`と、その全`#### Scenario:`である。
+- 台帳は、監査対象Hの`openspec/changes/<id>/specs/**/spec.md`から、`build_ledger.py`で決定論的に作る。対象は`## ADDED Requirements`、`## MODIFIED Requirements`、`## RENAMED Requirements`、`## REMOVED Requirements`配下の全要求（RENAMEDはFROM/TOのTOの名前）と、その全`#### Scenario:`である。
 - 項目IDは、要求が`R:<出典path>#<要求の順番>`、シナリオが`S:<出典path>#<要求の順番>.<シナリオの順番>`。各項目に出典path、出典blob SHA、delta種別を付ける。
 - 台帳は依頼書に掲載し、Reviewerに出典と照合させる。
 - 台帳の項目は既定で全て`required: true`。`required: false`にできるのは、利用者が承認し依頼書に理由を記載した除外（`exclusion: {approved_by, reason}`）だけである。承認のない除外は不備。
@@ -240,6 +240,7 @@ Skill作成の完了条件は、開発前記録とPR監査時記録を区別し�
 
 - 2026-10-25 12:40: 第3版。別意見のレビュー（P1: checker試験の欠落、P2: 回答JSONスキーマ・manifestの保存先と信頼境界・回答のデータ扱い・来歴の可視性・Reviewer情報の記録、P3: 重複の整理・依頼書の分割方針）を反映。この改訂に対する独立レビューは未実施で、`pr_openspec_plan_review_002_1025.md`のPASSは第2版（SHA-256 `c68c04a0…`）に対するものである。
 - 2026-10-25 13:10: 第3版への追記。成果物の数え方を「5種類」とし、checker試験1式の構成を明記。回答JSONの抽出をchecker自身が行う（Markdown回答または純粋なJSONを受け付ける）ことを定め、抽出失敗を試験対象に含めた。この追記にも独立レビューは未実施である。
+- 2026-10-25 第7版: 67f8c8f の独立レビュー（P1: 承認者・理由がnullの除外がPASSになる、P1: 仕様35行目が依頼書に public head P と blob SHA を要求、P2相当: 台帳範囲からREMOVEDが漏れている記述）を反映。checkerの承認者・理由の検査を空でない文字列に限定し、null用の試験フィクスチャ2件と試験3件を追加。仕様とdesignの記述を、依頼書にはbase・Hのみを置く形に統一。この改訂に対する独立レビューは、コミット後に別途依頼する。
 - 2026-10-25 第6版: P1（依頼書が自身のP・blob SHAを含む自己参照）を、依頼書にはHとbaseだけを置き、PとblobはPR本文とmanifestに記録する形に修正。P1（RENAMEDのFROM/TOを台帳で扱えない）と P2（REMOVEDの漏れ）を、台帳の抽出規則に追加して修正。P2（manifestの保存と命名が未定義）を`docs/Artifacts/pr_openspec_manifest_<request_id>.json`として定義。
 - 2026-10-25 第5版: P1（`required`をSkillが決めるだけで、全要求の網羅を保証しない）を、Hのspecデルタからの全要求台帳と承認済み除外で修正。P2（proposal・tasksが第3版を参照）を修正。`references/review_reply.schema.json`と`build_ledger.py`を成果物一覧に追加。
 - 2026-10-25 第4版（修正案受け入れ）: P1（必須基準の`out_of_scope`がPASSになる問題）を、manifestの`required`と判定規則で修正。P2（権限境界の評価・模擬ケースの不足）を、模擬ケースに4件追加して修正。Medium（生成物の日本語・JSTヘッダー・連番規則）は、規則の出どころを確認できていないため未反映。

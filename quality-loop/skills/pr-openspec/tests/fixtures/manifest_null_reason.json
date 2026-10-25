@@ -1,0 +1,52 @@
+{
+  "request_id": "REQ-001",
+  "pr_url": "https://github.com/syrius2000/QA-products/pull/99",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "2222222222222222222222222222222222222222",
+  "request_blob_sha": "3333333333333333333333333333333333333333",
+  "ledger": [
+    {
+      "id": "R:openspec/changes/c1/specs/cap/spec.md#1",
+      "kind": "requirement",
+      "title": "要求1",
+      "source": "openspec/changes/c1/specs/cap/spec.md",
+      "blob_sha": "4444444444444444444444444444444444444444",
+      "delta": "ADDED",
+      "required": true,
+      "exclusion": null
+    },
+    {
+      "id": "S:openspec/changes/c1/specs/cap/spec.md#1.1",
+      "kind": "scenario",
+      "title": "シナリオ1",
+      "source": "openspec/changes/c1/specs/cap/spec.md",
+      "blob_sha": "4444444444444444444444444444444444444444",
+      "delta": "ADDED",
+      "required": true,
+      "exclusion": null
+    },
+    {
+      "id": "S:openspec/changes/c1/specs/cap/spec.md#1.2",
+      "kind": "scenario",
+      "title": "シナリオ2",
+      "source": "openspec/changes/c1/specs/cap/spec.md",
+      "blob_sha": "4444444444444444444444444444444444444444",
+      "delta": "ADDED",
+      "required": true,
+      "exclusion": null
+    },
+    {
+      "id": "R:openspec/changes/c1/specs/cap/spec.md#2",
+      "kind": "requirement",
+      "title": "要求2（承認済み除外）",
+      "source": "openspec/changes/c1/specs/cap/spec.md",
+      "blob_sha": "4444444444444444444444444444444444444444",
+      "delta": "MODIFIED",
+      "required": false,
+      "exclusion": {
+        "approved_by": "owner-x",
+        "reason": null
+      }
+    }
+  ]
+}

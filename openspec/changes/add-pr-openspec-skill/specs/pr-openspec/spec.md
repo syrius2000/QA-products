@@ -32,7 +32,7 @@ OpenSpec changeの仕様・実装・テスト・未検証事項を、OpenSpec CL
 - **THEN** システムは公開を止め、Hの更新と再監査を利用者に提案する
 
 ### Requirement: 監査依頼書の内容
-システムは、監査依頼書に依頼ID、repository、base・H・Pの完全SHA、対象change一覧、資料一覧（path・blob SHA・読取状況）、要求別対応表、既知の未検証事項表、期待する回答形式を含めなければならない（MUST）。未検証事項は、Reviewerの適合判定によって実施済みとして扱ってはならない（MUST NOT）。
+システムは、監査依頼書に依頼ID、repository、base・Hの完全SHA、対象change一覧、資料一覧（path・blob SHA・読取状況）、要求別対応表、既知の未検証事項表、期待する回答形式を含めなければならない（MUST）。未検証事項は、Reviewerの適合判定によって実施済みとして扱ってはならない（MUST NOT）。
 
 #### Scenario: 資料が一部読めない
 - **WHEN** 必要な資料がGitHubから取得できない、または対象外として除外した
