@@ -24,4 +24,4 @@ OpenSpecで進めたchangeをGitHub上の外部Reviewerに監査してもらう�
 
 - 新規: `openspec/changes/add-pr-openspec-skill/`（本change）、`quality-loop/skills/pr-openspec/`（実装時に作成）。
 - 既存の`spec-review-loop`、`quality-qa`、`blind-qa-cycle`、`quality-review`、`quality-response`は変更しない。
-- 計画の詳細と経緯は `design.md` を参照（計画書 v3、SHA-256 `efa19c2e…`）。
+- 計画の詳細と経緯は `design.md` を参照（計画書 第5版）。第3版（`efa19c2e…`）以前の経緯も `design.md` の改訂履歴に残す。

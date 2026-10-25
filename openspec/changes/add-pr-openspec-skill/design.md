@@ -24,6 +24,8 @@ v0.1は使い始めるための5種類の成果物（Skill本体の4ファイル
 
 - `quality-loop/skills/pr-openspec/SKILL.md`: 起動条件、Git状態の確定、既存証跡の再利用、OpenSpec資料の照合、PR監査依頼書作成、権限境界。
 - `quality-loop/skills/pr-openspec/assets/review_request_template.md`: GitHub側がOpenSpec CLIなしで読める日本語の監査依頼書。既知の未検証事項と判定対象外欄を含める。
+- `quality-loop/skills/pr-openspec/references/review_reply.schema.json`: 回答JSONのスキーマ（Reviewerへの指示と、checkerの照合規則の正本）。
+- `quality-loop/skills/pr-openspec/scripts/build_ledger.py`: 監査対象HのspecデルタからR（Requirement）とS（Scenario）の全台帳を決定論的に作る。
 - `quality-loop/skills/pr-openspec/scripts/validate_review_reply.py`: Reviewer回答（Markdownまたは純粋なJSON）から回答JSONを抽出し、依頼ID、PR/base/head、依頼書blob SHA、全基準ID、判定値を検証する小さな決定的チェッカー。
 - `quality-loop/skills/pr-openspec/evals/evals.json`: Skillの起動・非起動と既存Skillへの振分けを検査するactivation cases。
 - `quality-loop/skills/pr-openspec/tests/test_validate_review_reply.py`と`tests/fixtures/*.json`: checkerの決定的な試験。検証対象は下記「Reviewer回答の機械検証」の全規則で、最低限のケースを同節に列挙する。checkerは本Skill唯一の決定的ロジックであり、試験なしで完成扱いにしない。
@@ -161,7 +163,7 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
 ```
 
 - `verdict`は上記4値の列挙のみ。`conforms`は`evidence`が1件以上必須、`nonconforming`は`evidence`と`reason`が必須、`unverified`と`out_of_scope`は`reason`が必須。
-- `out_of_scope`は、manifestで`required: false`とされた基準にだけ使える。`required: true`の基準を`out_of_scope`にした回答は、他の基準が全て適合でも`INCONCLUSIVE`とする（対象外を理由に監査を省略させないため）。
+- `out_of_scope`は、台帳で利用者が承認した除外（`exclusion`あり、`required: false`）の基準にだけ使える。それ以外の`out_of_scope`は不備とし、`INCONCLUSIVE`とする（対象外を理由に監査を省略させないため）。
 - `reviewer`（ツール・モデル・バージョン）は必須。`spec-review-loop`が記録するReviewer情報と同じ水準で、独立性を後から判断できるようにする。これは自己申告であり、真正性はcheckerでは検証できない。
 - 依頼書の全基準IDと回答の`criteria[].id`は、過不足なく一意に一致すること。重複・不明ID・欠落はすべて不備とする。
 - `findings[].criterion_id`は`criteria`に存在すること。
@@ -172,9 +174,18 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
 - 判定: 構造に不備があれば`structure: invalid`として`result: INCONCLUSIVE`（`problems`に理由、確実なFindingは保持）。構造が正しい場合は、`nonconforming`が1件でもあればFAIL、なければ`unverified`が1件でもあればINCONCLUSIVE、`required: true`の基準が`out_of_scope`であればINCONCLUSIVE、必須の基準が全て`conforms`で任意の基準が`conforms`か`out_of_scope`ならPASS。優先順位は`spec-review-loop`のFAIL > INCONCLUSIVE > PASSに揃える。
 - PASSは「回答が形式上有効で、Reviewerが全ての必須基準を適合と報告した」ことだけを示す。Reviewerの指摘の真偽、および依頼書の「既知の未検証事項」の実施は保証しない。
 
+#### 全要求台帳と必須の決め方（第5版）
+
+- 台帳は、監査対象Hの`openspec/changes/<id>/specs/**/spec.md`から、`build_ledger.py`で決定論的に作る。対象は`## ADDED Requirements`、`## MODIFIED Requirements`、`## RENAMED Requirements`配下の全`### Requirement:`と、その全`#### Scenario:`である。
+- 項目IDは、要求が`R:<出典path>#<要求の順番>`、シナリオが`S:<出典path>#<要求の順番>.<シナリオの順番>`。各項目に出典path、出典blob SHA、delta種別を付ける。
+- 台帳は依頼書に掲載し、Reviewerに出典と照合させる。
+- 台帳の項目は既定で全て`required: true`。`required: false`にできるのは、利用者が承認し依頼書に理由を記載した除外（`exclusion: {approved_by, reason}`）だけである。承認のない除外は不備。
+- checkerは、manifestの台帳IDと回答の`criteria[].id`を照合する（欠落・余剰・重複はINCONCLUSIVE）。checkerは台帳そのものを作り直さない。台帳の正しさは、`build_ledger.py`の決定論的な抽出と、Reviewerによる出典の照合で担保する。checkerのPASSは、この台帳に対する回答の形式と網羅性の検証に限られる。
+- 台帳が0件、出典を読めない、またはH以外のファイルから作られた場合は、依頼書を公開準備完了としない。
+
 #### 期待値manifestの保存先と信頼境界
 
-- manifestは依頼ID、PR URL、base SHA、公開head P、依頼書blob SHA、基準ID一覧を持つ。各基準には`required`（必須かどうか）を持たせる。`required`は依頼書作成時にSkillが対象Changeの要求から決め、回答側は変更できない。Pを含むためPのcommitには入れられず、ローカル専用（`docs/Artifacts/`配下の未commit JSON等）に置く。
+- manifestは依頼ID、PR URL、base SHA、公開head P、依頼書blob SHA、全要求台帳（下記）を持つ。台帳の各項目には`required`と、承認済みの場合だけ`exclusion`（承認者と理由）を持つ。回答側は変更できない。Pを含むためPのcommitには入れられず、ローカル専用（`docs/Artifacts/`配下の未commit JSON等）に置く。
 - manifestはSkillが送信前または回答確認時に、GitHub APIや`git`のGit objectから取得した値で作る。回答側が主張する値、PR本文、コメントの値を期待値の出どころにしない。manifestはcheckerの引数として明示的に渡す。
 
 #### checker試験の最低ケース
@@ -228,4 +239,5 @@ Skill作成の完了条件は、開発前記録とPR監査時記録を区別し�
 
 - 2026-10-25 12:40: 第3版。別意見のレビュー（P1: checker試験の欠落、P2: 回答JSONスキーマ・manifestの保存先と信頼境界・回答のデータ扱い・来歴の可視性・Reviewer情報の記録、P3: 重複の整理・依頼書の分割方針）を反映。この改訂に対する独立レビューは未実施で、`pr_openspec_plan_review_002_1025.md`のPASSは第2版（SHA-256 `c68c04a0…`）に対するものである。
 - 2026-10-25 13:10: 第3版への追記。成果物の数え方を「5種類」とし、checker試験1式の構成を明記。回答JSONの抽出をchecker自身が行う（Markdown回答または純粋なJSONを受け付ける）ことを定め、抽出失敗を試験対象に含めた。この追記にも独立レビューは未実施である。
+- 2026-10-25 第5版: P1（`required`をSkillが決めるだけで、全要求の網羅を保証しない）を、Hのspecデルタからの全要求台帳と承認済み除外で修正。P2（proposal・tasksが第3版を参照）を修正。`references/review_reply.schema.json`と`build_ledger.py`を成果物一覧に追加。
 - 2026-10-25 第4版（修正案受け入れ）: P1（必須基準の`out_of_scope`がPASSになる問題）を、manifestの`required`と判定規則で修正。P2（権限境界の評価・模擬ケースの不足）を、模擬ケースに4件追加して修正。Medium（生成物の日本語・JSTヘッダー・連番規則）は、規則の出どころを確認できていないため未反映。
