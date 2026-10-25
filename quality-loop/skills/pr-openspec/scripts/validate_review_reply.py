@@ -1,0 +1,250 @@
+#!/usr/bin/env python3
+"""pr-openspec: Reviewer回答の決定的な検証（標準ライブラリのみ）。
+
+使い方: validate_review_reply.py --manifest <manifest.json> --reply <回答.md|回答.json>
+出力はJSON。終了コード: 0=PASS, 1=FAIL, 2=INCONCLUSIVE, 3=使用法・入力ファイルの誤り。
+
+判定規則は計画書（openspec/changes/add-pr-openspec-skill/design.md）の
+「回答JSONのスキーマ」「全要求台帳と必須の決め方」「checkerの入出力と判定」に従う。
+GitHubの現在状態は取得しない。期待値は呼び出し側がmanifestとして渡す。
+checkerのPASSは、台帳に対する回答の形式と網羅性の検証に限られ、指摘の真偽は保証しない。
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / 'references' / 'review_reply.schema.json'
+SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding='utf-8'))
+VERDICTS = ('conforms', 'nonconforming', 'unverified', 'out_of_scope')
+IDENTITY = ('request_id', 'pr_url', 'base_sha', 'head_sha', 'request_blob_sha')
+SHA40 = re.compile(r'^[0-9a-f]{40}$')
+JSON_BLOCK = re.compile(r'^```json[ \t]*\n(.*?)\n```[ \t]*$', re.M | re.S)
+EXIT = {'PASS': 0, 'FAIL': 1, 'INCONCLUSIVE': 2}
+
+
+def extract_reply(path: Path) -> tuple[object | None, list[str]]:
+    """回答ファイルから回答JSONを取り出す。.jsonはそのまま読み、それ以外はMarkdownの```json blockを正確に1つ読む。"""
+    text = path.read_text(encoding='utf-8')
+    if path.suffix.lower() == '.json':
+        try:
+            return json.loads(text), []
+        except json.JSONDecodeError as exc:
+            return None, [f'回答JSONの構文が不正: {exc}']
+    blocks = JSON_BLOCK.findall(text)
+    if len(blocks) != 1:
+        return None, [f'回答Markdownの```json blockが{len(blocks)}個あります（1個だけ必要）']
+    try:
+        return json.loads(blocks[0]), []
+    except json.JSONDecodeError as exc:
+        return None, [f'JSON blockの構文が不正: {exc}']
+
+
+def _type_ok(value: object, typ: str) -> bool:
+    if typ == 'integer':
+        return isinstance(value, int) and not isinstance(value, bool)
+    python_type = {'object': dict, 'array': list, 'string': str, 'boolean': bool}[typ]
+    return isinstance(value, python_type)
+
+
+def _json_equal(a: object, b: object) -> bool:
+    """JSONの値の等価。数値は値で比べ（1と1.0は同じ）、boolは数値と区別する（trueは1ではない）。"""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return isinstance(a, bool) and isinstance(b, bool) and a == b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b
+    return type(a) is type(b) and a == b
+
+
+def schema_errors(schema: dict, value: object, path: str = '$') -> list[str]:
+    """references/review_reply.schema.jsonの規則（型・const・enum・minLength・pattern・必須・許容外フィールド・items）を標準ライブラリで検証する。"""
+    errs: list[str] = []
+    if 'const' in schema and not _json_equal(value, schema['const']):
+        errs.append(f'{path}: {schema["const"]!r}である必要があります')
+    if 'enum' in schema and not any(_json_equal(value, e) for e in schema['enum']):
+        errs.append(f'{path}: 許容外の値（{value!r}）です')
+    typ = schema.get('type')
+    if typ and not _type_ok(value, typ):
+        return errs + [f'{path}: {typ}である必要があります']
+    if isinstance(value, str):
+        if len(value) < schema.get('minLength', 0):
+            errs.append(f'{path}: 空文字列は許容されません')
+        if 'pattern' in schema and not re.search(schema['pattern'], value):
+            errs.append(f'{path}: 形式が不正です（{schema["pattern"]}）')
+    if isinstance(value, dict):
+        props = schema.get('properties', {})
+        for key in schema.get('required', []):
+            if key not in value:
+                errs.append(f'{path}.{key}が必須です')
+        if schema.get('additionalProperties') is False:
+            for key in value:
+                if key not in props:
+                    errs.append(f'{path}.{key}は許容されないフィールドです')
+        for key, sub in props.items():
+            if key in value:
+                errs.extend(schema_errors(sub, value[key], f'{path}.{key}'))
+    if isinstance(value, list) and 'items' in schema:
+        for index, item in enumerate(value):
+            errs.extend(schema_errors(schema['items'], item, f'{path}[{index}]'))
+    return errs
+
+
+def check_manifest(manifest: object) -> list[str]:
+    """期待値manifestの妥当性。台帳が空、承認のない除外、重複IDはここで不備にする。"""
+    if not isinstance(manifest, dict):
+        return ['manifestがJSONオブジェクトではありません']
+    problems: list[str] = []
+    for key in IDENTITY:
+        if not isinstance(manifest.get(key), str) or not manifest.get(key):
+            problems.append(f'manifestに{key}がありません')
+    for key in ('base_sha', 'head_sha'):
+        value = manifest.get(key)
+        if isinstance(value, str) and value and not SHA40.match(value):
+            problems.append(f'manifestの{key}が完全SHA（40桁の16進）ではありません')
+    ledger = manifest.get('ledger')
+    if not isinstance(ledger, list) or not ledger:
+        return problems + ['manifestのledger（全要求台帳）が空、または存在しません']
+    seen: set[str] = set()
+    for item in ledger:
+        if not isinstance(item, dict) or not isinstance(item.get('id'), str):
+            problems.append('台帳の項目にidがありません')
+            continue
+        item_id = item['id']
+        if item_id in seen:
+            problems.append(f'台帳のIDが重複: {item_id}')
+        seen.add(item_id)
+        if not isinstance(item.get('required'), bool):
+            problems.append(f'台帳 {item_id} のrequiredが真偽値ではありません')
+            continue
+        if item['required'] is False:
+            exclusion = item.get('exclusion')
+            if not (isinstance(exclusion, dict)
+                    and isinstance(exclusion.get('approved_by'), str) and exclusion['approved_by'].strip()
+                    and isinstance(exclusion.get('reason'), str) and exclusion['reason'].strip()):
+                problems.append(f'台帳 {item_id} は除外されていますが、承認者と理由がありません')
+    return problems
+
+
+def _result(problems: list[str], counts: dict, kept: list[dict]) -> dict:
+    """構造に不備があればINCONCLUSIVE。不備がなければ FAIL > INCONCLUSIVE > PASS の順で決める。"""
+    if problems:
+        result, structure = 'INCONCLUSIVE', 'invalid'
+    elif counts.get('nonconforming'):
+        result, structure = 'FAIL', 'valid'
+    elif counts.get('unverified'):
+        result, structure = 'INCONCLUSIVE', 'valid'
+    else:
+        result, structure = 'PASS', 'valid'
+    return {'result': result, 'structure': structure, 'problems': problems,
+            'counts': counts, 'kept_findings': kept}
+
+
+def check_reply(manifest: dict, reply: object) -> dict:
+    """回答JSONを台帳と照合する。不備は問題一覧に積み、確実なnonconformingはkept_findingsに残す。"""
+    if not isinstance(reply, dict):
+        return _result(['回答JSONがオブジェクトではありません'], {}, [])
+    problems: list[str] = []
+    kept: list[dict] = []
+    counts = {verdict: 0 for verdict in VERDICTS}
+
+    problems.extend(schema_errors(SCHEMA, reply))
+    if reply.get('schema_version') != 1:
+        problems.append('schema_versionが1ではありません')
+    for key in IDENTITY:
+        if key not in reply:
+            problems.append(f'回答に{key}がありません')
+        elif reply[key] != manifest.get(key):
+            problems.append(f'{key}が期待値と一致しません（回答: {reply[key]!r}、期待: {manifest.get(key)!r}）')
+
+    reviewer = reply.get('reviewer')
+    if not isinstance(reviewer, dict):
+        problems.append('reviewer（tool・model・version）がありません')
+    else:
+        for key in ('tool', 'model', 'version'):
+            if not isinstance(reviewer.get(key), str) or not reviewer[key].strip():
+                problems.append(f'reviewer.{key}がありません')
+
+    criteria = reply.get('criteria')
+    findings = reply.get('findings', [])
+    if not isinstance(criteria, list):
+        problems.append('criteriaが配列ではありません')
+        criteria = []
+    if not isinstance(findings, list):
+        problems.append('findingsが配列ではありません')
+        findings = []
+    if not isinstance(reply.get('unverified_items', []), list):
+        problems.append('unverified_itemsが配列ではありません')
+
+    ledger = {item['id']: item for item in manifest.get('ledger', [])
+              if isinstance(item, dict) and isinstance(item.get('id'), str)}
+    ids: list[str] = []
+    for criterion in criteria:
+        if not isinstance(criterion, dict) or not isinstance(criterion.get('id'), str):
+            problems.append('criteriaの項目にidがありません')
+            continue
+        cid = criterion['id']
+        ids.append(cid)
+        verdict = criterion.get('verdict')
+        if verdict not in VERDICTS:
+            problems.append(f'{cid}: verdictが許容外（{verdict!r}）')
+            continue
+        counts[verdict] += 1
+        evidence = criterion.get('evidence', [])
+        has_evidence = isinstance(evidence, list) and any(str(e).strip() for e in evidence)
+        reason = str(criterion.get('reason') or '').strip()
+        if verdict in ('conforms', 'nonconforming') and not has_evidence:
+            problems.append(f'{cid}: {verdict}には根拠（evidence）が1件以上必要')
+        if verdict in ('nonconforming', 'unverified', 'out_of_scope') and not reason:
+            problems.append(f'{cid}: {verdict}には理由（reason）が必要')
+        if verdict == 'nonconforming':
+            kept.append({'criterion_id': cid, 'verdict': 'nonconforming'})
+        if verdict == 'out_of_scope':
+            item = ledger.get(cid)
+            if item is None or item.get('required') is not False or not item.get('exclusion'):
+                problems.append(f'{cid}: out_of_scopeは承認済みの除外（required: false、exclusionあり）の基準にだけ使えます')
+
+    for cid in sorted({i for i in ids if ids.count(i) > 1}):
+        problems.append(f'基準IDが重複: {cid}')
+    for cid in sorted(set(ledger) - set(ids)):
+        problems.append(f'台帳の基準が回答にありません: {cid}')
+    for cid in sorted(set(ids) - set(ledger)):
+        problems.append(f'台帳にない基準IDです: {cid}')
+    for finding in findings:
+        target = finding.get('criterion_id') if isinstance(finding, dict) else None
+        if target not in set(ids):
+            problems.append(f'findingsのcriterion_idが回答のcriteriaにありません: {target!r}')
+
+    return _result(problems, counts, kept)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description='pr-openspec: Reviewer回答を期待値manifestと照合する')
+    parser.add_argument('--manifest', required=True, type=Path)
+    parser.add_argument('--reply', required=True, type=Path)
+    args = parser.parse_args(argv)
+    try:
+        manifest = json.loads(args.manifest.read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(json.dumps({'result': 'USAGE', 'error': f'manifestを読めません: {exc}'}, ensure_ascii=False))
+        return 3
+    if not args.reply.is_file():
+        print(json.dumps({'result': 'USAGE', 'error': f'回答ファイルがありません: {args.reply}'}, ensure_ascii=False))
+        return 3
+
+    problems = check_manifest(manifest)
+    reply, reply_problems = (None, [])
+    if not problems:
+        reply, reply_problems = extract_reply(args.reply)
+    if problems or reply_problems:
+        out = _result(problems + reply_problems, {}, [])
+    else:
+        out = check_reply(manifest, reply)
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return EXIT[out['result']]
+
+
+if __name__ == '__main__':
+    sys.exit(main())
