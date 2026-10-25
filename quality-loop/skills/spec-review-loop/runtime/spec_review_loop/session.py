@@ -44,7 +44,27 @@ def pid_alive(pid: int) -> bool:
         return False
     except PermissionError:
         return True
-    return True
+    # 終了したが回収されていない（ゾンビ）プロセスは、実行中とみなさない（Linuxのみ確認できる）
+    try:
+        return Path(f'/proc/{pid}/stat').read_text(encoding='utf-8').rsplit(')', 1)[1].split()[0] != 'Z'
+    except (OSError, IndexError):
+        return True
+
+
+def _read_lock_fd(fd: int) -> dict:
+    """ロックファイルの内容（JSON）を読む。空・壊れている場合は空の辞書。"""
+    os.lseek(fd, 0, os.SEEK_SET)
+    try:
+        value = json.loads(os.read(fd, 1 << 16).decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _reviewer_alive(info: dict) -> bool:
+    """記録された子Reviewerが生きているか。親CLIの状態とは独立に判断する。"""
+    rp = info.get('reviewer_pid')
+    return bool(rp) and pid_alive(int(rp))
 
 
 class Session:
@@ -96,21 +116,25 @@ class Session:
         tmp.write_text(text, encoding='utf-8')
         os.replace(tmp, self.path(name))  # 読み手が書きかけを見ないよう、原子的に置き換える
 
-    def record_prompt(self, round_no: int, attempt_no: int, prompt: str) -> str:
+    def record_prompt(self, round_no: int, prompt: str) -> str:
         """Reviewerへ渡すプロンプトを保存し、記録（SHA-256）を同じ状態ロックの下で更新する。
 
-        ファイルと記録が食い違う瞬間を他のプロセスに見せない。attemptごとのファイルも残し、
-        過去のattemptのプロンプトも書換えを検知できるようにする。"""
+        attempt番号は、記録済みattemptと保存済みプロンプトの最大番号から採番する。親CLIが異常終了して
+        attemptが記録されなかった場合も、前のattemptのプロンプトとハッシュを上書きしない。"""
         sha = sha256_text(prompt)
-        attempt_name = f'r{round_no}_prompt.attempt{attempt_no}.md'
         with self.state_lock():
+            state = self.state()
+            index = next(k for k, r in enumerate(state['rounds']) if r['round'] == round_no)
+            record = state['rounds'][index]
+            existing = record.get('prompt_files', {})
+            attempt_no = max([len(record.get('attempts', [])), *(int(k) for k in existing)]) + 1
+            attempt_name = f'r{round_no}_prompt.attempt{attempt_no}.md'
             self.write_text(attempt_name, prompt)
             self.write_text(f'r{round_no}_prompt.md', prompt)
-            state = self.state()
-            record = state['rounds'][-1]
-            files = {**record.get('prompt_files', {}), str(attempt_no): {'file': attempt_name, 'sha256': sha}}
+            files = {**existing, str(attempt_no): {'file': attempt_name, 'sha256': sha}}
             record = {**record, 'prompt_sha256': sha, 'prompt_files': files}
-            self.write_json('state.json', {**state, 'rounds': [*state['rounds'][:-1], record]})
+            rounds = [*state['rounds'][:index], record, *state['rounds'][index + 1:]]
+            self.write_json('state.json', {**state, 'rounds': rounds})
         return sha
 
     def state(self) -> dict:
@@ -141,16 +165,21 @@ class Session:
     def lock_info(self) -> dict | None:
         """実行中のreviewの情報（表示・拒否の判断用）。排他の正本はacquire_lockのOSロックで、これは参考情報。
 
-        内容が空（未取得・解放済み）、またはPIDが存在しない（異常終了）場合はNone。
+        親CLIが生きている間、または親CLIが異常終了しても子Reviewerが生きている間は情報を返す。
+        どちらも終了していれば（内容が空を含む）Noneを返す。
         """
         try:
             info = json.loads(self.path(LOCK_NAME).read_text(encoding='utf-8'))
         except (OSError, json.JSONDecodeError):
             return None
-        return info if pid_alive(int(info.get('pid', 0))) else None
+        if not isinstance(info, dict):
+            return None
+        if pid_alive(int(info.get('pid', 0))) or _reviewer_alive(info):
+            return info
+        return None
 
     def acquire_lock(self, round_no: int, tool: str) -> None:
-        """OSのファイルロックで排他する。プロセスが死ねばOSが解放するので、古いロックの判定・削除をしない。"""
+        """OSのファイルロックで排他する。親CLIが死んでもOSが解放するが、記録された子Reviewerが生きていれば開始しない。"""
         self.ensure_gitignore()
         fd = os.open(self.path(LOCK_NAME), os.O_CREAT | os.O_RDWR, 0o644)
         try:
@@ -161,20 +190,37 @@ class Session:
             raise contract(f'r{info.get("round", "?")}のレビューが実行中です（PID {info.get("pid", "不明")}、{info.get("tool", "")}）',
                            f'status で進行を確認してください（{self.review_rel}/r{info.get("round", "<N>")}_reviewer.log）。終了を待ってから再実行します',
                            {'lock': info})
-        os.ftruncate(fd, 0)
-        os.write(fd, json.dumps({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
-                                 'started_epoch': datetime.now(JST).timestamp()}).encode('utf-8'))
+        prev = _read_lock_fd(fd)  # 前回の親CLIが異常終了していた場合の残り
+        if _reviewer_alive(prev):
+            os.close(fd)
+            raise contract(f'前回のReviewer（PID {prev["reviewer_pid"]}、r{prev.get("round", "?")} {prev.get("tool", "")}）がまだ実行中です（親CLIは終了しています）',
+                           f'status で進行を確認し、終了を待ってから再実行してください（{self.review_rel}/r{prev.get("round", "<N>")}_reviewer.log）',
+                           {'lock': prev})
         self._lock_fd = fd
+        self._lock_info = {'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
+                           'started_epoch': datetime.now(JST).timestamp()}
+        self._write_lock_info()
 
     def update_lock_info(self, round_no: int, tool: str) -> None:
         """保持中のロックの表示用情報を、再読込後のround・toolへ更新する（排他には影響しない）。"""
-        fd = getattr(self, '_lock_fd', None)
-        if fd is None:
+        if getattr(self, '_lock_fd', None) is None:
             return
+        self._lock_info = {**getattr(self, '_lock_info', {}), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
+                           'started_epoch': datetime.now(JST).timestamp()}
+        self._write_lock_info()
+
+    def set_reviewer_pid(self, pid: int) -> None:
+        """子Reviewerのプロセスを記録する。親CLIが死んでも、この記録で実行中かどうかを判断できる。"""
+        if getattr(self, '_lock_fd', None) is None:
+            return
+        self._lock_info = {**getattr(self, '_lock_info', {}), 'reviewer_pid': pid}
+        self._write_lock_info()
+
+    def _write_lock_info(self) -> None:
+        fd = self._lock_fd
         os.ftruncate(fd, 0)
         os.lseek(fd, 0, os.SEEK_SET)
-        os.write(fd, json.dumps({'pid': os.getpid(), 'round': round_no, 'tool': tool, 'started_at': now_jst(),
-                                 'started_epoch': datetime.now(JST).timestamp()}).encode('utf-8'))
+        os.write(fd, json.dumps(self._lock_info).encode('utf-8'))
 
     def release_lock(self) -> None:
         fd = getattr(self, '_lock_fd', None)
@@ -182,7 +228,9 @@ class Session:
             return
         self._lock_fd = None
         try:
-            os.ftruncate(fd, 0)  # 内容を空にしてから解放する（空は「実行中でない」）
+            # 子Reviewerが残っている間は記録を消さず、親CLIが終わった後も実行中と分かるようにする
+            if not _reviewer_alive(getattr(self, '_lock_info', {})):
+                os.ftruncate(fd, 0)  # 内容を空にしてから解放する（空は「実行中でない」）
         finally:
             try:
                 fcntl.flock(fd, fcntl.LOCK_UN)
@@ -195,7 +243,7 @@ class Session:
             return None
         log = self.path(f'r{info.get("round")}_reviewer.log')
         tail = log.read_text(encoding='utf-8', errors='replace').splitlines()[-20:] if log.exists() else []
-        return {**{k: info[k] for k in ('pid', 'round', 'tool', 'started_at')},
+        return {**{k: info.get(k) for k in ('pid', 'round', 'tool', 'started_at', 'reviewer_pid')},
                 'elapsed_seconds': int(datetime.now(JST).timestamp() - info.get('started_epoch', 0)),
                 'log': f'{self.review_rel}/r{info.get("round")}_reviewer.log', 'log_tail': tail}
 
@@ -300,15 +348,21 @@ class Session:
         return crit.drift(self.frozen(), crit.build(self.root, self.change_id, allow_empty=True))
 
     def assert_no_review_running(self) -> None:
-        """state.lockを保持したまま呼ぶ。reviewのflockを一時的に取り、取れなければ実行中。"""
+        """state.lockを保持したまま呼ぶ。reviewのflockを一時的に取り、取れなければ実行中。
+        flockが取れても、記録された子Reviewerが生きていれば（親CLIが異常終了した後でも）実行中とみなす。"""
         self.ensure_gitignore()
         fd = os.open(self.path(LOCK_NAME), os.O_CREAT | os.O_RDWR, 0o644)
         try:
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as exc:
-            info = self.lock_info() or {}
-            raise contract(f'r{info.get("round", "?")}のレビューが実行中です（PID {info.get("pid", "不明")}）',
-                           f'status で進行を確認し、終了を待ってください') from exc
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                info = self.lock_info() or {}
+                raise contract(f'r{info.get("round", "?")}のレビューが実行中です（PID {info.get("pid", "不明")}）',
+                               f'status で進行を確認し、終了を待ってください') from exc
+            prev = _read_lock_fd(fd)
+            if _reviewer_alive(prev):
+                raise contract(f'前回のReviewer（PID {prev["reviewer_pid"]}）がまだ実行中です（親CLIは終了しています）',
+                               'status で進行を確認し、終了を待ってください')
         finally:
             os.close(fd)  # closeでflockも解放される
 

@@ -482,8 +482,8 @@ def _two_failed_codex_then_switch_slowly(repo, tmp_path, monkeypatch):
     monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
     monkeypatch.setenv('FAKE_STREAM_STEPS', '25')
     proc = background_review(repo, '--reviewer', 'claude')
-    assert wait_for(lambda: lock_active(repo)), '2回目のreviewが起動しない'
-    time.sleep(1.0)                                              # プロンプトの再保存より後まで待つ
+    assert wait_for(lambda: reviewer_pid(repo) is not None), '2回目のreviewが起動しない'
+    time.sleep(0.5)                                              # プロンプトの再保存より後まで待つ
     return proc
 
 
@@ -501,9 +501,10 @@ def test_status_during_second_attempt_is_not_a_false_hold(repo, tmp_path, monkey
 def test_crash_during_second_attempt_does_not_leave_permanent_hold(repo, tmp_path, monkeypatch):
     """2回目の実行中にCLIが異常終了しても、次の操作が改ざん検知HOLDで塞がれない。"""
     proc = _two_failed_codex_then_switch_slowly(repo, tmp_path, monkeypatch)
+    rp = reviewer_pid(repo)
     proc.kill()
     proc.wait()
-    assert wait_for(lambda: not lock_active(repo) or True)
+    assert wait_for(lambda: not running(rp), seconds=60), 'Reviewerが終了しない'
     code, out = cli(repo, 'status', CHANGE)
     assert 'HOLD' not in out
     monkeypatch.setenv('FAKE_REVIEW_MODE', 'ok')
@@ -558,3 +559,62 @@ def test_finish_dry_run_refuses_while_lock_is_held_but_empty(repo, tmp_path):
         assert code == 2 and '実行中' in out
     finally:
         os.close(fd)
+
+
+def reviewer_pid(repo):
+    try:
+        return json.loads((REVIEW(repo) / '.review.lock').read_text(encoding='utf-8')).get('reviewer_pid')
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def running(pid):
+    """親CLIが死んだ後の子プロセスの生存。ゾンビ（未回収の終了済み）は終了扱いにする。"""
+    if not pid:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    stat = os.path.join('/proc', str(pid), 'stat')
+    if os.path.exists(stat):
+        with open(stat, encoding='utf-8') as fh:
+            return fh.read().rsplit(')', 1)[1].split()[0] != 'Z'
+    return True
+
+
+def test_second_review_is_refused_while_orphaned_reviewer_runs(repo, tmp_path, monkeypatch):
+    """P1: 親CLIが異常終了しても、子Reviewerが生きている間は次のreviewを開始しない。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo))
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'timeout')          # 無音で30秒待つ（出力の切断で先に落ちない）
+    proc = background_review(repo)
+    assert wait_for(lambda: reviewer_pid(repo) is not None), 'Reviewerが記録されない'
+    rp = reviewer_pid(repo)
+    proc.kill()
+    proc.wait()
+    assert running(rp), '親CLIを止めた時点でReviewerは生きているはず'
+    code, out = cli(repo, 'review', CHANGE)
+    assert code == 2 and '前回のReviewer' in out and str(rp) in out
+    assert '実行中' in cli(repo, 'status', CHANGE)[1]
+    assert wait_for(lambda: not running(rp), seconds=60), 'Reviewerが終了しない'
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'ok')
+    code, out = cli(repo, 'review', CHANGE)
+    assert code == 0 and 'Gate: PASS' in out
+
+
+def test_prompt_attempt_number_is_not_reused_after_crash(repo, tmp_path):
+    """P2: attemptが記録されないまま親CLIが死んでも、前のattemptのプロンプトとハッシュを上書きしない。"""
+    sys.path.insert(0, str(SKILL / 'runtime'))
+    from spec_review_loop.session import Session
+    begin(repo)
+    session = Session(repo, CHANGE)
+    session.record_prompt(1, '最初のプロンプト')      # attemptは記録されずに終わった想定
+    session.record_prompt(1, '次のプロンプト')
+    files = load(repo, 'state.json')['rounds'][0]['prompt_files']
+    assert sorted(files) == ['1', '2']
+    assert (REVIEW(repo) / 'r1_prompt.attempt1.md').read_text(encoding='utf-8') == '最初のプロンプト'
+    assert session.integrity_problems() == []
+

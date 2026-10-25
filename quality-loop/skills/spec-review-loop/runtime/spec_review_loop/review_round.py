@@ -134,10 +134,10 @@ def _review_locked(session: Session, state: dict, record: dict, tool: str, model
         checks = run_checks(frozen['checks'], check_wt)
     with gitops.review_worktree(session.root, record['sha']) as wt:
         prompt = build_prompt(session, state, record, frozen, checks, previous_open, tool)
-        attempt['prompt_sha256'] = session.record_prompt(record['round'], len(record['attempts']) + 1, prompt)
+        attempt['prompt_sha256'] = session.record_prompt(record['round'], prompt)
         before_main = gitops.status_entries(session.root)  # 自分が書いた成果物の後で、Reviewer起動前の状態を取る
         result = reviewers.run(tool, prompt, wt, timeout or state['timeout'], model, probe, effort,
-                               log_path=session.path(f'r{record["round"]}_reviewer.log'))
+                               log_path=session.path(f'r{record["round"]}_reviewer.log'), on_start=session.set_reviewer_pid)
         wrote = gitops.status_entries(wt)  # 新しいworktreeなので、どの変更もReviewerの書込み
         changed_main = sorted(set(gitops.status_entries(session.root)) ^ set(before_main))
     attempt['model'] = result['model']

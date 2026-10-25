@@ -144,7 +144,7 @@ def extract_json(text: str) -> dict:
     raise ValueError('Reviewer出力にJSONオブジェクトがありません')
 
 
-def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_path: Path | None) -> dict:
+def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_path: Path | None, on_start=None) -> dict:
     """子プロセスを起動し、出力を逐次ログへ書きながら終了を待つ。timeoutでは子孫ごと止める。"""
     log = open(log_path, 'a', encoding='utf-8', buffering=1) if log_path else None
     lock = threading.Lock()
@@ -163,6 +163,8 @@ def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_pat
         if log:
             log.close()  # 起動に失敗しても、開いたログを残さない
         raise
+    if on_start:
+        on_start(proc.pid)  # 親CLIが死んでも、子Reviewerの生存を後から判断できるよう先に記録する
     chunks: dict[str, list[str]] = {'out': [], 'err': []}
 
     def pump(pipe, tag: str) -> None:
@@ -206,7 +208,7 @@ def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_pat
 
 
 def run(name: str, prompt: str, cwd: Path, timeout: int, model: str | None, info: dict, effort: str | None = None,
-        log_path: Path | None = None) -> dict:
+        log_path: Path | None = None, on_start=None) -> dict:
     """Reviewerを1回実行する。失敗は例外ではなく ok=False で返す。log_pathがあれば出力を逐次書き出す。"""
     adapter = get(name)
     base = {'tool': name, 'version': info.get('version') or 'unknown', 'model': model or 'unknown', 'ok': False}
@@ -214,7 +216,7 @@ def run(name: str, prompt: str, cwd: Path, timeout: int, model: str | None, info
         out_file = Path(tmp) / 'last_message.txt'
         argv, stdin = adapter.command(info['path'], cwd, out_file, model, prompt, effort)
         try:
-            proc = _stream(argv, stdin, cwd, timeout, log_path)
+            proc = _stream(argv, stdin, cwd, timeout, log_path, on_start)
         except OSError as exc:
             return {**base, 'error': f'起動に失敗しました: {exc}', 'raw': ''}
         if proc['timed_out']:
