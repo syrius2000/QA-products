@@ -9,7 +9,8 @@
   - `references/review_reply.schema.json`: 回答JSONの形式（条件付きの必須はcheckerが検証）。
   - `SKILL.md`、`assets/review_request_template.md`。
   - `evals/evals.json`: 起動評価4件、権限境界を含む評価6件。
-- テスト: `python3 -m pytest tests`（pr-openspec）→ 33件通過。
+- テスト: `python3 -m pytest tests`（pr-openspec）→ 51件通過。
+  - 回答JSONのスキーマ検証（必須・型・const・空文字・許容外フィールド・items）を標準ライブラリで実装し、スキーマ違反11件の試験を追加。旧checkerに対しては10件が失敗することを確認した。
   - 最低ケース一覧に対応するフィクスチャ25件（`tests/fixtures/`）。
   - 必須基準の`out_of_scope`規則を一時的に壊すとテストが失敗することを確認（変更を戻すと通過）。
   - 台帳作成は、一時gitリポジトリ（ADDED・MODIFIED・RENAMED、不正な順序、対象外のセクション）で試験。

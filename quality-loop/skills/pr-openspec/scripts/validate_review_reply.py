@@ -17,6 +17,8 @@ import re
 import sys
 from pathlib import Path
 
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / 'references' / 'review_reply.schema.json'
+SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding='utf-8'))
 VERDICTS = ('conforms', 'nonconforming', 'unverified', 'out_of_scope')
 IDENTITY = ('request_id', 'pr_url', 'base_sha', 'head_sha', 'request_blob_sha')
 SHA40 = re.compile(r'^[0-9a-f]{40}$')
@@ -39,6 +41,46 @@ def extract_reply(path: Path) -> tuple[object | None, list[str]]:
         return json.loads(blocks[0]), []
     except json.JSONDecodeError as exc:
         return None, [f'JSON blockの構文が不正: {exc}']
+
+
+def _type_ok(value: object, typ: str) -> bool:
+    if typ == 'integer':
+        return isinstance(value, int) and not isinstance(value, bool)
+    python_type = {'object': dict, 'array': list, 'string': str, 'boolean': bool}[typ]
+    return isinstance(value, python_type)
+
+
+def schema_errors(schema: dict, value: object, path: str = '$') -> list[str]:
+    """references/review_reply.schema.jsonの規則（型・const・enum・minLength・pattern・必須・許容外フィールド・items）を標準ライブラリで検証する。"""
+    errs: list[str] = []
+    if 'const' in schema and not (value == schema['const'] and type(value) is type(schema['const'])):
+        errs.append(f'{path}: {schema["const"]!r}である必要があります')
+    if 'enum' in schema and value not in schema['enum']:
+        errs.append(f'{path}: 許容外の値（{value!r}）です')
+    typ = schema.get('type')
+    if typ and not _type_ok(value, typ):
+        return errs + [f'{path}: {typ}である必要があります']
+    if isinstance(value, str):
+        if len(value) < schema.get('minLength', 0):
+            errs.append(f'{path}: 空文字列は許容されません')
+        if 'pattern' in schema and not re.search(schema['pattern'], value):
+            errs.append(f'{path}: 形式が不正です（{schema["pattern"]}）')
+    if isinstance(value, dict):
+        props = schema.get('properties', {})
+        for key in schema.get('required', []):
+            if key not in value:
+                errs.append(f'{path}.{key}が必須です')
+        if schema.get('additionalProperties') is False:
+            for key in value:
+                if key not in props:
+                    errs.append(f'{path}.{key}は許容されないフィールドです')
+        for key, sub in props.items():
+            if key in value:
+                errs.extend(schema_errors(sub, value[key], f'{path}.{key}'))
+    if isinstance(value, list) and 'items' in schema:
+        for index, item in enumerate(value):
+            errs.extend(schema_errors(schema['items'], item, f'{path}[{index}]'))
+    return errs
 
 
 def check_manifest(manifest: object) -> list[str]:
@@ -99,6 +141,7 @@ def check_reply(manifest: dict, reply: object) -> dict:
     kept: list[dict] = []
     counts = {verdict: 0 for verdict in VERDICTS}
 
+    problems.extend(schema_errors(SCHEMA, reply))
     if reply.get('schema_version') != 1:
         problems.append('schema_versionが1ではありません')
     for key in IDENTITY:

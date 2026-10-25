@@ -96,3 +96,49 @@ def test_usage_error_for_missing_reply_file():
     proc = subprocess.run([sys.executable, str(CHECKER), '--manifest', str(FIX / 'manifest.json'), '--reply', str(FIX / 'nope.json')],
                           capture_output=True, text=True)
     assert proc.returncode == 3 and json.loads(proc.stdout)['result'] == 'USAGE'
+
+
+def _run_object(tmp_path, reply_obj):
+    """回答JSONを一時ファイルに書き、checkerをCLIとして実行する。"""
+    path = tmp_path / 'reply.json'
+    path.write_text(json.dumps(reply_obj, ensure_ascii=False), encoding='utf-8')
+    proc = subprocess.run([sys.executable, str(CHECKER), '--manifest', str(FIX / 'manifest.json'), '--reply', str(path)],
+                          capture_output=True, text=True)
+    return proc.returncode, json.loads(proc.stdout)
+
+
+def _valid_reply():
+    return json.loads((FIX / 'reply_pass.json').read_text(encoding='utf-8'))
+
+
+def _mutate(fn):
+    obj = _valid_reply()
+    fn(obj)
+    return obj
+
+
+SCHEMA_MUTATIONS = [
+    # (名前, 変更, 問題に含まれるべき語)
+    ('findings_removed', lambda o: o.pop('findings'), 'findings'),
+    ('unverified_items_removed', lambda o: o.pop('unverified_items'), 'unverified_items'),
+    ('evidence_null', lambda o: o['criteria'][0].update(evidence=[None]), 'evidence'),
+    ('evidence_empty_string', lambda o: o['criteria'][0].update(evidence=['']), 'evidence'),
+    ('finding_without_observation', lambda o: o.update(findings=[{'criterion_id': o['criteria'][0]['id'], 'impact': 'x', 'how_to_verify': 'y'}]), 'observation'),
+    ('finding_empty_impact', lambda o: o.update(findings=[{'criterion_id': o['criteria'][0]['id'], 'observation': 'x', 'impact': '', 'how_to_verify': 'y'}]), 'impact'),
+    ('finding_extra_field', lambda o: o.update(findings=[{'criterion_id': o['criteria'][0]['id'], 'observation': 'x', 'impact': 'x', 'how_to_verify': 'y', 'severity': 'P1'}]), 'severity'),
+    ('reviewer_extra_field', lambda o: o['reviewer'].update(note='x'), 'note'),
+    ('criterion_extra_field', lambda o: o['criteria'][0].update(score=1), 'score'),
+    ('schema_version_true', lambda o: o.update(schema_version=True), 'schema_version'),
+    ('unverified_item_null', lambda o: o.update(unverified_items=[None]), 'unverified_items'),
+]
+
+
+@pytest.mark.parametrize('name, mutate, word', SCHEMA_MUTATIONS, ids=[m[0] for m in SCHEMA_MUTATIONS])
+def test_schema_violations_are_inconclusive(tmp_path, name, mutate, word):
+    """スキーマに反する回答は、必須・型・空文字・許容外フィールドのいずれでもPASSにしない。"""
+    obj = _mutate(mutate)
+    rc, out = _run_object(tmp_path, obj)
+    assert out['result'] == 'INCONCLUSIVE', out
+    assert rc == 2
+    assert any(word in p for p in out['problems']), out['problems']
+
