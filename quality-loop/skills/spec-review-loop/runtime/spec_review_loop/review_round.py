@@ -9,7 +9,7 @@ from pathlib import Path
 from . import criteria as crit
 from . import gate, gitops, report, reviewers, schema
 from .errors import contract
-from .session import Session, now_jst, sha256_file, sha256_text
+from .session import Session, now_jst, sha256_file
 
 MAX_ATTEMPTS = 2  # 1 round・1 Reviewerあたり: 初回 + 再試行1回
 CONTRACT_PATH = Path(__file__).resolve().parents[2] / 'references' / 'reviewer_contract.md'
@@ -94,8 +94,9 @@ def _eligibility(state: dict, reviewer: str | None) -> tuple[dict, str, bool]:
 
 def review(session: Session, reviewer: str | None = None, model: str | None = None, timeout: int | None = None,
            effort: str | None = None) -> dict:
-    state = session.state()
-    session.require_integrity(state)
+    with session.state_lock():
+        state = session.state()
+        session.require_integrity(state)
     _, tool, _ = _eligibility(state, reviewer)  # 早期の拒否（ロックを取る前）
     model = model or state.get('model')
     effort = effort or state.get('effort')
@@ -110,7 +111,7 @@ def review(session: Session, reviewer: str | None = None, model: str | None = No
         # ロック取得後に状態を再読込して判定し直す。取得前に読んだstateのまま、同じroundを再レビューしない
         with session.state_lock():
             fresh = session.state()
-        session.require_integrity(fresh)
+            session.require_integrity(fresh)
         record, tool, _ = _eligibility(fresh, reviewer)
         session.update_lock_info(record['round'], tool)
         return _review_locked(session, fresh, record, tool, model, timeout, effort, probe)
@@ -133,8 +134,7 @@ def _review_locked(session: Session, state: dict, record: dict, tool: str, model
         checks = run_checks(frozen['checks'], check_wt)
     with gitops.review_worktree(session.root, record['sha']) as wt:
         prompt = build_prompt(session, state, record, frozen, checks, previous_open, tool)
-        session.write_text(f'r{record["round"]}_prompt.md', prompt)
-        attempt['prompt_sha256'] = sha256_text(prompt)
+        attempt['prompt_sha256'] = session.record_prompt(record['round'], len(record['attempts']) + 1, prompt)
         before_main = gitops.status_entries(session.root)  # 自分が書いた成果物の後で、Reviewer起動前の状態を取る
         result = reviewers.run(tool, prompt, wt, timeout or state['timeout'], model, probe, effort,
                                log_path=session.path(f'r{record["round"]}_reviewer.log'))
@@ -184,6 +184,8 @@ def _finish_round(session: Session, state: dict, record: dict, attempt: dict, re
     # 最新のstateへ、今回のround記録だけを反映する
     with session.state_lock():
         fresh = session.state()
+        # 実行中に保存したプロンプトの記録（record_prompt）を、古いrecordで消さない
+        new_record.update({k: fresh['rounds'][-1][k] for k in ('prompt_sha256', 'prompt_files') if k in fresh['rounds'][-1]})
         new_state = {**fresh, 'rounds': [*fresh['rounds'][:-1], new_record]}
         if stop['stop']:
             new_state = {**new_state, 'status': 'stopped', 'stop_reason': stop['reason']}

@@ -48,7 +48,7 @@ def pid_alive(pid: int) -> bool:
 
 
 class Session:
-    """1つのchangeに対するループ。pathとJSON入出力だけを持つ。"""
+    """1つのchangeに対するループ。state.json・成果物の入出力と、それを守る排他ロック・実行中情報・SHA-256による改ざん検知を持つ。"""
 
     def __init__(self, root: Path, change_id: str):
         self.root = gitops.toplevel(root)
@@ -92,7 +92,26 @@ class Session:
 
     def write_text(self, name: str, text: str) -> None:
         self.review_dir.mkdir(parents=True, exist_ok=True)
-        self.path(name).write_text(text, encoding='utf-8')
+        tmp = self.path(f'{name}.{os.getpid()}.tmp')
+        tmp.write_text(text, encoding='utf-8')
+        os.replace(tmp, self.path(name))  # 読み手が書きかけを見ないよう、原子的に置き換える
+
+    def record_prompt(self, round_no: int, attempt_no: int, prompt: str) -> str:
+        """Reviewerへ渡すプロンプトを保存し、記録（SHA-256）を同じ状態ロックの下で更新する。
+
+        ファイルと記録が食い違う瞬間を他のプロセスに見せない。attemptごとのファイルも残し、
+        過去のattemptのプロンプトも書換えを検知できるようにする。"""
+        sha = sha256_text(prompt)
+        attempt_name = f'r{round_no}_prompt.attempt{attempt_no}.md'
+        with self.state_lock():
+            self.write_text(attempt_name, prompt)
+            self.write_text(f'r{round_no}_prompt.md', prompt)
+            state = self.state()
+            record = state['rounds'][-1]
+            files = {**record.get('prompt_files', {}), str(attempt_no): {'file': attempt_name, 'sha256': sha}}
+            record = {**record, 'prompt_sha256': sha, 'prompt_files': files}
+            self.write_json('state.json', {**state, 'rounds': [*state['rounds'][:-1], record]})
+        return sha
 
     def state(self) -> dict:
         return self.read_json('state.json')
@@ -190,6 +209,9 @@ class Session:
                 want = record.get(key)
                 if want and (not self.path(name).exists() or sha256_file(self.path(name)) != want):
                     problems.append(f'{self.review_rel}/{name}')
+            for entry in record.get('prompt_files', {}).values():
+                if not self.path(entry['file']).exists() or sha256_file(self.path(entry['file'])) != entry['sha256']:
+                    problems.append(f'{self.review_rel}/{entry["file"]}')
         return problems
 
     def require_integrity(self, state: dict) -> None:
@@ -347,8 +369,9 @@ class Session:
 
     # --- status ---
     def status(self) -> dict:
-        state = self.state()
-        problems = self.integrity_problems(state)
+        with self.state_lock():  # 保存中のファイルと記録の食い違いを、誤って改ざんと判定しない
+            state = self.state()
+            problems = self.integrity_problems(state)
         running = self.reviewing()
         nxt = next_action(state, self.change_id)
         if problems:

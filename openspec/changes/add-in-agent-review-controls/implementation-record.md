@@ -17,7 +17,7 @@
 - claude／cursorアダプタは`--output-format json`のため、Reviewer終了までstdoutが出ない。実行中のログには`[srl] start`とstderrだけが出る。codexはstderrの進行が逐次出る。
 - evals/evals.jsonへ、実行中の確認・人の指示・pause・Reviewer切替の4例を追加した（dogfood r1のF-001）。
 - 実Claude CLIをReviewerにしたdogfoodで、`status`が実行中のPID・経過時間・ログを返すことを確認した。
-- T-6.3（macOS実機のCodex CLIでの通し実行）は未実施。実施まで完了扱いにしない。
+- T-6.3（macOS実機のCodex CLIでの通し実行）は、この時点では未実施だった（2026-10-25に実施。下の「T-6.3 macOS実機検証」を参照）。
 
 ## PR #9 レビュー対応（並行操作）
 
@@ -40,3 +40,12 @@
 - r1の`r1_review.md`にReviewer `codex`、version `codex-cli 0.164.0`、model `gpt-6-luna`を記録した。コマンド出力は[実機検証記録](../../../CODEX_VERIFICATION.md)に掲載。
 - したがってT-6.3の明示された実機実行要件は満たした。一方、spec-review-loopのr1/r2 GateはINCONCLUSIVE。r2 Reviewerは、実機結果を要約しただけでround内にコマンド出力がないことをF-001とした。出力を記録した後の独立再レビューは未実施のため、GateをPASSと扱わない。
 - GateがPASS以外のため、`finish`は実行していない。使い捨てbranch/worktreeは手順に従い破棄し、元の`feat/in-agent-review-controls`、PR #9、未追跡Artifactには触れていない。
+
+## PR #9 第4回レビュー対応（プロンプト記録・FD・finish dry-run）
+
+- 再試行・Reviewer切替の2回目で`r<N>_prompt.md`を先に上書きし、記録（SHA-256）の更新が後になっていた。実行中の`status`が改ざんHOLDと誤表示し、実行中に異常終了すると以降が恒久的にHOLDになった。`record_prompt`で、ファイルと記録を同じ状態ロックの下で更新し、`status`・`review`・`finish`（dry-run）の検査も同ロックの下で行うようにした。プロンプトはattemptごとの別ファイルにも残し、過去のattemptの書換えも検知する。`write_text`は一時ファイル＋`os.replace`にした。
+- `Popen`が失敗したときにログのFDが閉じられなかった点を修正した。
+- `finish`のdry-runがPID記入前のロックを検知できなかった点を、OSロックによる判定へ揃えた。
+- テスト: 141件通過（136件＋5件）。追加した5件は、修正前のコードで全て失敗することを確認した。
+- 対応しない指摘: 「基準ドリフトで早期returnしたattemptの旧SHAが残る」は、その場合プロンプトを書き換えないため、記録とファイルは一致する（問題なし）。`commit-round`が一時的にreviewロックを取る瞬間の`review`の拒否は、安全側の失敗として既知（CODEX_VERIFICATION.md §8）。`Session`の責務集中、`effort`検証の重複、引数群の引き回しは、動作に影響しない構造上の指摘であり、本changeでは行わない（別changeで扱う）。
+

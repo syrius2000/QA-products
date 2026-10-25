@@ -469,3 +469,92 @@ def test_finish_check_and_commit_are_atomic_against_instruct(repo, tmp_path, mon
     assert 'Unconsumed' not in body
     state = json.loads(git(repo, 'show', f'HEAD:openspec/changes/{CHANGE}/review/state.json'))
     assert state['status'] == 'finished' and state.get('instructions', []) == []   # 指示が混入していない
+
+
+# --- PR #9 第4回レビュー対応（プロンプト上書き・FD・finish dry-run） ---
+
+def _two_failed_codex_then_switch_slowly(repo, tmp_path, monkeypatch):
+    """codexを失敗させた後、claudeへ切り替えて遅いreviewをバックグラウンドで起動する。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo, tool='claude'))
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'fail')
+    assert cli(repo, 'review', CHANGE)[0] == 3
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'stream')
+    monkeypatch.setenv('FAKE_STREAM_STEPS', '25')
+    proc = background_review(repo, '--reviewer', 'claude')
+    assert wait_for(lambda: lock_active(repo)), '2回目のreviewが起動しない'
+    time.sleep(1.0)                                              # プロンプトの再保存より後まで待つ
+    return proc
+
+
+def test_status_during_second_attempt_is_not_a_false_hold(repo, tmp_path, monkeypatch):
+    """Reviewer切替の2回目の実行中に、保存し直したプロンプトを改ざんと誤検知しない。"""
+    proc = _two_failed_codex_then_switch_slowly(repo, tmp_path, monkeypatch)
+    try:
+        code, out = cli(repo, 'status', CHANGE)
+        assert 'HOLD' not in out and '実行中' in out
+    finally:
+        proc.kill()
+        proc.wait()
+
+
+def test_crash_during_second_attempt_does_not_leave_permanent_hold(repo, tmp_path, monkeypatch):
+    """2回目の実行中にCLIが異常終了しても、次の操作が改ざん検知HOLDで塞がれない。"""
+    proc = _two_failed_codex_then_switch_slowly(repo, tmp_path, monkeypatch)
+    proc.kill()
+    proc.wait()
+    assert wait_for(lambda: not lock_active(repo) or True)
+    code, out = cli(repo, 'status', CHANGE)
+    assert 'HOLD' not in out
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'ok')
+    code, out = cli(repo, 'review', CHANGE, '--reviewer', 'claude')
+    assert code == 0 and 'HOLD' not in out and 'Gate: PASS' in out
+
+
+def test_each_attempt_prompt_is_kept_and_verified(repo, tmp_path, monkeypatch):
+    """各attemptのプロンプトを別ファイルに残し、過去のattemptのものも書換えを検知する。"""
+    begin(repo)
+    set_review(tmp_path, make_review(repo, tool='claude'))
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'fail')
+    assert cli(repo, 'review', CHANGE)[0] == 3
+    monkeypatch.setenv('FAKE_REVIEW_MODE', 'ok')
+    assert cli(repo, 'review', CHANGE, '--reviewer', 'claude')[0] == 0
+    first, second = REVIEW(repo) / 'r1_prompt.attempt1.md', REVIEW(repo) / 'r1_prompt.attempt2.md'
+    assert first.exists() and second.exists()
+    assert second.read_text(encoding='utf-8') == (REVIEW(repo) / 'r1_prompt.md').read_text(encoding='utf-8')
+    assert 'HOLD' not in cli(repo, 'status', CHANGE)[1]
+    first.write_text('書き換え', encoding='utf-8')
+    code, out = cli(repo, 'status', CHANGE)
+    assert 'HOLD' in out and 'r1_prompt.attempt1.md' in out
+
+
+def test_log_file_is_closed_when_the_reviewer_cannot_start(tmp_path, monkeypatch):
+    """Popenが失敗しても、開いたログファイルを閉じる。"""
+    sys.path.insert(0, str(SKILL / 'runtime'))
+    from spec_review_loop import reviewers
+    opened = []
+    real_open = open
+
+    def tracking_open(*args, **kwargs):
+        handle = real_open(*args, **kwargs)
+        opened.append(handle)
+        return handle
+
+    monkeypatch.setattr(reviewers, 'open', tracking_open, raising=False)
+    with pytest.raises(OSError):
+        reviewers._stream([str(tmp_path / 'no-such-command')], None, tmp_path, 5, tmp_path / 'x.log')
+    assert opened and all(h.closed for h in opened)
+
+
+def test_finish_dry_run_refuses_while_lock_is_held_but_empty(repo, tmp_path):
+    """review取得直後（PID未記入）でも、finishのdry-runは実行中として扱う。"""
+    import fcntl
+    passed_loop(repo, tmp_path)
+    git(repo, 'add', '-A')
+    fd = os.open(REVIEW(repo) / '.review.lock', os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        code, out = cli(repo, 'finish', CHANGE)
+        assert code == 2 and '実行中' in out
+    finally:
+        os.close(fd)

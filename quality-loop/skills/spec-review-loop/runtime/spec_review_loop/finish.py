@@ -33,8 +33,7 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     if state['status'] == 'finished':
         raise contract('このループはsquash済みです')
     session.require_integrity(state)
-    if session.lock_info():
-        raise contract('レビューが実行中です', 'status で進行を確認し、終了を待ってください')
+    session.assert_no_review_running()  # lock_infoの内容ではなくOSロックで判断する（取得直後でPID未記入でも検知できる）
     reviewed = [r for r in state['rounds'] if r.get('gate') is not None]
     if not reviewed or reviewed[-1] is not state['rounds'][-1]:
         raise contract('レビュー済みのroundがありません', 'commit-round と review を先に実行してください')
@@ -97,7 +96,8 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
 
 def finish(session: Session, message: str | None, accept_residual: str | None, confirm: bool) -> dict:
     if not confirm:
-        return plan(session, message, accept_residual)
+        with session.state_lock():
+            return plan(session, message, accept_residual)
     # 前提条件の検査から`finished`の確定までを、状態ロックを保持したまま行う。
     # 検査後に別プロセスが`instruct`などで状態を変えて、検査と矛盾した状態で終了することを防ぐ。
     with session.state_lock():

@@ -25,7 +25,7 @@
 - `start --pause round`は`state.pause='round'`を記録する。`review`が停止せず終わったとき`state.awaiting_user=true`にし、`commit-round`は`awaiting_user`の間は拒否する。`instruct`が`awaiting_user`を解除する。Gateが停止した場合（PASS・停滞・上限・HOLD）は`awaiting_user`を立てない。
 
 ### D3. 改ざん検知（HOLD）
-- Reviewerへ渡したプロンプトを`r<N>_prompt.md`に保存し、各attemptに`prompt_sha256`、roundに`review_sha256`（`r<N>_review.json`の内容）を記録する。
+- Reviewerへ渡したプロンプトを、attemptごとに`r<N>_prompt.attempt<k>.md`へ、最新のものを`r<N>_prompt.md`へ保存する。保存と記録（roundの`prompt_sha256`・`prompt_files`）は同じ状態ロックの下で行い、`status`も同ロックの下で検査するため、再試行・Reviewer切替の実行中に食い違いを改ざんと誤検知しない。roundには`review_sha256`（`r<N>_review.json`の内容）も記録する。
 - `Session.integrity_problems()`が、記録済みのファイルのSHA-256を再計算して不一致を返す。`status`は問題があれば次の操作に`HOLD`と該当ファイルを示し、`commit-round`・`review`・`finish`は拒否する。`refreeze`は基準の再固定であり、この問題を解消しない。
 - この検知は書換えの事後検出であり、書換えの防止ではない。
 

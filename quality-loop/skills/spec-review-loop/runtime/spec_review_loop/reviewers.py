@@ -156,8 +156,13 @@ def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_pat
 
     started = time.monotonic()
     emit('srl', f'start {time.strftime("%Y-%m-%dT%H:%M:%S%z")} timeout={timeout}s argv0={Path(argv[0]).name}')
-    proc = subprocess.Popen(argv, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            text=True, env=quiet_env(), start_new_session=True)
+    try:
+        proc = subprocess.Popen(argv, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True, env=quiet_env(), start_new_session=True)
+    except BaseException:
+        if log:
+            log.close()  # 起動に失敗しても、開いたログを残さない
+        raise
     chunks: dict[str, list[str]] = {'out': [], 'err': []}
 
     def pump(pipe, tag: str) -> None:
