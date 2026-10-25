@@ -144,9 +144,9 @@ OpenSpec changeの目的・Scenario・タスクを受入基準として固定し
 - **WHEN** 実行中のreviewがある状態で`review`を実行する
 - **THEN** システムは新しいReviewerを起動せず、実行中であることを示して拒否する
 
-#### Scenario: 実行中のプロセスが消えている
-- **WHEN** ロックが残っているがそのPIDのプロセスが存在しない
-- **THEN** システムは古いロックとして破棄し、reviewを開始できる
+#### Scenario: 親CLIが異常終了し、ロックファイルが残っている
+- **WHEN** ロックファイルが残っているが、保持していた親CLIのプロセスは存在し、OSロックを取得できる
+- **THEN** システムはロックファイルを再利用し、記録された前回の子Reviewerが生存していなければreviewを開始できる。子Reviewerが生存していれば、新しいReviewerを起動せず、そのPIDを示して拒否する
 
 ### Requirement: 人の指示を原文のまま次のroundへ引き継ぐ
 システムは`instruct`で与えられた人の発言を記録し、未消化の指示がある間は、その原文を含まない実装報告でのround commitを拒否しなければならない（MUST）。`start --pause round`が指定されたとき、stopしないreviewの後は、`instruct`で人の指示が記録されるまで次のround commitを拒否しなければならない（MUST）。発言が空の`instruct`は拒否しなければならない（MUST）。
