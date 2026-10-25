@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "pr-openspec 回答JSON（schema_version 1）",
+  "description": "Reviewerが返す回答の形式。条件付きの必須（nonconformingの根拠と理由、unverified・out_of_scopeの理由など）と、台帳との照合はcheckerが検証する。",
+  "type": "object",
+  "required": ["schema_version", "request_id", "pr_url", "base_sha", "head_sha", "request_blob_sha", "reviewer", "criteria", "findings", "unverified_items"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "request_id": {"type": "string", "minLength": 1},
+    "pr_url": {"type": "string", "minLength": 1},
+    "base_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "request_blob_sha": {"type": "string", "minLength": 1},
+    "reviewer": {
+      "type": "object",
+      "required": ["tool", "model", "version"],
+      "properties": {
+        "tool": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "verdict"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "verdict": {"enum": ["conforms", "nonconforming", "unverified", "out_of_scope"]},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["criterion_id", "observation", "impact", "how_to_verify"],
+        "properties": {
+          "criterion_id": {"type": "string"},
+          "observation": {"type": "string"},
+          "impact": {"type": "string"},
+          "how_to_verify": {"type": "string"}
+        }
+      }
+    },
+    "unverified_items": {"type": "array", "items": {"type": "string"}}
+  }
+}

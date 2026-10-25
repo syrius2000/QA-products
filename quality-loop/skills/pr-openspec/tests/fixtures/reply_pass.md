@@ -1,0 +1,53 @@
+# Reviewer回答
+
+判定を以下に示します。
+
+```json
+{
+  "schema_version": 1,
+  "request_id": "REQ-001",
+  "pr_url": "https://github.com/syrius2000/QA-products/pull/99",
+  "base_sha": "1111111111111111111111111111111111111111",
+  "head_sha": "2222222222222222222222222222222222222222",
+  "request_blob_sha": "3333333333333333333333333333333333333333",
+  "reviewer": {
+    "tool": "codex",
+    "model": "gpt-x",
+    "version": "0.1"
+  },
+  "criteria": [
+    {
+      "id": "R:openspec/changes/c1/specs/cap/spec.md#1",
+      "verdict": "conforms",
+      "evidence": [
+        "openspec/changes/c1/specs/cap/spec.md:10"
+      ]
+    },
+    {
+      "id": "S:openspec/changes/c1/specs/cap/spec.md#1.1",
+      "verdict": "conforms",
+      "evidence": [
+        "openspec/changes/c1/specs/cap/spec.md:10"
+      ]
+    },
+    {
+      "id": "S:openspec/changes/c1/specs/cap/spec.md#1.2",
+      "verdict": "conforms",
+      "evidence": [
+        "openspec/changes/c1/specs/cap/spec.md:10"
+      ]
+    },
+    {
+      "id": "R:openspec/changes/c1/specs/cap/spec.md#2",
+      "verdict": "conforms",
+      "evidence": [
+        "openspec/changes/c1/specs/cap/spec.md:10"
+      ]
+    }
+  ],
+  "findings": [],
+  "unverified_items": []
+}
+```
+
+以上。
