@@ -29,4 +29,4 @@
 
 - [x] 6.1 一時リポジトリで「実行中にstatus確認 → 指示 → round間pause → 2 roundでPASS → finish」を通しで実行する。検証: round commit 2件が1 commitにまとまり、tree一致、ログがcommitに入らない。
 - [x] 6.2 既存の全テストと追加テストが通り、`openspec validate --strict add-in-agent-review-controls`が成功し、差分に`quality-qa`・`blind-qa-cycle`・`quality-review`・`quality-response`の変更が含まれない。検証: テストとvalidateの出力を実装記録に残す。
-- [x] 6.3 macOS実機でCodex CLIを使い、実際のchange 1件で通しで実行する。検証: Reviewerのツール・モデル名が記録され、実行中にログが増える。2026-10-25に実施し、実機出力は[`CODEX_VERIFICATION.md`](../../../CODEX_VERIFICATION.md)、結果は[`implementation-record.md`](implementation-record.md)に記録。spec-review-loopの独立GateはINCONCLUSIVEのため、PASSとは区別する。
+- [x] 6.3 macOS実機でCodex CLIを使い、実際のchange 1件で通しで実行する。検証: Reviewerのツール・モデル名が記録され、実行中にログが増える。2026-10-25に実施し、実機出力は[`CODEX_VERIFICATION.md`](../../../../CODEX_VERIFICATION.md)、結果は[`implementation-record.md`](implementation-record.md)に記録。spec-review-loopの独立GateはINCONCLUSIVEのため、PASSとは区別する。

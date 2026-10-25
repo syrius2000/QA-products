@@ -37,7 +37,7 @@
 - macOS 27.0.1 (26A434)上の実際の`codex-cli 0.164.0`をReviewerにして、`add-in-agent-review-controls`を`check/t63-codex`の使い捨てbranchで実行した。round SHAは`9725a356fee5fb13b3c05c930704a0975eb37ecb`。
 - `doctor`はCodex Reviewer利用可を返し、`start --reviewer codex --pause round`は受入基準12件・Scenario 16件で成功した。
 - review中のstatusでPID・経過時間・ログ末尾を確認し、ログが25,359 bytesから219,864 bytes、完了時262,766 bytesへ増加した。同時実行のreviewは終了コード2で拒否された。
-- r1の`r1_review.md`にReviewer `codex`、version `codex-cli 0.164.0`、model `gpt-6-luna`を記録した。コマンド出力は[実機検証記録](../../../CODEX_VERIFICATION.md)に掲載。
+- r1の`r1_review.md`にReviewer `codex`、version `codex-cli 0.164.0`、model `gpt-6-luna`を記録した。コマンド出力は[実機検証記録](../../../../CODEX_VERIFICATION.md)に掲載。
 - したがってT-6.3の明示された実機実行要件は満たした。一方、spec-review-loopのr1/r2 GateはINCONCLUSIVE。r2 Reviewerは、実機結果を要約しただけでround内にコマンド出力がないことをF-001とした。出力を記録した後の独立再レビューは未実施のため、GateをPASSと扱わない。
 - GateがPASS以外のため、`finish`は実行していない。使い捨てbranch/worktreeは手順に従い破棄し、元の`feat/in-agent-review-controls`、PR #9、未追跡Artifactには触れていない。
 
