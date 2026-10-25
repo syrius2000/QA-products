@@ -8,8 +8,11 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import tempfile
+import threading
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -141,26 +144,90 @@ def extract_json(text: str) -> dict:
     raise ValueError('Reviewer出力にJSONオブジェクトがありません')
 
 
-def run(name: str, prompt: str, cwd: Path, timeout: int, model: str | None, info: dict, effort: str | None = None) -> dict:
-    """Reviewerを1回実行する。失敗は例外ではなく ok=False で返す。"""
+def _stream(argv: list[str], stdin: str | None, cwd: Path, timeout: int, log_path: Path | None, on_start=None) -> dict:
+    """子プロセスを起動し、出力を逐次ログへ書きながら終了を待つ。timeoutでは子孫ごと止める。"""
+    log = open(log_path, 'a', encoding='utf-8', buffering=1) if log_path else None
+    lock = threading.Lock()
+
+    def emit(tag: str, text: str) -> None:
+        if log:
+            with lock:
+                log.write(f'[{tag}] {text}' if text.endswith('\n') else f'[{tag}] {text}\n')
+
+    started = time.monotonic()
+    emit('srl', f'start {time.strftime("%Y-%m-%dT%H:%M:%S%z")} timeout={timeout}s argv0={Path(argv[0]).name}')
+    try:
+        proc = subprocess.Popen(argv, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True, env=quiet_env(), start_new_session=True)
+    except BaseException:
+        if log:
+            log.close()  # 起動に失敗しても、開いたログを残さない
+        raise
+    if on_start:
+        on_start(proc.pid)  # 親CLIが死んでも、子Reviewerの生存を後から判断できるよう先に記録する
+    chunks: dict[str, list[str]] = {'out': [], 'err': []}
+
+    def pump(pipe, tag: str) -> None:
+        for line in iter(pipe.readline, ''):
+            chunks[tag].append(line)
+            emit(tag, line)
+
+    def feed() -> None:
+        try:
+            proc.stdin.write(stdin or '')
+        except (BrokenPipeError, OSError):
+            pass
+        finally:
+            try:
+                proc.stdin.close()
+            except OSError:
+                pass
+
+    threads = [threading.Thread(target=pump, args=(proc.stdout, 'out'), daemon=True),
+               threading.Thread(target=pump, args=(proc.stderr, 'err'), daemon=True),
+               threading.Thread(target=feed, daemon=True)]
+    for t in threads:
+        t.start()
+    timed_out = False
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError, OSError):
+            proc.kill()
+        proc.wait()
+    for t in threads:
+        t.join(timeout=5)
+    emit('srl', f'end returncode={proc.returncode} timed_out={timed_out} elapsed={time.monotonic() - started:.1f}s')
+    if log:
+        log.close()
+    return {'returncode': proc.returncode, 'stdout': ''.join(chunks['out']), 'stderr': ''.join(chunks['err']),
+            'timed_out': timed_out}
+
+
+def run(name: str, prompt: str, cwd: Path, timeout: int, model: str | None, info: dict, effort: str | None = None,
+        log_path: Path | None = None, on_start=None) -> dict:
+    """Reviewerを1回実行する。失敗は例外ではなく ok=False で返す。log_pathがあれば出力を逐次書き出す。"""
     adapter = get(name)
     base = {'tool': name, 'version': info.get('version') or 'unknown', 'model': model or 'unknown', 'ok': False}
     with tempfile.TemporaryDirectory(prefix='spec-review-out-') as tmp:
         out_file = Path(tmp) / 'last_message.txt'
         argv, stdin = adapter.command(info['path'], cwd, out_file, model, prompt, effort)
         try:
-            proc = subprocess.run(argv, cwd=cwd, input=stdin, capture_output=True, text=True, timeout=timeout, env=quiet_env())
-        except subprocess.TimeoutExpired:
-            return {**base, 'error': f'timeout（{timeout}秒）', 'raw': ''}
+            proc = _stream(argv, stdin, cwd, timeout, log_path, on_start)
         except OSError as exc:
             return {**base, 'error': f'起動に失敗しました: {exc}', 'raw': ''}
-        base['model'] = adapter.model_name(proc.stdout, model) + (f'（effort {effort}）' if effort else '')
-        if proc.returncode != 0:
-            return {**base, 'error': f'終了コード {proc.returncode}: {proc.stderr.strip()[-2000:]}', 'raw': proc.stdout[-20000:]}
+        if proc['timed_out']:
+            return {**base, 'error': f'timeout（{timeout}秒）', 'raw': ''}
+        base['model'] = adapter.model_name(proc['stdout'], model) + (f'（effort {effort}）' if effort else '')
+        if proc['returncode'] != 0:
+            return {**base, 'error': f'終了コード {proc["returncode"]}: {proc["stderr"].strip()[-2000:]}', 'raw': proc['stdout'][-20000:]}
         try:
-            text = adapter.final_text(proc.stdout, out_file)
+            text = adapter.final_text(proc['stdout'], out_file)
         except (OSError, ValueError) as exc:
-            return {**base, 'error': f'最終出力を読めません: {exc}', 'raw': proc.stdout[-20000:]}
+            return {**base, 'error': f'最終出力を読めません: {exc}', 'raw': proc['stdout'][-20000:]}
     try:
         data = extract_json(text)
     except ValueError as exc:

@@ -27,6 +27,7 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument('--model')
     s.add_argument('--timeout', type=int, help='Reviewerのtimeout秒')
     s.add_argument('--effort', help='Reviewerの推論effort（codexは-c model_reasoning_effort、claudeは--effort、cursorはmodel[effort=…]）')
+    s.add_argument('--pause', choices=('none', 'round'), help='round: 各review後、instructで人の指示を記録するまで次のroundを始めない')
     sub.add_parser('commit-round', help='実装報告付きのround commitを作る').add_argument('change_id')
     r = sub.add_parser('review', help='round SHAを別系統のReviewerで読取り専用レビューする')
     r.add_argument('change_id')
@@ -34,6 +35,9 @@ def parser() -> argparse.ArgumentParser:
     r.add_argument('--model')
     r.add_argument('--timeout', type=int)
     r.add_argument('--effort')
+    i = sub.add_parser('instruct', help='人の指示を原文のまま記録する（次のr<N>_report.mdへの転記が必須になる）')
+    i.add_argument('change_id')
+    i.add_argument('--message', required=True, help='利用者の発言（原文）')
     sub.add_parser('status', help='状態と次の操作を表示する（読取りのみ）').add_argument('change_id')
     f = sub.add_parser('finish', help='round commit群を検証付きで1 commitへsquashする（既定はdry-run）')
     f.add_argument('change_id')
@@ -68,12 +72,14 @@ def execute(a) -> tuple[dict, int]:
     session = Session(a.root, a.change_id)
     op = a.operation
     if op == 'start':
-        return session.start(a.reviewer, a.max_rounds, a.model, a.timeout, a.effort), EXIT_OK
+        return session.start(a.reviewer, a.max_rounds, a.model, a.timeout, a.effort, a.pause), EXIT_OK
     if op == 'commit-round':
         return session.commit_round(), EXIT_OK
     if op == 'review':
         result = review_round.review(session, a.reviewer, a.model, a.timeout, a.effort)
         return result, (EXIT_IO if result['reviewer_failed'] else EXIT_OK)
+    if op == 'instruct':
+        return session.instruct(a.message), EXIT_OK
     if op == 'status':
         return session.status(), EXIT_OK
     if op == 'finish':

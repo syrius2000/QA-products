@@ -28,6 +28,15 @@ if mode == 'fail':
     sys.exit(5)
 if mode == 'timeout':
     time.sleep(30)
+if mode == 'orphan':  # 孫プロセスを起こしてからtimeoutまで待つ（killpgで孫も止まることの検証用）
+    import subprocess
+    child = subprocess.Popen(['sleep', '60'])
+    Path(os.environ['FAKE_CHILD_PID']).write_text(str(child.pid))
+    time.sleep(60)
+if mode == 'stream':
+    for i in range(int(os.environ.get('FAKE_STREAM_STEPS', '5'))):
+        print(f'progress {i}', file=sys.stderr, flush=True)
+        time.sleep(0.4)
 if mode == 'write':
     Path('INJECTED.txt').write_text('x')
 text = 'no json here' if mode == 'garbage' else Path(os.environ['FAKE_REVIEW_FILE']).read_text(encoding='utf-8')

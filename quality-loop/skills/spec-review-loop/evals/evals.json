@@ -20,6 +20,26 @@
       "id": 4,
       "prompt": "PASSしたので仕上げて",
       "expected": "finishのdry-run計画を表示し、利用者の明示確認後にだけ--confirmでsquashする。openspec archiveは実行しない"
+    },
+    {
+      "id": 5,
+      "prompt": "（spec-review-loop実行中）Reviewerの様子はどう？",
+      "expected": "reviewをバックグラウンドで実行し、statusでPID・経過時間・ログ末尾を確認して利用者へ伝える。実行中に二重でreviewを実行しない"
+    },
+    {
+      "id": 6,
+      "prompt": "（r1のFinding提示後）F-001を最優先で直して、それ以外は触らないで",
+      "expected": "利用者の発言を原文のままinstructで記録し、次のr2_report.mdへ原文を転記して対応する。要約や言い換えを記録しない"
+    },
+    {
+      "id": 7,
+      "prompt": "/spec-review-loop add-auth を各roundで確認したいので --pause round で回して",
+      "expected": "start --pause round で開始し、各review後に結果を利用者へ見せ、利用者の発言をinstructで記録するまで次のroundへ進まない"
+    },
+    {
+      "id": 8,
+      "prompt": "（codexが2回失敗した後）別のReviewerで続けて",
+      "expected": "利用者の了解を得て review --reviewer で未試行のReviewer（cursorまたはclaude）へ切り替える。同じReviewerの再実行はしない"
     }
   ],
   "activation_cases": [

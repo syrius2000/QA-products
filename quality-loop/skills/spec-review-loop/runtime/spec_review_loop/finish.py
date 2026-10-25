@@ -32,6 +32,8 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     state = session.state()
     if state['status'] == 'finished':
         raise contract('このループはsquash済みです')
+    session.require_integrity(state)
+    session.assert_no_review_running()  # lock_infoの内容ではなくOSロックで判断する（取得直後でPID未記入でも検知できる）
     reviewed = [r for r in state['rounds'] if r.get('gate') is not None]
     if not reviewed or reviewed[-1] is not state['rounds'][-1]:
         raise contract('レビュー済みのroundがありません', 'commit-round と review を先に実行してください')
@@ -40,6 +42,11 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     if gate_value != 'PASS' and not (accept_residual or '').strip():
         raise contract(f'最終GateがPASSではありません（{gate_value}）',
                        'PASS以外で終了するなら、利用者の判断を --accept-residual "<判断>" で明示してください')
+    unconsumed = [i for i in state.get('instructions', []) if i['consumed_round'] is None]
+    if unconsumed and not (accept_residual or '').strip():
+        raise contract('実装報告に反映されていない人の指示があります',
+                       '指示を反映する場合はループを続けてください。反映せずに終了する場合は、利用者の判断を --accept-residual "<判断>" で明示してください',
+                       {'instructions': [f'{i["id"]}: {i["text"]}' for i in unconsumed]})
     if gitops.current_branch(session.root) != state['branch']:
         raise contract(f'開始時のbranch {state["branch"]} ではありません')
     commits = gitops.commits_since(session.root, state['base_sha'])
@@ -69,6 +76,9 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
     trailers = [f'Spec-Review: {session.change_id}', f'Spec-Review-Gate: {gate_value}',
                 f'Spec-Review-Rounds: {len(state["rounds"])}', f'Spec-Review-Reviewer: {_reviewer_label(last)}',
                 f'Spec-Review-Pre-Squash: {last["sha"]}']
+    if unconsumed:
+        trailers.append('Spec-Review-Unconsumed-Instructions: ' + ', '.join(i['id'] for i in unconsumed))
+        trailers.append('Spec-Review-Unconsumed-Judgment: ' + ' '.join(accept_residual.split()))
     if gate_value != 'PASS':
         _, latest = latest_review(state['rounds'])
         residual = [f['id'] for f in (latest or {}).get('findings', []) if f['status'] in OPEN_STATUSES]
@@ -85,39 +95,44 @@ def plan(session: Session, message: str | None, accept_residual: str | None) -> 
 
 
 def finish(session: Session, message: str | None, accept_residual: str | None, confirm: bool) -> dict:
-    p = plan(session, message, accept_residual)
     if not confirm:
-        return p
-    state = session.state()
-    last = state['rounds'][-1]
-    pre_head = gitops.head(session.root)
-    info = {'at': now_jst(), 'backup_ref': p['backup_ref'], 'pre_squash_sha': last['sha'],
-            'gate': p['gate'], 'accept_residual': accept_residual, 'squash': 'pending'}
-    if any(r['ref'] == p['backup_ref'] for r in gitops.list_refs(session.root, session.change_id)):
-        raise contract(f'バックアップref {p["backup_ref"]} が既に存在します', '1秒以上おいて finish を再実行してください')
-    backup = None
-    ref_created = False
-    try:
-        session.write_text('summary.md', report.summary_markdown(state, info))
-        session.write_json('state.json', {**state, 'status': 'finished', 'finish': info})
-        gitops.git(session.root, 'add', '--', session.review_rel)
-        n = last['round']
-        gitops.git(session.root, 'commit', '-q', '-F', '-', input_text=(
-            f'spec-review: r{n} {session.change_id} summary\n\n{gitops.ROUND_TRAILER}: {session.change_id} r{n}-summary\n'))
-        if gitops.status_entries(session.root):
-            raise io_error('summary commit後も作業ツリーがcleanではありません')
-        backup = gitops.head(session.root)
-        gitops.create_ref(session.root, p['backup_ref'], backup)
-        ref_created = True
-        squashed = gitops.commit_squash(session.root, p['base_sha'], p['message'])
-        expected, actual = gitops.tree_of(session.root, p['backup_ref']), gitops.tree_of(session.root, 'HEAD')
-        if expected != actual:
-            raise io_error('squash後のtreeがsquash前と一致しません', details={'expected_tree': expected, 'actual_tree': actual})
-    except Exception as exc:
-        _rollback(session, state, pre_head, backup, p['backup_ref'] if ref_created else None)
-        details = {**getattr(exc, 'details', {}), 'restored_to': pre_head}
-        raise io_error(f'finishに失敗したため、finish前の状態へ戻しました: {getattr(exc, "message", exc)}',
-                       '原因を調査してから finish を再実行してください', details) from exc
+        with session.state_lock():
+            return plan(session, message, accept_residual)
+    # 前提条件の検査から`finished`の確定までを、状態ロックを保持したまま行う。
+    # 検査後に別プロセスが`instruct`などで状態を変えて、検査と矛盾した状態で終了することを防ぐ。
+    with session.state_lock():
+        p = plan(session, message, accept_residual)
+        session.assert_no_review_running()
+        state = session.state()
+        last = state['rounds'][-1]
+        pre_head = gitops.head(session.root)
+        info = {'at': now_jst(), 'backup_ref': p['backup_ref'], 'pre_squash_sha': last['sha'],
+                'gate': p['gate'], 'accept_residual': accept_residual, 'squash': 'pending'}
+        if any(r['ref'] == p['backup_ref'] for r in gitops.list_refs(session.root, session.change_id)):
+            raise contract(f'バックアップref {p["backup_ref"]} が既に存在します', '1秒以上おいて finish を再実行してください')
+        backup = None
+        ref_created = False
+        try:
+            session.write_text('summary.md', report.summary_markdown(state, info))
+            session.write_json('state.json', {**state, 'status': 'finished', 'finish': info})
+            gitops.git(session.root, 'add', '--', session.review_rel)
+            n = last['round']
+            gitops.git(session.root, 'commit', '-q', '-F', '-', input_text=(
+                f'spec-review: r{n} {session.change_id} summary\n\n{gitops.ROUND_TRAILER}: {session.change_id} r{n}-summary\n'))
+            if gitops.status_entries(session.root):
+                raise io_error('summary commit後も作業ツリーがcleanではありません')
+            backup = gitops.head(session.root)
+            gitops.create_ref(session.root, p['backup_ref'], backup)
+            ref_created = True
+            squashed = gitops.commit_squash(session.root, p['base_sha'], p['message'])
+            expected, actual = gitops.tree_of(session.root, p['backup_ref']), gitops.tree_of(session.root, 'HEAD')
+            if expected != actual:
+                raise io_error('squash後のtreeがsquash前と一致しません', details={'expected_tree': expected, 'actual_tree': actual})
+        except Exception as exc:
+            _rollback(session, state, pre_head, backup, p['backup_ref'] if ref_created else None)
+            details = {**getattr(exc, 'details', {}), 'restored_to': pre_head}
+            raise io_error(f'finishに失敗したため、finish前の状態へ戻しました: {getattr(exc, "message", exc)}',
+                           '原因を調査してから finish を再実行してください', details) from exc
     return {**p, 'dry_run': False, 'squashed_sha': squashed, 'backup_sha': backup, 'tree': actual}
 
 

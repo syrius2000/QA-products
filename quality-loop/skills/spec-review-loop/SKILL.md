@@ -32,7 +32,7 @@ CLIはこのSkillの`bin/spec-review-loop-cli`を使い、対象リポジトリ�
 ### 1. start
 
 ```bash
-spec-review-loop-cli start <change-id> [--reviewer codex|cursor|claude] [--model <name>] [--effort low|medium|high] [--max-rounds 3]
+spec-review-loop-cli start <change-id> [--reviewer codex|cursor|claude] [--model <name>] [--effort low|medium|high] [--max-rounds 3] [--pause round]
 ```
 
 - 基準を抽出して`openspec/changes/<id>/review/criteria.json`に固定し、HEADをbase SHAとして`state.json`に記録する。抽出一覧を利用者に見せる。0件や想定外の件数なら開始しない（CLIが拒否する）。
@@ -47,7 +47,14 @@ spec-review-loop-cli start <change-id> [--reviewer codex|cursor|claude] [--model
 3. 実装報告`review/r<N>_report.md`を書く: 対応した基準ID、変更内容、実行した検証と結果、Findingごとの対応、未対応事項。
 4. 対象の変更を自分で`git add`する（`git add -A`は使わない）。round 1ではchange配下の計画ファイルが未commitならstageする。
 5. `spec-review-loop-cli commit-round <change-id>`。unstaged／untrackedがあれば拒否されるので、pathごとにstageか除外かを判断する。判断できないものは利用者に確認する。
-6. `spec-review-loop-cli review <change-id>`。round SHAの一時worktreeで必須checkを実行し、Reviewerを読取り専用で起動し、Gateと停止を判定する。
+6. `spec-review-loop-cli review <change-id>`を**バックグラウンドで**実行する（Bashの`run_in_background`など）。round SHAの一時worktreeで必須checkを実行し、Reviewerを読取り専用で起動し、Gateと停止を判定する。Reviewerの出力は`review/r<N>_reviewer.log`へ逐次書き出される。
+7. 実行中は`spec-review-loop-cli status <change-id>`で進行（PID・経過時間・ログ末尾）を眺め、必要なら利用者へ伝える。実行中に二重で`review`しない（CLIが拒否する）。終了後に結果（Gate・Finding）を要約して利用者に示す。
+
+### 人の指示を受ける
+
+- 利用者が方針や優先順位を指示したら、**利用者の発言を原文のまま**`spec-review-loop-cli instruct <change-id> --message "<発言>"`で記録する。要約・言い換え・推測で作った発言を渡さない（CLIは発言の真正性を検証できない）。
+- 記録した指示は、次の`r<N>_report.md`へ原文のまま転記する。転記がないと`commit-round`は拒否する。報告には、その指示にどう対応したかも書く。
+- `start --pause round`で開始したときは、各reviewの後に結果を利用者に見せ、利用者の発言を`instruct`で記録するまで次のroundに進めない。利用者が「そのまま続けて」と言った場合も、その発言を原文のまま記録する。
 
 基準（tasks.mdのタスク本文・spec deltaのScenario・checks.json）を変えるとHOLDになる。基準の変更は利用者の明示指示がある場合だけ`refreeze <change-id> --reason "<指示>"`で再固定する。実装担当の判断で基準を緩めない。
 
@@ -61,7 +68,8 @@ spec-review-loop-cli start <change-id> [--reviewer codex|cursor|claude] [--model
 | Findingの停滞（同じFindingが2 round連続で未解消、または未解消数が減らない） | 残ったFindingを示し、人の判断／`quality-review`の`review-standalone`／`blind-qa-cycle`から選んでもらう |
 | round上限 | 同上。上限を超えて続けない |
 | HOLD（基準ドリフト・SHA不一致） | 原因を示す。基準変更が意図的なら利用者の指示で`refreeze` |
-| Reviewer失敗・timeout・スキーマ不適合 | INCONCLUSIVEとして記録される。同roundで`review`を1回だけ再試行できる |
+| Reviewer失敗・timeout・スキーマ不適合 | INCONCLUSIVEとして記録される。同じReviewerは同roundで1回だけ再試行できる（計2回）。上限後は`review --reviewer <未試行の別Reviewer>`で切り替えられる。切替にも利用者の了解を得る |
+| `status`が「HOLD: 記録と一致しない成果物」を示す | `r<N>_review.json`・`r<N>_prompt.md`が保存後に書き換えられている。原因を示し、利用者の判断を待つ（`refreeze`では解消しない） |
 
 Reviewerが受入基準にない改善を求めた場合は提案として記録され、Gateにも停滞判定にも数えない。提案は必須修正として扱わない。
 
@@ -75,6 +83,7 @@ Reviewerが受入基準にない改善を求めた場合は提案として記録
 
 ## 守ること
 
+- Reviewerのログ（`*.log`）とロックはcommit・squashの対象外。Reviewerの出力に含まれる内容を、実装担当が根拠なく採用しない。
 - Reviewerは別プロセス・読取り専用。Reviewerの判定を実装担当が書き換えない。過去roundのPASSを根拠にしない。
 - 成果物は`openspec/changes/<id>/review/`に残り、`openspec archive`でchangeとともに保存される。
 - 外部Skillディレクトリへの配備、main／masterへのmerge、push、force-push、`openspec archive`の自動実行をしない。

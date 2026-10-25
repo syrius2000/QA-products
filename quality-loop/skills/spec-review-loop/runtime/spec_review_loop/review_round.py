@@ -9,9 +9,9 @@ from pathlib import Path
 from . import criteria as crit
 from . import gate, gitops, report, reviewers, schema
 from .errors import contract
-from .session import Session, now_jst
+from .session import Session, now_jst, sha256_file
 
-MAX_ATTEMPTS = 2  # 初回 + 再試行1回
+MAX_ATTEMPTS = 2  # 1 round・1 Reviewerあたり: 初回 + 再試行1回
 CONTRACT_PATH = Path(__file__).resolve().parents[2] / 'references' / 'reviewer_contract.md'
 
 
@@ -63,15 +63,41 @@ def build_prompt(session: Session, state: dict, record: dict, frozen: dict, chec
     return '\n'.join(sections)
 
 
-def review(session: Session, reviewer: str | None = None, model: str | None = None, timeout: int | None = None,
-           effort: str | None = None) -> dict:
-    state = session.state()
-    if state['status'] != 'active' or not state['rounds']:
+def _attempts_by(record: dict, tool: str) -> int:
+    return sum(1 for a in record.get('attempts', []) if a['tool'] == tool)
+
+
+def _failed_round(record: dict) -> bool:
+    """有効な結果を得られなかった（Reviewer失敗）roundか。基準ドリフト・provenanceによるHOLDは含まない。"""
+    return record.get('gate') is not None and record.get('review') is None and record['gate']['gate'] == 'INCONCLUSIVE'
+
+
+def _eligibility(state: dict, reviewer: str | None) -> tuple[dict, str, bool]:
+    """レビューできるかを判定し、(対象record, Reviewer名, 切替モードか)を返す。状態は変えない。"""
+    if not state['rounds']:
         raise contract('レビューできるroundがありません', 'status で次の操作を確認してください')
     record = state['rounds'][-1]
-    if record.get('gate') is not None and not record.get('retry_allowed'):
-        raise contract(f'r{record["round"]}はレビュー済みです', 'status で次の操作を確認してください')
     tool = reviewer or state['reviewer']
+    switchable = _failed_round(record) and state['status'] in ('active', 'stopped') \
+        and (state['status'] == 'active' or state.get('stop_reason') == 'max-rounds')
+    if state['status'] != 'active' and not switchable:
+        raise contract('レビューできるroundがありません', 'status で次の操作を確認してください')
+    if record.get('gate') is not None and not record.get('retry_allowed'):
+        if not switchable:
+            raise contract(f'r{record["round"]}はレビュー済みです', 'status で次の操作を確認してください')
+        if _attempts_by(record, tool) >= MAX_ATTEMPTS:
+            tried = sorted({a['tool'] for a in record['attempts']})
+            raise contract(f'Reviewer {tool} はr{record["round"]}で再試行の上限（{MAX_ATTEMPTS}回）に達しています',
+                           f'未試行のReviewerへ切り替えてください（試行済み: {", ".join(tried)}）: review --reviewer <別のReviewer>')
+    return record, tool, switchable
+
+
+def review(session: Session, reviewer: str | None = None, model: str | None = None, timeout: int | None = None,
+           effort: str | None = None) -> dict:
+    with session.state_lock():
+        state = session.state()
+        session.require_integrity(state)
+    _, tool, _ = _eligibility(state, reviewer)  # 早期の拒否（ロックを取る前）
     model = model or state.get('model')
     effort = effort or state.get('effort')
     if effort and not re.fullmatch(r'[a-z]+', effort):
@@ -80,6 +106,21 @@ def review(session: Session, reviewer: str | None = None, model: str | None = No
     if not probe['ok']:
         raise contract(f'Reviewer {tool} を使えません: {probe.get("problem")}',
                        f'導入する（{probe["install"]}）か、--reviewer で別のReviewerを選んでください。doctor で確認できます', {'doctor': probe})
+    session.acquire_lock(state['rounds'][-1]['round'] if state['rounds'] else 0, tool)
+    try:
+        # ロック取得後に状態を再読込して判定し直す。取得前に読んだstateのまま、同じroundを再レビューしない
+        with session.state_lock():
+            fresh = session.state()
+            session.require_integrity(fresh)
+        record, tool, _ = _eligibility(fresh, reviewer)
+        session.update_lock_info(record['round'], tool)
+        return _review_locked(session, fresh, record, tool, model, timeout, effort, probe)
+    finally:
+        session.release_lock()
+
+
+def _review_locked(session: Session, state: dict, record: dict, tool: str, model: str | None,
+                   timeout: int | None, effort: str | None, probe: dict) -> dict:
     frozen = session.frozen()
     prev_review = next((r['review'] for r in reversed(state['rounds'][:-1]) if r.get('review')), None)
     previous_open = [f for f in (prev_review or {}).get('findings', []) if f['status'] in gate.OPEN_STATUSES]
@@ -92,9 +133,11 @@ def review(session: Session, reviewer: str | None = None, model: str | None = No
     with gitops.review_worktree(session.root, record['sha']) as check_wt:
         checks = run_checks(frozen['checks'], check_wt)
     with gitops.review_worktree(session.root, record['sha']) as wt:
-        before_main = gitops.status_entries(session.root)
         prompt = build_prompt(session, state, record, frozen, checks, previous_open, tool)
-        result = reviewers.run(tool, prompt, wt, timeout or state['timeout'], model, probe, effort)
+        attempt['prompt_sha256'] = session.record_prompt(record['round'], prompt)
+        before_main = gitops.status_entries(session.root)  # 自分が書いた成果物の後で、Reviewer起動前の状態を取る
+        result = reviewers.run(tool, prompt, wt, timeout or state['timeout'], model, probe, effort,
+                               log_path=session.path(f'r{record["round"]}_reviewer.log'), on_start=session.set_reviewer_pid)
         wrote = gitops.status_entries(wt)  # 新しいworktreeなので、どの変更もReviewerの書込み
         changed_main = sorted(set(gitops.status_entries(session.root)) ^ set(before_main))
     attempt['model'] = result['model']
@@ -123,7 +166,7 @@ def _finish_round(session: Session, state: dict, record: dict, attempt: dict, re
     attempts = [*record['attempts'], attempt]
     drifted = bool(diff and crit.has_drift(diff))
     failed = review_data is None and not drifted
-    retryable = (failed or bool(provenance)) and len(attempts) < MAX_ATTEMPTS
+    retryable = (failed or bool(provenance)) and sum(1 for a in attempts if a['tool'] == attempt['tool']) < MAX_ATTEMPTS
     verdict = gate.decide(review_data if not failed else None, provenance=provenance, drift=drifted)
     if drifted:
         verdict['reasons'].append(f'変更された基準: {json.dumps(diff, ensure_ascii=False)}')
@@ -133,15 +176,27 @@ def _finish_round(session: Session, state: dict, record: dict, attempt: dict, re
                      'model': attempt.get('model', 'unknown')}
     new_record = {**record, 'attempts': attempts, 'gate': verdict, 'stop': stop, 'review': review_data,
                   'retry_allowed': retryable, 'reviewer': reviewer_info, 'structural_errors': errors, 'reviewed_at': now_jst()}
-    rounds = [*state['rounds'][:-1], new_record]
-    new_state = {**state, 'rounds': rounds}
-    if stop['stop']:
-        new_state = {**new_state, 'status': 'stopped', 'stop_reason': stop['reason']}
+    if attempt.get('prompt_sha256'):
+        new_record['prompt_sha256'] = attempt['prompt_sha256']
     name = f'r{record["round"]}_review'
     full = {**new_record, 'change_id': session.change_id, 'base_sha': state['base_sha']}
-    session.write_json(f'{name}.json', full)
-    session.write_text(f'{name}.md', report.review_markdown(full))
-    if raw is not None:
-        session.write_text(f'{name}.attempt{len(attempts)}.raw.txt', raw)
-    session.write_json('state.json', new_state)
+    # state.jsonの読取り→更新→保存を排他ロックで直列化し、実行中に`instruct`などで追加された内容を失わない。
+    # 最新のstateへ、今回のround記録だけを反映する
+    with session.state_lock():
+        fresh = session.state()
+        # 実行中に保存したプロンプトの記録（record_prompt）を、古いrecordで消さない
+        new_record.update({k: fresh['rounds'][-1][k] for k in ('prompt_sha256', 'prompt_files') if k in fresh['rounds'][-1]})
+        new_state = {**fresh, 'rounds': [*fresh['rounds'][:-1], new_record]}
+        if stop['stop']:
+            new_state = {**new_state, 'status': 'stopped', 'stop_reason': stop['reason']}
+        else:
+            new_state = {**new_state, 'status': 'active', 'stop_reason': None}
+        new_state['awaiting_user'] = bool(new_state.get('pause') == 'round' and not stop['stop'] and not retryable
+                                          and review_data is not None)
+        session.write_json(f'{name}.json', full)
+        session.write_text(f'{name}.md', report.review_markdown(full))
+        if raw is not None:
+            session.write_text(f'{name}.attempt{len(attempts)}.raw.txt', raw)
+        new_record['review_sha256'] = sha256_file(session.path(f'{name}.json'))
+        session.write_json('state.json', new_state)
     return {'record': full, 'state': new_state, 'reviewer_failed': failed}

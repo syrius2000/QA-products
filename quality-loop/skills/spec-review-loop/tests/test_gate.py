@@ -124,7 +124,7 @@ def test_reviewer_failure_is_inconclusive_with_single_retry(repo, tmp_path, sess
     assert first['reviewer_failed'] and first['record']['gate']['gate'] == 'INCONCLUSIVE' and first['record']['retry_allowed']
     second = review_round.review(session, timeout=2)
     assert second['record']['gate']['gate'] == 'INCONCLUSIVE' and not second['record']['retry_allowed']
-    with pytest.raises(SpecReviewError, match='レビュー済み'):
+    with pytest.raises(SpecReviewError, match='再試行の上限'):
         review_round.review(session, timeout=2)
 
 

@@ -6,7 +6,7 @@
 
 開発用Skillの一覧を整理し、新しいレビューループSkill `spec-review-loop` を追加しました。`feat/add-spec-review-loop`ブランチへpush済みで、`master`へは未統合です。
 
-- `spec-review-loop`（0.1.0）: OpenSpec changeの`tasks.md`とspec deltaを受入基準として固定し、round commit、別系統AI Reviewerによる読取り専用の独立レビュー、決定論的なGate判定、終了時の検証付きsquashを行います。明示的に依頼された場合にだけ使用します。Reviewerは`codex`（既定）、`cursor`（Cursor CLIの`agent`）、`claude`から選びます。使い方は [`SKILL.md`](quality-loop/skills/spec-review-loop/SKILL.md) を参照してください。
+- `spec-review-loop`（0.2.0）: OpenSpec changeの`tasks.md`とspec deltaを受入基準として固定し、round commit、別系統AI Reviewerによる読取り専用の独立レビュー、決定論的なGate判定、終了時の検証付きsquashを行います。Reviewerの実行中はログと`status`で進行を確認でき、人の指示は`instruct`で原文のまま次のroundへ引き継ぎます。明示的に依頼された場合にだけ使用します。Reviewerは`codex`（既定）、`cursor`（Cursor CLIの`agent`）、`claude`から選びます。使い方は [`SKILL.md`](quality-loop/skills/spec-review-loop/SKILL.md) を参照してください。
 - QA関連Skill（`quality-qa`、`quality-review`、`quality-response`、`blind-qa-cycle`、`spec-review-loop`）は、ユーザーが現在のメッセージで操作を明示的に依頼した場合にだけ使用します。QAの相談・説明、結果や文書の共有、OpenSpecのverify/applyだけでは起動しません。
 - 上記のうち`spec-review-loop`は、Productivity-Skillへの配備・同期の対象外です。配備は動作確認後の別changeで扱います。
 - 開発用Skillの一覧と使い分けは [Quality Loop README](quality-loop/README.md) を参照してください。
