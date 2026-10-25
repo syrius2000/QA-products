@@ -9,7 +9,7 @@
   - `references/review_reply.schema.json`: 回答JSONの形式（条件付きの必須はcheckerが検証）。
   - `SKILL.md`、`assets/review_request_template.md`。
   - `evals/evals.json`: 起動評価4件、権限境界を含む評価6件。
-- テスト: `python3 -m pytest tests`（pr-openspec）→ 51件通過。
+- テスト: `python3 -m pytest tests`（pr-openspec）→ 52件通過。
   - 回答JSONのスキーマ検証（必須・型・const・空文字・許容外フィールド・items）を標準ライブラリで実装し、スキーマ違反11件の試験を追加。旧checkerに対しては10件が失敗することを確認した。
   - 最低ケース一覧に対応するフィクスチャ25件（`tests/fixtures/`）。
   - 必須基準の`out_of_scope`規則を一時的に壊すとテストが失敗することを確認（変更を戻すと通過）。
@@ -26,5 +26,5 @@
 
 ## 既知の注意点
 
-- このブランチ（`feat/pr-openspec-skill`）は、アーカイブ前の`main`から分岐している。`add-in-agent-review-controls`の未アーカイブ状態が残っているため、`main`へ入れる前に`main`を取り込み、重複を解消する必要がある。
+- このブランチ（`feat/pr-openspec-skill`）は、アーカイブ前の`main`から分岐していたが、`main`（33584de、PR #10）を取り込み済み（f63d43b）。`add-in-agent-review-controls`は`main`でアーカイブ済みで、`openspec/specs/spec-review-loop/spec.md`に反映されている。
 - `build_ledger.py`は除外を作らない。除外は、利用者の承認を依頼書に記載した上で、manifestへ人が入力する。

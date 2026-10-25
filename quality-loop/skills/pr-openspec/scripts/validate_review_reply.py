@@ -50,12 +50,21 @@ def _type_ok(value: object, typ: str) -> bool:
     return isinstance(value, python_type)
 
 
+def _json_equal(a: object, b: object) -> bool:
+    """JSONの値の等価。数値は値で比べ（1と1.0は同じ）、boolは数値と区別する（trueは1ではない）。"""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return isinstance(a, bool) and isinstance(b, bool) and a == b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b
+    return type(a) is type(b) and a == b
+
+
 def schema_errors(schema: dict, value: object, path: str = '$') -> list[str]:
     """references/review_reply.schema.jsonの規則（型・const・enum・minLength・pattern・必須・許容外フィールド・items）を標準ライブラリで検証する。"""
     errs: list[str] = []
-    if 'const' in schema and not (value == schema['const'] and type(value) is type(schema['const'])):
+    if 'const' in schema and not _json_equal(value, schema['const']):
         errs.append(f'{path}: {schema["const"]!r}である必要があります')
-    if 'enum' in schema and value not in schema['enum']:
+    if 'enum' in schema and not any(_json_equal(value, e) for e in schema['enum']):
         errs.append(f'{path}: 許容外の値（{value!r}）です')
     typ = schema.get('type')
     if typ and not _type_ok(value, typ):

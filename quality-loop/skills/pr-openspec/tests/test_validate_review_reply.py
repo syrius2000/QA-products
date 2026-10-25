@@ -142,3 +142,11 @@ def test_schema_violations_are_inconclusive(tmp_path, name, mutate, word):
     assert rc == 2
     assert any(word in p for p in out['problems']), out['problems']
 
+
+def test_schema_version_1_point_0_is_the_same_value_as_1(tmp_path):
+    """JSON Schemaの値比較では1と1.0は同じ。正常な回答を誤ってINCONCLUSIVEにしない。"""
+    obj = _mutate(lambda o: o.update(schema_version=1.0))
+    rc, out = _run_object(tmp_path, obj)
+    assert out['result'] == 'PASS', out
+    assert rc == 0
+
