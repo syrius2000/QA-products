@@ -10,7 +10,7 @@
 - [x] 2.1 回答JSONのスキーマ（判定4値、根拠・理由の必須条件、`reviewer`必須）を`references/review_reply.schema.json`に定める。検証: 正常例と欠落例でスキーマ検証が期待どおり成否を返す。
 - [x] 2.2 `scripts/validate_review_reply.py`を実装する。Markdown（```json囲みのblockを正確に1つ抽出）とJSONファイルの両方を受け付ける。検証: 同じ内容をMarkdownとJSONで与えた場合に同じ結果を返す。
 - [x] 2.3 期待値manifestとの照合（依頼ID、PR URL、base SHA、head P、依頼書blob SHA、全基準IDの一意性・網羅性、基準ごとの`required`）と、判定の優先順位（FAIL > INCONCLUSIVE > PASS）を実装する。必須基準の`out_of_scope`はINCONCLUSIVEとする。検証: design.mdの最低ケース一覧を`tests/fixtures/`に1対1で対応させ、全ケースが期待どおりの結果と終了コードを返す。
-- [x] 2.5 `scripts/build_ledger.py`を実装する。specデルタから、R・Sの全台帳（ID、出典path、出典blob SHA、delta種別、`required`の既定値）を作る。検証: 複数Requirement・複数Scenario・MODIFIED・RENAMEDを含む例で、件数・ID・順序が期待どおりになる。
+- [x] 2.5 `scripts/build_ledger.py`を実装する。specデルタから、R・Sの全台帳（ID、出典path、出典blob SHA、delta種別、`required`の既定値）を作る。検証: 複数Requirement・複数Scenario・MODIFIED・RENAMED（FROM/TO）・REMOVEDを含む例で、件数・ID・順序が期待どおりになる。
 - [x] 2.4 checkerの試験`tests/test_validate_review_reply.py`を作成する。検証: 全件通過し、出力に結果・構造・問題一覧が含まれる。
 
 ## 3. SKILL.md と依頼書テンプレート

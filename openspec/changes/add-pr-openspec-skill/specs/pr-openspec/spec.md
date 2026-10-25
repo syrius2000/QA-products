@@ -60,6 +60,10 @@ OpenSpec changeの仕様・実装・テスト・未検証事項を、OpenSpec CL
 - **WHEN** 回答の基準IDまたは台帳のIDが、specデルタの全要求と一致しない
 - **THEN** システムは`INCONCLUSIVE`とし、欠落または余剰のIDを示す
 
+#### Scenario: 削除される要求がある
+- **WHEN** specデルタに`## REMOVED Requirements`がある
+- **THEN** 削除される要求は台帳に含まれ、Reviewerは削除後の契約を確認する
+
 #### Scenario: 承認のない除外
 - **WHEN** `required: false`の基準に承認者と理由がない
 - **THEN** システムは`INCONCLUSIVE`とする

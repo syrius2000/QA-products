@@ -117,7 +117,7 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
 4. 要求別対応表。要求／Scenario ID、delta種別、出典pathとblob SHA、実装path・行、テスト、検証対象SHA・コマンド・結果・証跡、実装側の申告、Reviewer確認欄を持つ。
 5. Reviewerへの依頼文。「本書を先に読み、全基準を対象SHAの実装・テストと独立に照合する。未読・未確認を適合としない。仕様にない改善提案は別記する」。
 6. 既知の未検証事項・制約の表。`implementation-record.md`、`CODEX_VERIFICATION.md`の既知注意点、tasksの未完了、CI結果などから項目・根拠path/SHA・未実施理由・影響・実行時/静的など証拠種別を列挙する。Reviewerには、これらを実施済みruntime証拠としてPASS扱いせず、今回のコード監査範囲外か、別途検証可能かを明記させる。ReviewerのPASSは未実施事項を完了に変えない。
-7. 期待する回答。冒頭に依頼ID、実際に確認したPR URL、baseの完全SHA、公開head Pの完全SHA、P上の監査依頼書のblob SHAまたはP固定のファイルURLを返す。各基準の適合／不適合／未確認／根拠付き対象外、証拠、Findingの基準ID・観測事実・影響・再現または確認方法。指摘ゼロでも確認範囲と未確認事項を返す。回答はチェッカー用の一意なJSON blockを含める。
+7. 期待する回答。冒頭に依頼ID、実際に確認したPR URL、baseの完全SHA、PR本文に記載された公開head Pの完全SHAと依頼書のblob SHAを返す（依頼書自身には書かない）。各基準の適合／不適合／未確認／根拠付き対象外、証拠、Findingの基準ID・観測事実・影響・再現または確認方法。指摘ゼロでも確認範囲と未確認事項を返す。回答はチェッカー用の一意なJSON blockを含める。
 
 必要資料がGitHubから取得できない、大きさ等で必要な基準を掲載できない場合は欠落を明示し、黙って省略して公開準備完了としない。依頼書の本体はファイルであり、PR本文・コメントにはリンクと要約だけを置く（PR本文・コメントは約65,000文字が上限のため、全文展開はファイル側で行う）。依頼書が大きく一度に読めない場合は、Change単位で複数ファイルに分割し、各ファイルに依頼IDと通し番号を持たせ、回答JSONは分割全体の基準IDを網羅させる。PR本文には本書へのリンクとレビュー手順を明記する。任意のレビューBotへの自動注入や、そのBotが必ず従う保証は初版に含めない。
 
@@ -149,7 +149,7 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
   "pr_url": "https://github.com/<owner>/<repo>/pull/<n>",
   "base_sha": "<40桁>",
   "head_sha": "<公開head P、40桁>",
-  "request_blob_sha": "<P上の依頼書blob SHA>",
+  "request_blob_sha": "<PR本文に記載の依頼書blob SHA>",
   "reviewer": {"tool": "...", "model": "...", "version": "..."},
   "criteria": [
     {"id": "<基準ID>", "verdict": "conforms|nonconforming|unverified|out_of_scope",
@@ -180,12 +180,13 @@ proposal、design、tasks、全delta spec、存在する実装記録を読む。
 - 項目IDは、要求が`R:<出典path>#<要求の順番>`、シナリオが`S:<出典path>#<要求の順番>.<シナリオの順番>`。各項目に出典path、出典blob SHA、delta種別を付ける。
 - 台帳は依頼書に掲載し、Reviewerに出典と照合させる。
 - 台帳の項目は既定で全て`required: true`。`required: false`にできるのは、利用者が承認し依頼書に理由を記載した除外（`exclusion: {approved_by, reason}`）だけである。承認のない除外は不備。
+- RENAMEDは、FROM・TOの対応から、TOの名前を要求の項目にする（旧名はタイトルに残す）。REMOVEDは、削除される要求を delta種別`REMOVED`の要求の項目とし、Reviewerが削除後の契約を確認する。
 - checkerは、manifestの台帳IDと回答の`criteria[].id`を照合する（欠落・余剰・重複はINCONCLUSIVE）。checkerは台帳そのものを作り直さない。台帳の正しさは、`build_ledger.py`の決定論的な抽出と、Reviewerによる出典の照合で担保する。checkerのPASSは、この台帳に対する回答の形式と網羅性の検証に限られる。
 - 台帳が0件、出典を読めない、またはH以外のファイルから作られた場合は、依頼書を公開準備完了としない。
 
 #### 期待値manifestの保存先と信頼境界
 
-- manifestは依頼ID、PR URL、base SHA、公開head P、依頼書blob SHA、全要求台帳（下記）を持つ。台帳の各項目には`required`と、承認済みの場合だけ`exclusion`（承認者と理由）を持つ。回答側は変更できない。Pを含むためPのcommitには入れられず、ローカル専用（`docs/Artifacts/`配下の未commit JSON等）に置く。
+- manifestは依頼ID、PR URL、base SHA、公開head P、依頼書blob SHA、全要求台帳（下記）を持つ。公開head Pと依頼書blob SHAは、公開後にGitHubから取得した値である。依頼書は自分のblob SHAとPを含めないため、これらはPR本文とmanifestにだけ記録する。manifestの保存先と名前は`docs/Artifacts/pr_openspec_manifest_<request_id>.json`（未追跡、ローカル専用）とする。台帳の各項目には`required`と、承認済みの場合だけ`exclusion`（承認者と理由）を持つ。回答側は変更できない。Pを含むためPのcommitには入れられず、ローカル専用（`docs/Artifacts/`配下の未commit JSON等）に置く。
 - manifestはSkillが送信前または回答確認時に、GitHub APIや`git`のGit objectから取得した値で作る。回答側が主張する値、PR本文、コメントの値を期待値の出どころにしない。manifestはcheckerの引数として明示的に渡す。
 
 #### checker試験の最低ケース
@@ -239,5 +240,6 @@ Skill作成の完了条件は、開発前記録とPR監査時記録を区別し�
 
 - 2026-10-25 12:40: 第3版。別意見のレビュー（P1: checker試験の欠落、P2: 回答JSONスキーマ・manifestの保存先と信頼境界・回答のデータ扱い・来歴の可視性・Reviewer情報の記録、P3: 重複の整理・依頼書の分割方針）を反映。この改訂に対する独立レビューは未実施で、`pr_openspec_plan_review_002_1025.md`のPASSは第2版（SHA-256 `c68c04a0…`）に対するものである。
 - 2026-10-25 13:10: 第3版への追記。成果物の数え方を「5種類」とし、checker試験1式の構成を明記。回答JSONの抽出をchecker自身が行う（Markdown回答または純粋なJSONを受け付ける）ことを定め、抽出失敗を試験対象に含めた。この追記にも独立レビューは未実施である。
+- 2026-10-25 第6版: P1（依頼書が自身のP・blob SHAを含む自己参照）を、依頼書にはHとbaseだけを置き、PとblobはPR本文とmanifestに記録する形に修正。P1（RENAMEDのFROM/TOを台帳で扱えない）と P2（REMOVEDの漏れ）を、台帳の抽出規則に追加して修正。P2（manifestの保存と命名が未定義）を`docs/Artifacts/pr_openspec_manifest_<request_id>.json`として定義。
 - 2026-10-25 第5版: P1（`required`をSkillが決めるだけで、全要求の網羅を保証しない）を、Hのspecデルタからの全要求台帳と承認済み除外で修正。P2（proposal・tasksが第3版を参照）を修正。`references/review_reply.schema.json`と`build_ledger.py`を成果物一覧に追加。
 - 2026-10-25 第4版（修正案受け入れ）: P1（必須基準の`out_of_scope`がPASSになる問題）を、manifestの`required`と判定規則で修正。P2（権限境界の評価・模擬ケースの不足）を、模擬ケースに4件追加して修正。Medium（生成物の日本語・JSTヘッダー・連番規則）は、規則の出どころを確認できていないため未反映。

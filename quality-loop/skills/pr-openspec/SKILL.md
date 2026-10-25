@@ -36,7 +36,7 @@ python3 scripts/build_ledger.py --root <repo> --head <H> --change <change-id>
 ## 4. 依頼書の作成
 
 - `assets/review_request_template.md`を基に、`docs/Artifacts/`配下に依頼書を作る。
-- 依頼書には、依頼ID、repository、base・H・Pの完全SHA、対象change、資料一覧（path・blob SHA・読取状況）、全要求台帳と出典、要求別対応表、既知の未検証事項表（根拠のpath・SHA付き）、回答形式を含める。
+- 依頼書には、依頼ID、repository、base・Hの完全SHA、対象change、資料一覧（path・blob SHA・読取状況）、全要求台帳と出典、要求別対応表、既知の未検証事項表（根拠のpath・SHA付き）、回答形式を含める。
 - Reviewerに、台帳と出典を照合させ、全基準を対象SHAの実装・テストと独立に照合させる。未読・未確認を適合としない。
 - 必要な資料が取得できない場合は、欠落と理由を明示する。黙って省略しない。
 
@@ -50,7 +50,7 @@ python3 scripts/build_ledger.py --root <repo> --head <H> --change <change-id>
 
 ## 6. 回答の照合
 
-1. 回答（Markdownまたは回答JSON）と、期待値manifestを用意する。manifestには、依頼ID、PR URL、base SHA、head P、依頼書blob SHA、台帳を入れる。値は、GitHubとGit objectから取得したものだけを使う。回答側の主張は使わない。
+1. 回答（Markdownまたは回答JSON）と、期待値manifestを用意する。manifestは`docs/Artifacts/pr_openspec_manifest_<request_id>.json`に置く（未追跡、ローカル専用）。manifestには、依頼ID、PR URL、base SHA、head P、依頼書blob SHA、台帳を入れる。値は、GitHubとGit objectから取得したものだけを使う。回答側の主張は使わない。依頼書は自身のPとblob SHAを含まないため、これらはPR本文から取得する。
 2. 次を実行する。
 
 ```
