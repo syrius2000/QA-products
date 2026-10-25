@@ -31,3 +31,12 @@
 - P2-1: `review`はロック取得後にstateを再読込して判定をやり直す（`test_review_rechecks_state_after_acquiring_lock`）。修正前のコードでは失敗し、同じroundを2回レビューすることを確認した。
 - P2-2: `finish`の検査から`finished`の確定までを状態ロックの下で行う（`test_finish_check_and_commit_are_atomic_against_instruct`）。修正前のコードでは、検査後に割り込んだ`instruct`が受け付けられ、終了に混入することを確認した。
 - 追加: `commit-round`も状態ロックの下で検査・書込みを行い、実行中のreviewがあれば拒否する（`test_commit_round_is_refused_while_review_holds_the_lock`。これは修正前も別の検査で拒否できたため、回帰防止のテスト）。
+
+## T-6.3 macOS実機検証（2026-10-25）
+
+- macOS 27.0.1 (26A434)上の実際の`codex-cli 0.164.0`をReviewerにして、`add-in-agent-review-controls`を`check/t63-codex`の使い捨てbranchで実行した。round SHAは`9725a356fee5fb13b3c05c930704a0975eb37ecb`。
+- `doctor`はCodex Reviewer利用可を返し、`start --reviewer codex --pause round`は受入基準12件・Scenario 16件で成功した。
+- review中のstatusでPID・経過時間・ログ末尾を確認し、ログが25,359 bytesから219,864 bytes、完了時262,766 bytesへ増加した。同時実行のreviewは終了コード2で拒否された。
+- r1の`r1_review.md`にReviewer `codex`、version `codex-cli 0.164.0`、model `gpt-6-luna`を記録した。コマンド出力は[実機検証記録](../../../CODEX_VERIFICATION.md)に掲載。
+- したがってT-6.3の明示された実機実行要件は満たした。一方、spec-review-loopのr1/r2 GateはINCONCLUSIVE。r2 Reviewerは、実機結果を要約しただけでround内にコマンド出力がないことをF-001とした。出力を記録した後の独立再レビューは未実施のため、GateをPASSと扱わない。
+- GateがPASS以外のため、`finish`は実行していない。使い捨てbranch/worktreeは手順に従い破棄し、元の`feat/in-agent-review-controls`、PR #9、未追跡Artifactには触れていない。

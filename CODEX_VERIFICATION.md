@@ -183,6 +183,87 @@ Gate が PASS 以外なら、`finish` は実行せず、結果を報告してく
 
 止めた場合（§0 や §2 に該当）は、上の「結果」だけを埋めて、止めた理由を具体的に書いてください。
 
+### 実施結果（2026-10-25）
+
+- 実行日時: 2026-10-25 17:14〜17:16 JST
+- 実行環境: macOS 27.0.1 (26A434) / `codex-cli 0.164.0`
+- 対象branch・commit: `check/t63-codex` / review対象round SHA `9725a356fee5fb13b3c05c930704a0975eb37ecb`
+- 開始時のtopic branch HEAD: `5f4b18f1a6015e6bcfba29596c4a85377e8cf3aa`
+- `start --reviewer codex --pause round`: 成功。受入基準12件、Scenario 16件を固定。
+- 実Reviewer: `codex`、`codex-cli 0.164.0`、model `gpt-6-luna`。r1の`r1_review.md`に記録。
+- ログサイズ: 実行中に25,359 bytes、219,864 bytes、完了時262,766 bytesを観測。
+- 二重起動: 実行中の同一`review`は終了コード2で拒否。
+- T-6.3の実機実行要件（実際のchangeをCodex CLIでreviewし、Reviewer情報と実行中のログ増加を確認）は満たした。
+- spec-review-loop GateはINCONCLUSIVE。r1は実機確認前に書いた報告書を評価し、r2は実機出力をround成果物に含めていなかった点をFinding F-001とした。出力を下記へ記録した後の再レビューは行っていない。
+- GateがPASSではないため`finish`は実行していない。
+
+#### 2. doctor の出力
+
+```text
+git: git version 2.54.0 (Apple Git-157)
+openspec: 1.14.0
+Reviewer codex: codex-cli 0.164.0 利用可
+Reviewer cursor: 2026.10.14-941492e 利用可
+Reviewer claude: 2.1.296 (Claude Code) 利用可
+選択中のReviewer codex: OK
+```
+
+#### 4-3. 実行中statusの出力
+
+```text
+add-in-agent-review-controls: active（branch check/t63-codex、base 5f4b18f1a601、上限 3 round、Reviewer codex）
+  r1 9725a356fee5 Gate 未レビュー
+実行中: r1 codex PID 49657 経過 4秒 ログ openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log
+  | [err] hook: SessionStart
+  | [err] hook: SessionStart Completed
+  | [err] hook: SessionStart Completed
+  | [err] hook: UserPromptSubmit
+  | [err] hook: UserPromptSubmit Completed
+次の操作: r1のレビューが実行中です。ログ（openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log）を確認し、終了を待ってください
+```
+
+実行中statusでログ末尾が後続の作業出力へ進むことを確認した。`wc -c`の観測出力:
+
+```text
+25359 openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log
+219864 openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log
+262766 openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log
+```
+
+#### 二重起動拒否の出力
+
+```text
+停止: r1のレビューが実行中です（PID 49657、codex）
+次の操作: status で進行を確認してください（openspec/changes/add-in-agent-review-controls/review/r1_reviewer.log）。終了を待ってから再実行します
+  lock: {'pid': 49657, 'round': 1, 'tool': 'codex', 'started_at': '2026-10-25T17:14:49+09:00', 'started_epoch': 1792916089.648764}
+```
+
+#### 4-5. r1_review.mdの先頭
+
+```text
+# spec-review r1: add-in-agent-review-controls
+
+- Gate: **INCONCLUSIVE**（T-6.3: UNVERIFIED）
+- base SHA: `5f4b18f1a6015e6bcfba29596c4a85377e8cf3aa`
+- round SHA: `9725a356fee5fb13b3c05c930704a0975eb37ecb`
+- Reviewer: codex codex-cli 0.164.0 ／ model: gpt-6-luna
+- 停止判定: 継続
+```
+
+#### r2の独立確認結果
+
+実機出力を含めず要約だけを記録したr2 reportに対し、Reviewerは次を返した。
+
+```text
+r2 Gate: INCONCLUSIVE（T-6.3: UNVERIFIED）
+Reviewer: codex codex-cli 0.164.0 ／ model gpt-6-luna
+  F-001 [unverified/medium] openspec/changes/add-in-agent-review-controls/review/r2_report.md:11-20,24-32: r2_reportは実機実行、status、ログ増加、Reviewer情報を報告しているが、round SHAに実行ログやstatus出力など独立確認可能な証拠がなく、T-6.3を独立に確認できない。
+停止: Findingの停滞（F-001）
+選択肢: 人の判断 ／ quality-review の review-standalone ／ blind-qa-cycle
+```
+
+この結果は実機実行の失敗ではなく、独立レビュー時点でround内の証拠が不足していたことを示す。実機出力を本節に追記した後の独立再レビューは未実施であり、GateをPASSとは扱わない。
+
 ## 6. 後片付け
 
 検証が終わったら、使い捨てのブランチを捨てます。push はしないでください。
@@ -234,7 +315,7 @@ git branch -D check/t63-codex
 ### 未実装・未確認
 - `waive`（Findingの格下げ）は導入していません。
 - 既存の `spec-review-loop`（0.1.0）は置き換えず、0.2.0 として拡張しています。
-- T-6.3（この検証）は未実施です。結果が出るまで、このPRのマージは保留です。
+- T-6.3は2026-10-25にmacOS実機で実施し、Codex Reviewer情報・実行中status・ログ増加・二重起動拒否を確認した。結果と実際の出力は本書「実施結果」と`openspec/changes/add-in-agent-review-controls/implementation-record.md`に記録した。spec-review-loopの独立GateはINCONCLUSIVEのままで、出力追記後の再レビューは未実施。
 
 ### Macのローカル環境
 - 作業用のローカルブランチ `add-spec-review-loop-base` が残っています。不要なら、利用者の判断で削除してください。
