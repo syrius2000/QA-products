@@ -150,3 +150,15 @@ def test_schema_version_1_point_0_is_the_same_value_as_1(tmp_path):
     assert out['result'] == 'PASS', out
     assert rc == 0
 
+
+def test_kept_findings_carry_the_finding_body():
+    """nonconformingの確実な指摘は、基準IDだけでなく回答の観測・影響・確認方法を残す（P2-002）。"""
+    reply = json.loads((FIX / 'reply_fail_nonconforming.json').read_text(encoding='utf-8'))
+    rc, out = run('reply_fail_nonconforming.json')
+    assert out['result'] == 'FAIL'
+    kept = {k['criterion_id']: k for k in out['kept_findings']}
+    for finding in reply['findings']:
+        bucket = kept[finding['criterion_id']]['findings']
+        assert any(f['observation'] == finding['observation'] and f['how_to_verify'] == finding['how_to_verify']
+                   for f in bucket), bucket
+

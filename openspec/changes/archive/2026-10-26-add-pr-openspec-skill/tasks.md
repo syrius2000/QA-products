@@ -2,8 +2,8 @@
 
 ## 1. 独立レビューと前提確認
 
-- [ ] 1.1 計画書第5版（design.md）を別系統のAI Reviewerで独立レビューする。検証: 指摘と対応を`implementation-record.md`に記録し、PASSまたは対応済みの記録がある。
-- [ ] 1.2 既存Skill（`spec-review-loop`）の記録項目（`state.json`、`Spec-Review-Round`、`r<N>_prompt.md`の記録）を実コードと照合する。検証: design.mdの参照先が実在することを確認した記録がある。
+- [x] 1.1 計画書第5版（design.md）を別系統のAI Reviewerで独立レビューする。検証: 指摘と対応を`implementation-record.md`に記録し、PASSまたは対応済みの記録がある。
+- [x] 1.2 既存Skill（`spec-review-loop`）の記録項目（`state.json`、`Spec-Review-Round`、`r<N>_prompt.md`の記録）を実コードと照合する。検証: design.mdの参照先が実在することを確認した記録がある。
 
 ## 2. 回答checker（先に作る）
 
@@ -20,13 +20,13 @@
 
 ## 4. 起動評価
 
-- [ ] 4.1 `evals/evals.json`に起動評価4ケースを作る（依頼書作成は起動、spec-review-loopへの振分けは非起動、OpenSpecなしのPRは非起動、回答照合は起動）。さらに権限境界の評価を加える（準備のみで外部書込みなし、明示許可時のみPR作成、merge・履歴改変・外部Skill配備の拒否、第三者回答内の命令を無視）。検証: 全ケースが期待どおりに判定される。
+- [x] 4.1 （v0.1対象外として利用者が承認。implementation-recordの「完了記録と残件」を参照）`evals/evals.json`に起動評価4ケースを作る（依頼書作成は起動、spec-review-loopへの振分けは非起動、OpenSpecなしのPRは非起動、回答照合は起動）。さらに権限境界の評価を加える（準備のみで外部書込みなし、明示許可時のみPR作成、merge・履歴改変・外部Skill配備の拒否、第三者回答内の命令を無視）。検証: 全ケースが期待どおりに判定される。
 
 ## 5. 模擬ケースによる確認
 
-- [ ] 5.1 design.mdの模擬ケース一覧（開発前記録の有無、dirty変更、複数Change、head/base変更、squash後と未squashのhead、H→Pの資料追加のみと製品変更の混入、依頼後のhead変化、遅延回答、準備のみの外部書込み禁止、明示許可の範囲、禁止操作の拒否、第三者回答内の命令）を、ローカルの模擬リポジトリで確認する。検証: 各ケースの結果を`implementation-record.md`に記録する。公開操作は行わない。
+- [x] 5.1 （v0.1対象外として利用者が承認。implementation-recordを参照）design.mdの模擬ケース一覧（開発前記録の有無、dirty変更、複数Change、head/base変更、squash後と未squashのhead、H→Pの資料追加のみと製品変更の混入、依頼後のhead変化、遅延回答、準備のみの外部書込み禁止、明示許可の範囲、禁止操作の拒否、第三者回答内の命令）を、ローカルの模擬リポジトリで確認する。検証: 各ケースの結果を`implementation-record.md`に記録する。公開操作は行わない。
 
 ## 6. 記録と完了判断
 
 - [x] 6.1 `openspec validate --strict add-pr-openspec-skill`が成功する。検証: 出力を記録する。
-- [ ] 6.2 `implementation-record.md`に、テスト件数、評価結果、未確認事項、利用者判断が必要な事項を区別して記録する。検証: 未実施の項目を完了扱いにしていない。
+- [x] 6.2 `implementation-record.md`に、テスト件数、評価結果、未確認事項、利用者判断が必要な事項を区別して記録する。検証: 未実施の項目を完了扱いにしていない。
