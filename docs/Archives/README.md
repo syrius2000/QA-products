@@ -20,6 +20,7 @@ author: Claude Code
 
 ## 現行Quality Loopの要約
 
+- [PR向けOpenSpec監査スキル（pr-openspec）関連文書のアーカイブ記録](qa_workflow/pr-openspec/archived_summary_009_1026.md): 2026-10-25〜2026-10-26の計画書および独立レビュー記録（001〜008）計9文書の集約記録
 - [完了済みArtifact整理統合アーカイブ](archived_summary_004_0906.md): 2026-08-24〜2026-09-06の完了済み計画・報告・QA・同期記録
 - [blind-qa-cycle Cycle 1のアーカイブ](qa_workflow/unify-blind-qa-cycle/archived_summary_007_1011.md): Gate `FAIL`と未解決Findingを保持し、利用者判断で独立再QAを省略した記録
 - [blind-qa-cycle関連計画のアーカイブ](qa_workflow/unify-blind-qa-cycle/archived_summary_008_1011.md): Plan 038・039・041の実施状態、確認結果、検証上の制約
