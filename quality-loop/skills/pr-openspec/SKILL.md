@@ -29,7 +29,7 @@ OpenSpec CLIを使えないGitHub上のReviewerが、対象changeの仕様・実
 python3 scripts/build_ledger.py --root <repo> --head <H> --change <change-id>
 ```
 
-- 出力は`head_sha`と`ledger`。台帳は、H上の`openspec/changes/<id>/specs/**/spec.md`の`## ADDED`・`## MODIFIED`・`## RENAMED Requirements`配下の全Requirementと全Scenarioである。
+- 出力は`head_sha`と`ledger`。台帳は、H上の`openspec/changes/<id>/specs/**/spec.md`の`## ADDED`・`## MODIFIED`・`## RENAMED`・`## REMOVED Requirements`配下の全Requirementと全Scenarioである。
 - 台帳が0件（終了コード2）なら、依頼書を公開準備完了としない。
 - 台帳の項目は全て`required: true`とする。除外は利用者が承認し、依頼書に承認者と理由を記載した場合だけ、`required: false`と`exclusion`を付けてよい。承認のない除外は使わない。
 
@@ -50,7 +50,7 @@ python3 scripts/build_ledger.py --root <repo> --head <H> --change <change-id>
 
 ## 6. 回答の照合
 
-1. 回答（Markdownまたは回答JSON）と、期待値manifestを用意する。manifestは`docs/Artifacts/pr_openspec_manifest_<request_id>.json`に置く（未追跡、ローカル専用）。manifestには、依頼ID、PR URL、base SHA、head P、依頼書blob SHA、台帳を入れる。値は、GitHubとGit objectから取得したものだけを使う。回答側の主張は使わない。依頼書は自身のPとblob SHAを含まないため、これらはPR本文から取得する。
+1. 回答（Markdownまたは回答JSON）と、期待値manifestを用意する。manifestは`docs/Artifacts/pr_openspec_manifest_<request_id>.json`に置く（未追跡、ローカル専用）。manifestには、依頼ID、PR URL、base SHA、head P、依頼書blob SHA、台帳を入れる。値は、GitHubとGit objectから取得したものだけを使う。回答側の主張は使わない。依頼書は自身のPとblob SHAを含まないため、これらは公開後にGitHub APIまたはGit objectから取得する。PR本文は期待値の出どころにしない。
 2. 次を実行する。
 
 ```

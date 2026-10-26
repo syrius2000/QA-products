@@ -206,6 +206,8 @@ def check_reply(manifest: dict, reply: object) -> dict:
             if item is None or item.get('required') is not False or not item.get('exclusion'):
                 problems.append(f'{cid}: out_of_scopeは承認済みの除外（required: false、exclusionあり）の基準にだけ使えます')
 
+    kept = [dict(k, findings=[f for f in findings if isinstance(f, dict) and f.get('criterion_id') == k['criterion_id']])
+            for k in kept]
     for cid in sorted({i for i in ids if ids.count(i) > 1}):
         problems.append(f'基準IDが重複: {cid}')
     for cid in sorted(set(ledger) - set(ids)):
