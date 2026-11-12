@@ -1,5 +1,11 @@
 # 別PCでの開発引継ぎメモ
 
+## 2026-11-12開始のQAオーケストレーション計画
+
+新しい設計作業は`plan/qa-agent-orchestration`ブランチで管理する。
+[再開ガイド](docs/Artifacts/qa_agent_orchestration_next_20261112.md)から、変更計画とfalsify-me自己点検を読み、次のT01/T02（調査・状態契約設計）へ進む。
+製品実装・実機接続・独立QAは未実施。以下は別案件の過去引継ぎ記録として保持する。
+
 created: 2026-10-05 06:10 (JST)
 update: 2026-10-05 23:35 (JST)
 author: Codex (GPT-6)
@@ -65,7 +71,7 @@ git status -sb
 - [QA-003 Cycle 1レビュー](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_review_003_1004.md)
 - [QAレビュー評価記録](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_review_evaluation_001_1005.md)
 - [QA-003状態記録](docs/Archives/qa_workflow/unify-qa-skill-workflow/artifacts/qa_state_003_1004.json)
-- [統合QA OpenSpecタスク](openspec/changes/unify-qa-skill-workflow/tasks.md)
+- [統合QA OpenSpecタスク](openspec/changes/archive/2026-10-06-unify-qa-skill-workflow/tasks.md)
 
 ## 検証状況と注意点
 
